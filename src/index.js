@@ -1,22 +1,31 @@
-﻿import http from 'node:http';
+import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import { config } from './config.js';
 import { api } from './routes.js';
-import { currentUser, canAccessNumber } from './auth.js';
+import { currentUser, canAccessNumber, requireAuth } from './auth.js';
 import { restoreAll } from './wa.js';
+import * as wa from './wa.js';
 import * as backup from './backup.js';
-import { db } from './db.js';
+import { db, q } from './db.js';
+import { shutdown as shutdownRegex } from './regexRunner.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 if (config.trustProxy) app.set('trust proxy', 1);
 app.use(express.json({ limit: '24mb' }));
 app.use(express.static(path.join(here, '..', 'public')));
-app.use('/media', express.static(path.join(config.dataDir, 'media')));
 app.use('/api', api);
+app.use('/media', requireAuth, express.static(path.join(config.dataDir, 'media'), {
+  setHeaders: (res, filePath) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    if (filePath.endsWith('.html') || filePath.endsWith('.htm')) {
+      res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'; img-src data:; style-src 'unsafe-inline'");
+    }
+  },
+}));
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
@@ -60,8 +69,29 @@ setInterval(() => {
 
 server.listen(config.port, config.host, async () => {
   console.log(`[http] http://localhost:${config.port}`);
+  // Tanpa flag ini V8 mengompilasi ulang regex berat ke kode native di eksekusi kedua (>400 ms),
+  // sehingga rule bertanda slow bergantian timeout. Lihat LAPORAN-HARDENING.md.
+  const v8Flags = `${process.execArgv.join(' ')} ${process.env.NODE_OPTIONS || ''}`;
+  if (!v8Flags.includes('--regexp-interpret-all')) console.warn('[regex] PERINGATAN: jalankan dengan "npm start" atau node --regexp-interpret-all; rule regex berat bisa timeout bergantian');
   await checkBackup();
+  db.exec("UPDATE numbers SET status = 'offline'");
   await restoreAll();
 });
 
-process.on('SIGINT', () => { server.close(); process.exit(0); });
+process.on('unhandledRejection', (err) => console.error('[unhandled]', err?.stack || err));
+process.on('uncaughtException', (err) => console.error('[uncaught]', err?.stack || err));
+
+let closing = false;
+const shutdown = () => {
+  if (closing) return;
+  closing = true;
+  console.log('[shutdown] menutup');
+  for (const n of q.allNumbers.all()) wa.disconnect(n.id);
+  shutdownRegex();
+  // Klien WS menahan server.close(); tutup agar tidak selalu jatuh ke batas 5 detik.
+  for (const client of wss.clients) client.terminate();
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 5000);
+};
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);

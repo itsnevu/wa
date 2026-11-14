@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="id">
 <head>
 <meta charset="utf-8" />
@@ -54,6 +54,7 @@ svg { width:20px; height:20px; stroke:currentColor; stroke-width:1.6; fill:none;
 #chats:empty::before { content:"belum ada chat"; display:block; padding:10px; }
 .b { max-width:68%; align-self:flex-start; background:#f3f4f6; border-radius:8px; padding:7px 10px; white-space:pre-wrap; overflow-wrap:anywhere; }
 .b.me { align-self:flex-end; }
+.b.plain { background:transparent; padding:0; }
 .toolbar { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
 #composer { display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; }
 #quoteBar { flex:0 0 100%; border-bottom:1px solid var(--line); padding-bottom:6px; }
@@ -102,6 +103,64 @@ label { display:grid; gap:5px; font-size:12px; color:var(--muted); }
 .rail { overflow-y:auto; }
 .rail button { flex-shrink:0; }
 </style>
+<link rel="stylesheet" href="/style-extra.css" />
+<style id="thread-proportions">
+svg { width:18px; height:18px; }
+.chat-empty svg { width:18px; height:18px; }
+#title[role=button] { cursor:pointer; border-radius:4px; }
+#title:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.contact-name-editor { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.contact-name-editor input { flex:1 0 100%; height:36px; }
+#head .contact-name-editor button { width:auto; flex:0 0 auto; height:32px; padding:4px 8px; font-size:12px; }
+#app { grid-template-columns:56px 300px minmax(0,1fr); }
+.rail { gap:4px; padding:16px 8px; }
+.rail button.active { background:rgba(255,255,255,.14); border:0; border-radius:8px; }
+#main > #head,#main > .composer-card,#msgs { max-width:860px; margin:0 auto; width:100%; }
+#msgs { padding:20px 24px; scrollbar-width:thin; scrollbar-color:var(--line2) transparent; }
+::-webkit-scrollbar { width:8px; height:8px; }
+::-webkit-scrollbar-thumb { background:var(--line2); border-radius:999px; }
+#msgs .b { max-width:68%; padding:8px 12px; border-radius:10px; background:#f3f4f6; margin-top:8px; }
+#msgs .b.compact { margin-top:3px; }
+#msgs .b.me { align-self:flex-end; background:#ede9fe; }
+#msgs .b:has(img),#msgs .b:has(video),#msgs .b:has(audio) { max-width:min(68%,284px); }
+#msgs .b.plain { background:transparent; padding:0; }
+#msgs .b img,#msgs .b video,#msgs .b audio { max-width:min(260px,100%); max-height:320px; object-fit:cover; border-radius:8px; display:block; cursor:zoom-in; }
+#msgs .message-time { font-size:10.5px; color:var(--muted); text-align:right; margin-top:3px; }
+#msgs .message-date { position:relative; gap:0; margin:16px 0 8px; }
+.message-date > span { background:var(--card); padding:0 10px; }
+#head { flex-wrap:nowrap; gap:4px; }
+.contact-heading { flex:1; min-width:0; }
+#head #title { display:block; font-size:14px; font-weight:600; }
+#head .contact-detail { display:block; font-size:11.5px; margin:0; }
+#head button,#composer .ghost { width:40px; height:40px; padding:10px; flex:0 0 40px; }
+#chips:empty { display:none; }
+#chips { max-width:100px; }
+#composer { flex-wrap:nowrap; align-items:flex-end; gap:8px; }
+#composer #input { flex:1 1 0; width:0; min-width:0; height:40px; min-height:40px; max-height:120px; }
+#composer #btnSend { flex:0 0 auto; min-width:88px; height:40px; }
+#quoteBar { margin-bottom:8px; }
+.mini-menu { position:fixed; z-index:25; min-width:180px; max-width:calc(100vw - 24px); max-height:260px; overflow:auto; padding:6px; box-shadow:0 8px 24px #11182718; }
+.mini-menu button { display:block; text-align:left; width:100%; }
+#mediaPreview { background:#111827f2; z-index:40; cursor:zoom-out; }
+#mediaPreviewContent { display:grid; place-items:center; }
+#mediaPreviewContent > * { max-width:90vw; max-height:90vh; object-fit:contain; }
+#mediaPreviewClose { position:absolute; right:16px; top:16px; width:40px; height:40px; color:white; }
+#workspace { max-width:860px; margin:0 auto; }
+thead th { position:sticky; top:0; }
+tbody tr:nth-child(even) { background:#fbfbfc; }
+th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
+@media(max-width:819px) {
+  #app { grid-template-columns:1fr; }
+  #head { flex-wrap:wrap; }
+  #head .contact-heading { flex:1 0 calc(100% - 8px); }
+  #head #chips { margin-left:auto; }
+  #main > .composer-card { left:8px; right:8px; width:calc(100% - 16px); padding:10px; }
+  #composer { gap:4px; }
+  #composer #input { max-height:120px; }
+  #msgs { padding:20px 24px 72px; }
+  #workspace { max-width:860px; }
+}
+</style>
 </head>
 <body>
 
@@ -143,22 +202,21 @@ label { display:grid; gap:5px; font-size:12px; color:var(--muted); }
   </aside>
 
   <main id="main">
-    <div id="head" class="card"><span id="title">pilih chat</span>
+    <div id="head" class="card"><div class="contact-heading"><span id="title">pilih chat</span></div>
       <span id="chips"></span>
-      <button id="takeChat" class="ghost">Ambil chat</button>
-      <button id="exportChat" class="ghost">Ekspor CSV</button>
-      <select id="labelPick" style="width:auto"></select>
+      <span id="wsDown" class="chip hidden" role="status" title="Koneksi realtime terputus, mencoba menyambung ulang">terputus</span>
+      <button id="takeChat" class="ghost" title="Ambil chat" aria-label="Ambil chat"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a7 7 0 0 1 14 0v2M19 8v6M16 11h6"/></svg></button>
+      <button id="exportChat" class="ghost" title="Ekspor CSV" aria-label="Ekspor CSV"><svg viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg></button>
+      <button id="labelPick" class="ghost" title="Pilih label" aria-label="Pilih label" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M3 3h9l9 9-9 9-9-9Z"/><circle cx="8" cy="8" r="1"/></svg></button>
       <button id="headDelete" class="ghost" title="Hapus nomor" aria-label="Hapus nomor"><svg viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg></button>
     </div>
     <div id="msgs" class="card"></div>
     <div class="card">
-    <div class="toolbar">
-      <select id="tplPick" style="width:auto"><option value="">template…</option></select>
-    </div>
-    <div id="composer">
       <div id="quoteBar" class="hidden" style="width:100%;color:var(--muted)"><span id="quoteText"></span><button id="quoteCancel" class="ghost" type="button">Batal kutip</button></div>
-      <input type="file" id="filePick" accept="image/*,video/*,application/pdf" class="hidden" />
-      <button id="btnFile" title="lampirkan">Lampirkan</button>
+    <div id="composer">
+      <button id="tplPick" class="ghost" title="Pilih template" aria-label="Pilih template" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M5 3h9l5 5v13H5ZM14 3v6h5M8 13h8M8 17h6"/></svg></button>
+      <input type="file" id="filePick" accept="image/*,audio/*,video/*,application/pdf" class="hidden" />
+      <button id="btnFile" class="ghost" title="Lampirkan" aria-label="Lampirkan"><svg viewBox="0 0 24 24"><path d="m8 13 7-7a3 3 0 0 1 4 4L9 20a5 5 0 0 1-7-7L12 3M5 16l10-10"/></svg></button>
       <textarea id="input" placeholder="tulis pesan"></textarea>
       <button class="primary" id="btnSend" style="width:auto">Kirim</button>
     </div>
@@ -171,6 +229,10 @@ label { display:grid; gap:5px; font-size:12px; color:var(--muted); }
   </section>
 </div>
 
+<div id="mediaPreview" class="hidden overlay" aria-label="Pratinjau media">
+  <button id="mediaPreviewClose" class="ghost" title="Tutup pratinjau" aria-label="Tutup pratinjau"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  <div id="mediaPreviewContent"></div>
+</div>
 <div id="qrModal" class="hidden overlay">
   <div class="dialog">
     <strong>Tautkan perangkat</strong>
@@ -225,7 +287,7 @@ function setPage(name) {
   $('.number-panel').classList.toggle('hidden', name !== 'chats');
   $('#main').classList.toggle('hidden', name !== 'chats');
   $('#workspace').classList.toggle('hidden', name === 'chats');
-  $('#page').innerHTML = '';
+  $('#page').innerHTML = skeleton();
   $('#pageAction').textContent = name === 'backups' ? 'Buat backup sekarang' : name === 'numbers' ? '+ Nomor' : 'Tambah';
   $('#pageAction').onclick = name === 'backups' ? async () => {
     const button = $('#pageAction');
@@ -236,7 +298,9 @@ function setPage(name) {
     } catch (err) { notify(err.message); }
     finally { button.disabled = false; }
   } : () => name === 'numbers' ? $('#btnNum').onclick() : $('#page').querySelector('form input')?.focus();
-  Promise.resolve(pages[name].render($('#page'))).catch((err) => {
+  Promise.resolve(pages[name].render($('#page'))).then(() => {
+    if (currentPage === name) enhanceTables();
+  }).catch((err) => {
     if (currentPage === name) $('#page').textContent = err.message;
   });
 }
@@ -245,9 +309,9 @@ async function confirmDelete(text) {
   return new Promise((resolve) => {
     $('#cfTitle').textContent = 'Anda yakin?';
     $('#cfText').textContent = text;
-    $('#cfDialog').classList.remove('hidden');
+    showOverlay('cfDialog');
     const done = (val) => {
-      $('#cfDialog').classList.add('hidden');
+      hideOverlay('cfDialog');
       $('#cfYes').onclick = null;
       $('#cfNo').onclick = null;
       resolve(val);
@@ -260,18 +324,29 @@ async function confirmDelete(text) {
 function toast(text) {
   const t = document.createElement('div');
   t.textContent = text;
-  t.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 14px;border-radius:8px;font-size:12.5px;z-index:20';
+  t.setAttribute('role', 'status');
+  t.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 14px;border-radius:8px;font-size:12.5px;z-index:30';
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
+  setTimeout(() => t.remove(), 2400);
 }
 
 function notify(text) { toast(String(text)); }
 
 function chatLabel(c) {
+  const phone = String(c.pn || (String(c.jid).endsWith('@lid') ? '' : c.jid) || '').split('@')[0].split(':')[0].replace(/\D/g, '');
+  if (phone && (state.numbers || []).some(n => String(n.phone).replace(/\D/g, '') === phone)) return 'Catatan saya';
   if (c.name) return c.name;
+  if (c.push_name) return c.push_name;
   if (c.pn) return c.pn;
   const id = String(c.jid).split('@')[0];
   return c.jid.endsWith('@lid') ? 'LID ' + id.slice(-6) : id;
+}
+
+function chatListLabel(c) {
+  const label = chatLabel(c);
+  if (state.chats.filter(other => chatLabel(other) === label).length < 2) return label;
+  const phone = String(c.pn || c.jid || '').split('@')[0].split(':')[0].replace(/\D/g, '');
+  return label + ' · ' + phone.slice(-4);
 }
 
 async function call(method, url, body) {
@@ -291,7 +366,7 @@ async function call(method, url, body) {
 function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
 async function boot() {
-  try { state.me = (await call('GET', '/me')).user; } catch { $('#login').classList.remove('hidden'); return; }
+  try { const out = await call('GET', '/me'); state.me = out.user; state.passMin = out.passMin || 12; } catch { $('#login').classList.remove('hidden'); return; }
   $('#app').classList.remove('hidden');
   await loadNumbers(); await loadTemplates(); await loadLabels();
   await loadNotificationCount();
@@ -301,15 +376,42 @@ async function boot() {
     $('#railMonitor').classList.add('hidden');
   }
   setPage('chats');
-  state.ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws`);
-  state.ws.onmessage = (e) => {
+  openSocket();
+}
+
+const WS_DELAYS = [2000, 4000, 8000, 15000];
+let wsAttempt = 0;
+let wsTimer = null;
+let wsEverOpen = false;
+
+function openSocket() {
+  clearTimeout(wsTimer);
+  wsTimer = null;
+  const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws`);
+  state.ws = ws;
+  ws.onopen = () => {
+    if (state.ws !== ws) return;
+    const reconnected = wsEverOpen;
+    wsEverOpen = true;
+    wsAttempt = 0;
+    $('#wsDown').classList.add('hidden');
+    if (reconnected) loadChats();
+  };
+  ws.onclose = () => {
+    if (state.ws !== ws) return;
+    $('#wsDown').classList.remove('hidden');
+    const delay = WS_DELAYS[Math.min(wsAttempt, WS_DELAYS.length - 1)];
+    wsAttempt += 1;
+    wsTimer = setTimeout(openSocket, delay);
+  };
+  ws.onmessage = (e) => {
     const ev = JSON.parse(e.data);
     if (ev.type === 'notification' && ev.userId === state.me.id) {
       loadNotificationCount();
       if (currentPage === 'notifications') setPage('notifications');
     }
     if (ev.type === 'message' && ev.numberId === state.numberId) {
-      if (ev.chatId === state.chatId) append(ev.body, ev.fromMe, ev.mediaPath, ev.waId);
+      if (ev.chatId === state.chatId) append(ev.body, ev.fromMe, ev.mediaPath, ev.kind, ev.waId, ev.ts);
       loadChats();
     }
     if (ev.type === 'number.status') loadNumbers();
@@ -317,14 +419,17 @@ async function boot() {
 }
 
 async function loadNumbers() {
+  if (!$('#nums').children.length) $('#nums').innerHTML = skeleton();
   const rows = await call('GET', '/numbers');
+  state.numbers = rows;
   $('#nums').innerHTML = rows.map((n) =>
     `<div class="num ${n.id === state.numberId ? 'active' : ''}" data-id="${n.id}">
       <span class="dot ${n.status === 'online' ? 'online' : ''}"></span>
       <div class="num-info"><div>${esc(n.name)}</div><small>${esc(n.phone)} · ${esc(n.status)}</small></div>
-      <button class="row-del ghost" data-del="${n.id}" title="hapus">×</button>
+      <button class="row-del ghost" data-del="${n.id}" title="hapus" aria-label="Hapus nomor">×</button>
     </div>`).join('');
   $('#nums').querySelectorAll('.num').forEach((el) => el.onclick = () => pickNumber(Number(el.dataset.id)));
+  keyboardRows($('#nums'), '.num');
   $('#nums').querySelectorAll('.row-del').forEach((b) => b.onclick = async (e) => {
     e.stopPropagation();
     if (!await confirmDelete('Hapus nomor ini beserta data dashboard terkait?')) return;
@@ -342,19 +447,26 @@ async function pickNumber(id) {
   state.numberId = id; state.chatId = null;
   $('#msgs').innerHTML = ''; $('#title').textContent = 'pilih chat';
   await loadNumbers(); await loadChats();
+  updateHeader(); updateComposer();
 }
 
 async function loadChats() {
   if (!state.numberId) return;
-  state.chats = await call('GET', `/numbers/${state.numberId}/chats${$('#mineOnly').checked ? '?mine=1' : ''}`);
+  const numberId = state.numberId;
+  const mine = $('#mineOnly').checked;
+  if (!$('#chats').querySelector('.chat')) $('#chats').innerHTML = skeleton();
+  const rows = await call('GET', `/numbers/${numberId}/chats${mine ? '?mine=1' : ''}`);
+  if (state.numberId !== numberId || $('#mineOnly').checked !== mine) return;
+  state.chats = rows;
   const term = $('#search').value.toLowerCase();
   $('#chats').innerHTML = state.chats
     .filter((c) => chatLabel(c).toLowerCase().includes(term))
     .map((c) => `<div class="chat ${c.id === state.chatId ? 'active' : ''}" data-id="${c.id}">
-      <div class="chat-info">${esc(chatLabel(c))}${c.unread ? ` <span class="chip">${c.unread}</span>` : ''}
+      <div class="chat-info">${esc(chatListLabel(c))}${c.unread ? ` <span class="chip">${c.unread}</span>` : ''}
       <div><small>${esc(c.pn ? c.pn.split('@')[0] : c.jid.endsWith('@lid') ? '' : c.jid.split('@')[0])}</small></div></div>
-      <button class="row-del ghost" data-chat="${c.id}" title="hapus chat">×</button></div>`).join('');
+      <button class="row-del ghost" data-chat="${c.id}" title="hapus chat" aria-label="Hapus chat">×</button></div>`).join('') || chatEmpty();
   $('#chats').querySelectorAll('.chat').forEach((el) => el.onclick = () => openChat(Number(el.dataset.id)));
+  keyboardRows($('#chats'), '.chat');
   $('#chats').querySelectorAll('[data-chat]').forEach((b) => b.onclick = async (e) => {
     e.stopPropagation();
     const ok = await confirmDelete('Chat ini dihapus dari dashboard. Tetap ada di HP.');
@@ -369,24 +481,101 @@ async function loadChats() {
       await loadChats();
     } catch (err) { notify(err.message); }
   });
+  updateHeader(); updateComposer();
 }
 
 async function openChat(id) {
   clearQuote();
   state.chatId = id;
+  $('#msgs').innerHTML = skeleton();
   const data = await call('GET', `/chats/${id}/messages`);
+  if (state.chatId !== id) return;
   $('#msgs').innerHTML = '';
-  data.messages.forEach((m) => append(m.body, m.from_me, m.media_path, m.wa_id));
-  $('#chips').innerHTML = data.labels.map((l) => `<span class="chip">${esc(l.name)}</span>`).join(' ');
   const chat = state.chats.find((c) => c.id === id);
+  const unread = data.messages.filter(m => !m.from_me).slice(-(chat?.unread || 0));
+  const firstUnread = chat?.unread ? unread[0] : null;
+  data.messages.forEach((m) => append(m.body, m.from_me, m.media_path, m.kind, m.wa_id, m.ts, m === firstUnread));
+  if (!data.messages.length) $('#msgs').innerHTML = '<div class="empty thread-empty">belum ada pesan</div>';
+  state.oldestTs = data.messages.length ? data.messages[0].ts : null;
+  renderLoadOlder(data.hasMore);
+  $('#chips').innerHTML = data.labels.map((l) => `<span class="chip">${esc(l.name)}</span>`).join(' ');
   $('#title').textContent = chat ? chatLabel(chat) : '';
   await call('POST', `/chats/${id}/read`);
   await loadChats();
 }
 
-function append(text, me, mediaPath, waId) {
+function renderLoadOlder(hasMore) {
+  $('#loadOlder')?.remove();
+  if (!hasMore) return;
+  const b = document.createElement('button');
+  b.id = 'loadOlder';
+  b.type = 'button';
+  b.className = 'ghost';
+  b.style.cssText = 'display:block;margin:6px auto';
+  b.textContent = 'muat lebih lama';
+  b.onclick = loadOlder;
+  $('#msgs').prepend(b);
+}
+
+async function loadOlder() {
+  const id = state.chatId;
+  const before = state.oldestTs;
+  if (!id || !before) return;
+  $('#loadOlder').disabled = true;
+  let data;
+  try { data = await call('GET', `/chats/${id}/messages?before=${before}`); }
+  catch (err) { $('#loadOlder').disabled = false; return toast(err.message); }
+  if (state.chatId !== id) return;
+  const thread = $('#msgs');
+  const fromBottom = thread.scrollHeight - thread.scrollTop;
+  $('#loadOlder')?.remove();
+  // Lepas node yang sudah tampil, render batch lama lewat append(), lalu pasang kembali di bawahnya.
+  const existing = [...thread.childNodes];
+  existing.forEach((n) => n.remove());
+  data.messages.forEach((m) => append(m.body, m.from_me, m.media_path, m.kind, m.wa_id, m.ts));
+  const olderBubbles = thread.querySelectorAll('.b');
+  const lastOlderDay = olderBubbles[olderBubbles.length - 1]?.dataset.day;
+  const firstExisting = existing.find((n) => n.classList?.contains('b'));
+  if (lastOlderDay && firstExisting?.dataset.day === lastOlderDay && existing[0]?.classList?.contains('message-date')) existing.shift();
+  existing.forEach((n) => thread.appendChild(n));
+  if (data.messages.length) state.oldestTs = data.messages[0].ts;
+  renderLoadOlder(data.hasMore);
+  thread.scrollTop = thread.scrollHeight - fromBottom;
+}
+
+function append(text, me, mediaPath, kind, waId, ts = Date.now(), unread = false) {
+  const thread = $('#msgs');
+  thread.querySelectorAll('.thread-empty, .skeleton').forEach(el => el.remove());
+  const date = new Date(ts);
+  const day = date.toLocaleDateString('id-ID');
+  const bubbles = thread.querySelectorAll('.b');
+  const last = bubbles[bubbles.length - 1];
+  if (!last || last.dataset.day !== day) {
+    const divider = document.createElement('div');
+    divider.className = 'message-date';
+    const label = document.createElement('span');
+    label.textContent = formatThreadDate(date);
+    divider.appendChild(label);
+    thread.appendChild(divider);
+  }
+  if (unread) {
+    const divider = document.createElement('div');
+    divider.className = 'unread-divider';
+    divider.textContent = 'belum dibaca';
+    thread.appendChild(divider);
+  }
   const d = document.createElement('div');
   d.className = 'b' + (me ? ' me' : '');
+  if (kind === 'sticker') d.classList.add('plain');
+  d.dataset.day = day;
+  d.dataset.ts = ts;
+  // Incoming group participants are unavailable in this API; group by side.
+  const contiguous = last && last.dataset.day === day && last.classList.contains('me') === Boolean(me)
+    && Number(ts) >= Number(last.dataset.ts) && Number(ts) - Number(last.dataset.ts) <= 180000;
+  if (contiguous) {
+    d.classList.add('compact');
+    last.querySelector('.message-time')?.classList.add('hidden');
+  }
   if (waId) d.dataset.waId = waId;
   d.oncontextmenu = (e) => {
     e.preventDefault();
@@ -404,57 +593,106 @@ function append(text, me, mediaPath, waId) {
     button('Kutip', () => { state.quoteWaId = waId; $('#quoteText').textContent = String(text || 'Media').slice(0, 100); $('#quoteBar').classList.remove('hidden'); $('#input').focus(); }, !waId);
     const reactions = document.createElement('div'); reactions.style.cssText = 'display:flex;gap:4px';
     menu.appendChild(reactions);
-    for (const emoji of ['👍', '❤️', '😂', '😮', '🙏']) {
-      button(emoji, () => call('POST', `/chats/${chatId}/react`, { wa_id: waId, emoji }), !waId);
+    for (const [emoji, label] of [['👍','Suka'], ['❤️','Hati'], ['😂','Tertawa'], ['😮','Terkejut'], ['🙏','Terima kasih']]) {
+      button(label, () => call('POST', `/chats/${chatId}/react`, { wa_id: waId, emoji }), !waId);
       reactions.appendChild(menu.lastChild);
     }
     button('Tandai belum dibaca', async () => { await call('POST', `/chats/${chatId}/unread`); await loadChats(); });
     document.body.appendChild(menu);
   };
+  if (kind === 'call') {
+    const tag = document.createElement('div');
+    tag.textContent = 'Panggilan';
+    tag.style.cssText = 'font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:2px';
+    d.appendChild(tag);
+  }
   if (mediaPath) {
-    const img = document.createElement('img');
-    img.src = '/media/' + mediaPath;
-    img.style.maxWidth = '240px';
-    img.style.borderRadius = '6px';
-    img.style.display = 'block';
-    d.appendChild(img);
+    const src = '/media/' + mediaPath;
+    const el = document.createElement(kind === 'audio' ? 'audio' : kind === 'video' ? 'video' : kind === 'sticker' || kind === 'image' ? 'img' : 'a');
+    if (kind === 'audio' || kind === 'video') el.controls = true;
+    if (kind === 'audio' || kind === 'video' || kind === 'sticker' || kind === 'image') {
+      el.src = src;
+      el.style.display = 'block';
+      if (kind === 'sticker') { el.style.width = '120px'; el.alt = 'Sticker'; }
+      el.tabIndex = 0;
+      el.setAttribute('aria-label', 'Buka pratinjau media');
+      el.onclick = () => previewMedia(el);
+      el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); previewMedia(el); } };
+    } else {
+      el.href = src;
+      el.target = '_blank';
+      el.rel = 'noopener';
+      el.textContent = 'unduh lampiran';
+    }
+    d.appendChild(el);
   }
   if (text) {
     const t = document.createElement('div');
-    t.textContent = text;
+    const value = String(text);
+    let offset = 0;
+    for (const match of value.matchAll(/https?:\/\/[^\s<>"']+/g)) {
+      t.appendChild(document.createTextNode(value.slice(offset, match.index)));
+      const link = document.createElement('a');
+      link.href = match[0]; link.textContent = match[0];
+      link.target = '_blank'; link.rel = 'noreferrer';
+      t.appendChild(link);
+      offset = match.index + match[0].length;
+    }
+    t.appendChild(document.createTextNode(value.slice(offset)));
     d.appendChild(t);
   }
+  const time = document.createElement('time');
+  time.className = 'message-time';
+  time.dateTime = date.toISOString();
+  time.textContent = date.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+  d.appendChild(time);
   $('#msgs').appendChild(d);
   $('#msgs').scrollTop = $('#msgs').scrollHeight;
 }
 
 async function send() {
   const text = $('#input').value.trim();
-  if (!text || !state.chatId) return;
+  if (!text || !state.chatId || state.sending) return;
+  const chatId = state.chatId;
+  state.sending = true;
+  $('#btnSend').disabled = true;
+  $('#btnSend').textContent = 'mengirim…';
   $('#input').value = '';
-  try { await call('POST', `/chats/${state.chatId}/send`, { text, quote_wa_id: state.quoteWaId || undefined }); clearQuote(); }
-  catch (e) { notify(e.message); $('#input').value = text; }
+  resizeComposer();
+  try { await call('POST', `/chats/${chatId}/send`, { text, quote_wa_id: state.quoteWaId || undefined }); if (state.chatId === chatId) clearQuote(); }
+  catch (e) { toast(e.message); if (state.chatId === chatId && !$('#input').value) $('#input').value = text; }
+  finally { state.sending = false; $('#btnSend').textContent = 'Kirim'; updateComposer(); resizeComposer(); }
+}
+
+function resizeComposer() {
+  const input = $('#input');
+  const max = 120;
+  input.style.height = '40px';
+  input.style.height = Math.min(max, Math.max(40, input.scrollHeight + 2)) + 'px';
+  input.style.overflowY = input.scrollHeight > input.clientHeight ? 'auto' : 'hidden';
+}
+
+function updateComposer() {
+  const active = Boolean(state.chatId);
+  $('#input').placeholder = active ? 'tulis pesan' : 'pilih chat dulu';
+  $('#input').disabled = !active;
+  $('#btnSend').disabled = !active || Boolean(state.sending);
+  $('#btnFile').disabled = !active;
 }
 
 async function loadTemplates() {
   const rows = await call('GET', '/templates');
-  $('#tplPick').innerHTML = '<option value="">template…</option>' +
-    rows.map((t) => `<option value="${t.id}">${esc(t.title)}</option>`).join('');
-  $('#tplPick').onchange = (e) => {
-    const t = rows.find((x) => x.id === Number(e.target.value));
-    if (t) $('#input').value = t.body;
-  };
+  $('#tplPick').onclick = () => choiceMenu($('#tplPick'), rows.map(t => ({ label:t.title, choose:() => { $('#input').value = t.body; resizeComposer(); $('#input').focus(); } })));
 }
 
 async function loadLabels() {
   const rows = await call('GET', '/labels');
-  $('#labelPick').innerHTML = '<option value="">label…</option>' +
-    rows.map((l) => `<option value="${l.id}">${esc(l.name)}</option>`).join('');
-  $('#labelPick').onchange = async (e) => {
-    if (!state.chatId || !e.target.value) return;
-    await call('POST', `/chats/${state.chatId}/labels/${e.target.value}`);
-    openChat(state.chatId);
-  };
+  $('#labelPick').onclick = () => choiceMenu($('#labelPick'), rows.map(l => ({ label:l.name, choose:async () => {
+    if (!state.chatId) return toast('pilih chat dulu');
+    const id = state.chatId;
+    await call('POST', `/chats/${id}/labels/${l.id}`);
+    if (state.chatId === id) await openChat(id);
+  } })));
 }
 
 let qrTimer = null;
@@ -463,7 +701,7 @@ let currentQrNumber = null;
 
 async function showQr(numberId) {
   currentQrNumber = numberId;
-  $('#qrModal').classList.remove('hidden');
+  showOverlay('qrModal');
   $('#qrImg').src = '';
   $('#qrNote').textContent = 'menyiapkan sesi…';
   clearInterval(qrTimer);
@@ -477,7 +715,7 @@ async function showQr(numberId) {
         $('#qrNote').textContent = 'tersambung';
         clearInterval(qrTimer);
         await loadNumbers();
-        setTimeout(() => $('#qrModal').classList.add('hidden'), 1200);
+        setTimeout(() => hideOverlay('qrModal'), 1200);
         return;
       }
       if (out.qr) {
@@ -497,7 +735,7 @@ async function showQr(numberId) {
   qrTimer = setInterval(tick, 4000);
 }
 
-$('#qrClose').onclick = () => { clearInterval(qrTimer); $('#qrModal').classList.add('hidden'); };
+$('#qrClose').onclick = () => hideOverlay('qrModal');
 $('#qrRetry').onclick = () => { if (currentQrNumber) showQr(currentQrNumber); };
 
 $('#login').onsubmit = async (e) => {
@@ -521,18 +759,18 @@ $('#btnNum').onclick = async () => {
   } catch {
     $('#ndOwnerWrap').classList.add('hidden');
   }
-  $('#numDialog').classList.remove('hidden');
+  showOverlay('numDialog');
   $('#ndPhone').focus();
 };
 
-$('#ndCancel').onclick = () => $('#numDialog').classList.add('hidden');
+$('#ndCancel').onclick = () => hideOverlay('numDialog');
 
 $('#numForm').onsubmit = async (e) => {
   e.preventDefault();
   const phone = $('#ndPhone').value.trim();
   const name = $('#ndName').value.trim();
   if (!phone || !name) return;
-  $('#numDialog').classList.add('hidden');
+  hideOverlay('numDialog');
   try {
     const out = await call('POST', '/numbers', {
       phone, name,
@@ -550,7 +788,15 @@ $('#btnSend').onclick = send;
 function clearQuote() { state.quoteWaId = null; $('#quoteBar').classList.add('hidden'); }
 $('#quoteCancel').onclick = clearQuote;
 document.addEventListener('click', (e) => { const m = $('#bubbleMenu'); if (m && !m.contains(e.target)) m.remove(); });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#bubbleMenu')?.remove(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  $('#bubbleMenu')?.remove();
+  closeChoiceMenu();
+  document.querySelectorAll('.overlay:not(.hidden)').forEach(el => {
+    if (el.id === 'cfDialog') $('#cfNo').click();
+    else hideOverlay(el.id);
+  });
+});
 $('#btnFile').onclick = () => $('#filePick').click();
 
 $('#filePick').onchange = async () => {
@@ -560,7 +806,7 @@ $('#filePick').onchange = async () => {
   reader.onload = async () => {
     try {
       await call('POST', `/chats/${state.chatId}/media`, {
-        base64: reader.result, mime: f.type || 'application/octet-stream', caption: $('#input').value.trim(),
+        base64: reader.result, mime: /\.webp$/i.test(f.name) ? 'image/webp' : f.type || 'application/octet-stream', caption: $('#input').value.trim(),
       });
       $('#input').value = '';
     } catch (err) {
@@ -570,7 +816,16 @@ $('#filePick').onchange = async () => {
   reader.readAsDataURL(f);
   $('#filePick').value = '';
 };
-$('#input').onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+$('#input').onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } };
+$('#input').addEventListener('input', resizeComposer);
+const composerCard = $('#composer').parentElement;
+composerCard.classList.add('composer-card');
+new ResizeObserver(() => {
+  document.documentElement.style.setProperty('--composer-height', composerCard.offsetHeight + 'px');
+}).observe(composerCard);
+window.addEventListener('resize', resizeComposer);
+new MutationObserver(updateComposer).observe($('#title'), { childList:true, subtree:true });
+updateComposer();
 $('#search').oninput = loadChats;
 $('#mineOnly').onchange = loadChats;
 $('#exportChat').onclick = () => {
@@ -601,7 +856,7 @@ $('#btnRules').onclick = async () => {
   panel.classList.remove('hidden');
   panel.innerHTML = `<div class="panel-head"><strong>Rules auto-reply</strong><button id="deleteSelected" class="ghost danger">Hapus terpilih</button></div>
     <table><thead><tr><th><input id="selectRules" type="checkbox" aria-label="Pilih semua rules" /></th><th>Kata kunci</th><th>Balasan</th><th>Tipe</th><th>Aksi</th></tr></thead><tbody>
-    ${rows.map((r) => `<tr><td><input type="checkbox" class="rule-check" value="${r.id}" aria-label="Pilih rule ${r.id}" /></td><td>${esc(r.pattern)}</td><td>${esc(r.reply)}</td><td>${esc(r.match_type)}</td><td class="actions"><button class="ghost" data-edit="${r.id}" title="Isi form dari rule ini" aria-label="Isi form dari rule ini">${pencilIcon}</button><button class="ghost danger" data-del="${r.id}" title="Hapus rule" aria-label="Hapus rule">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada rule</td></tr>'}
+    ${rows.map((r) => `<tr><td><input type="checkbox" class="rule-check" value="${r.id}" aria-label="Pilih rule ${r.id}" /></td><td>${esc(r.pattern)}${r.slow ? ' <span class="chip rule-slow" title="Regex ini pernah melewati batas 50 ms">berat</span>' : ''}</td><td>${esc(r.reply)}</td><td>${esc(r.match_type)}</td><td class="actions"><button class="ghost" data-edit="${r.id}" title="Isi form dari rule ini" aria-label="Isi form dari rule ini">${pencilIcon}</button><button class="ghost danger" data-del="${r.id}" title="Hapus rule" aria-label="Hapus rule">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada rule</td></tr>'}
     </tbody></table>
     <div class="rule-form"><input id="rp" placeholder="kata kunci / regex" aria-label="Kata kunci" />
     <input id="rr" placeholder="balasan" aria-label="Balasan" />
@@ -704,10 +959,11 @@ pages.rules = { title: 'Rules', render: async (root) => {
     const numberId = Number(select.value);
     const area = root.querySelector('#rulesTable');
     if (!numberId) { area.className = 'empty'; area.textContent = 'pilih nomor untuk melihat rules'; return; }
+    area.innerHTML = skeleton();
     const rows = await call('GET', `/numbers/${numberId}/rules`);
     if (version !== pageVersion || Number(select.value) !== numberId) return;
     area.className = '';
-    area.innerHTML = `<table><thead><tr><th>Kata kunci</th><th>Balasan</th><th>Tipe</th><th>Aktif</th><th>Aksi</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${esc(r.pattern)}</td><td>${esc(r.reply)}</td><td>${esc(r.match_type)}</td><td><input type="checkbox" data-toggle="${r.id}" ${r.enabled ? 'checked' : ''} aria-label="Aktifkan rule" /></td><td><button class="ghost danger" data-rule-del="${r.id}" aria-label="Hapus rule">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada rule</td></tr>'}</tbody></table><form class="page-form" id="rulesForm"><input id="rp" placeholder="kata kunci" aria-label="Kata kunci" required /><input id="rr" placeholder="balasan" aria-label="Balasan" required /><select id="rm" aria-label="Tipe"><option value="contains">mengandung</option><option value="exact">persis</option><option value="regex">regex</option></select><button id="radd" class="primary">Tambah</button></form>`;
+    area.innerHTML = `<table><thead><tr><th>Kata kunci</th><th>Balasan</th><th>Tipe</th><th>Aktif</th><th>Aksi</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${esc(r.pattern)}${r.slow ? ' <span class="chip rule-slow" title="Regex ini pernah melewati batas 50 ms">berat</span>' : ''}</td><td>${esc(r.reply)}</td><td>${esc(r.match_type)}</td><td><input type="checkbox" data-toggle="${r.id}" ${r.enabled ? 'checked' : ''} aria-label="Aktifkan rule" /></td><td><button class="ghost danger" data-rule-del="${r.id}" aria-label="Hapus rule">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada rule</td></tr>'}</tbody></table><form class="page-form" id="rulesForm"><input id="rp" placeholder="kata kunci" aria-label="Kata kunci" required /><input id="rr" placeholder="balasan" aria-label="Balasan" required /><select id="rm" aria-label="Tipe"><option value="contains">mengandung</option><option value="exact">persis</option><option value="regex">regex</option></select><button id="radd" class="primary">Tambah</button></form>`;
     area.querySelectorAll('[data-rule-del]').forEach((b) => b.onclick = async () => {
       if (!await confirmDelete('Hapus rule ini?')) return;
       try { await call('DELETE', `/rules/${b.dataset.ruleDel}`); await render(); } catch (err) { notify(err.message); }
@@ -783,6 +1039,8 @@ async function loadNotificationCount() {
 
 pages.notifications = { title: 'Notifikasi', render: async (root) => {
   const version = pageVersion;
+  await call('POST', '/notifications/read');
+  await loadNotificationCount();
   const rows = await call('GET', '/notifications');
   if (version !== pageVersion) return;
   $('#pageAction').textContent = 'Tandai dibaca';
@@ -801,6 +1059,7 @@ pages.search = { title: 'Cari pesan', render: (root) => {
   $('#pageAction').onclick = () => $('#messageSearchForm').requestSubmit();
   $('#messageSearchForm').onsubmit = async (e) => {
     e.preventDefault();
+    $('#messageSearchResults').innerHTML = skeleton();
     try {
       const rows = await call('GET', '/search?q=' + encodeURIComponent($('#messageSearchTerm').value.trim()));
       if (version !== pageVersion) return;
@@ -827,7 +1086,20 @@ pages.monitor = { title: 'Monitor', render: async (root) => {
 pages.account = { title: 'Akun', render: (root) => {
   $('#pageAction').textContent = 'Simpan';
   $('#pageAction').onclick = () => $('#passwordForm').requestSubmit();
-  root.innerHTML = '<form id="passwordForm" class="card" style="display:grid;gap:12px;max-width:420px"><label>Password lama<input id="oldPassword" type="password" autocomplete="current-password" required /></label><label>Password baru<input id="nextPassword" type="password" autocomplete="new-password" minlength="8" required /></label><button class="primary">Simpan</button><p id="passwordResult" role="status" style="margin:0"></p></form>';
+  root.innerHTML = `<form id="usernameForm" class="card" style="display:grid;gap:12px;max-width:420px"><label>Username<input id="accountUsername" autocomplete="username" minlength="3" value="${esc(state.me.username)}" required /></label><button class="primary">Simpan username</button><p id="usernameResult" role="status" style="margin:0"></p></form><form id="passwordForm" class="card" style="display:grid;gap:12px;max-width:420px"><label>Password lama<input id="oldPassword" type="password" autocomplete="current-password" required /></label><label>Password baru<input id="nextPassword" type="password" autocomplete="new-password" minlength="${state.passMin || 12}" required /></label><small>Minimal ${state.passMin || 12} karakter</small><button class="primary">Simpan</button><p id="passwordResult" role="status" style="margin:0"></p></form><div class="card" style="max-width:420px"><button id="logoutAll" class="ghost danger">Keluar dari semua perangkat</button><p id="logoutAllResult" role="status"></p></div>`;
+  $('#usernameForm').onsubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const username = $('#accountUsername').value.trim();
+      await call('PATCH', '/me', { username });
+      state.me.username = username;
+      $('#usernameResult').textContent = 'Username berhasil diubah';
+    } catch (err) { $('#usernameResult').textContent = err.message; }
+  };
+  $('#logoutAll').onclick = async () => {
+    try { await call('POST', '/logout-all'); location.reload(); }
+    catch (err) { $('#logoutAllResult').textContent = err.message; }
+  };
   $('#passwordForm').onsubmit = async (e) => {
     e.preventDefault();
     try {
@@ -869,7 +1141,214 @@ $('#railMonitor').classList.add('rail-btn');
 $('#railMonitor').dataset.page = 'monitor';
 $('#railMonitor').onclick = () => setPage('monitor');
 
+function showOverlay(id) {
+  const overlay = document.getElementById(id);
+  if (!overlay.classList.contains('hidden')) return;
+  const trigger = document.activeElement?.closest('button, [tabindex]');
+  if (trigger) {
+    document.querySelectorAll('[data-return]').forEach(el => { if (el.dataset.return === id) el.removeAttribute('data-return'); });
+    trigger.dataset.return = id;
+  }
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', overlay.querySelector('h2, strong')?.textContent || 'Dialog');
+  overlay.classList.remove('hidden');
+  (overlay.querySelector('input, select, textarea') || overlay.querySelector('button'))?.focus();
+}
+
+function skeleton() {
+  return '<div class="skeleton" role="status" aria-label="Memuat data"><span></span><span></span><span></span></div>';
+}
+
+function formatPhone(value) {
+  const raw = String(value || '');
+  const id = raw.split('@')[0];
+  if (raw.endsWith('@lid')) return 'LID ' + id.slice(-6);
+  const digits = id.replace(/\D/g, '');
+  if (digits.startsWith('62')) {
+    const subscriber = digits.slice(2);
+    return '+62 ' + [subscriber.slice(0,3), subscriber.slice(3,7), subscriber.slice(7)].filter(Boolean).join('-');
+  }
+  return id;
+}
+
+function formatThreadDate(date) {
+  const today = new Date();
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+  if (date.toDateString() === today.toDateString()) return 'Hari ini';
+  if (date.toDateString() === yesterday.toDateString()) return 'Kemarin';
+  return date.toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' });
+}
+
+function previewMedia(source) {
+  const media = document.createElement(source.tagName.toLowerCase());
+  media.src = source.currentSrc || source.src;
+  if (source.tagName === 'IMG') media.alt = source.alt || 'Pratinjau media';
+  else { source.pause(); media.controls = true; }
+  $('#mediaPreviewContent').replaceChildren(media);
+  showOverlay('mediaPreview');
+}
+$('#mediaPreview').onclick = () => hideOverlay('mediaPreview');
+
+function closeChoiceMenu(restore = true) {
+  const menu = $('#choiceMenu');
+  if (!menu) return;
+  const trigger = document.getElementById(menu.dataset.trigger);
+  menu.remove();
+  trigger?.setAttribute('aria-expanded', 'false');
+  if (restore) trigger?.focus();
+}
+
+function choiceMenu(trigger, options) {
+  const toggled = $('#choiceMenu')?.dataset.trigger === trigger.id;
+  closeChoiceMenu(false);
+  if (toggled) return;
+  const menu = document.createElement('div');
+  menu.id = 'choiceMenu'; menu.className = 'mini-menu card'; menu.dataset.trigger = trigger.id;
+  menu.setAttribute('role', 'menu'); menu.setAttribute('aria-label', trigger.getAttribute('aria-label'));
+  trigger.setAttribute('aria-expanded', 'true');
+  options.forEach(option => {
+    const button = document.createElement('button'); button.className = 'ghost'; button.setAttribute('role', 'menuitem'); button.textContent = option.label;
+    button.onclick = async () => { closeChoiceMenu(); try { await option.choose(); } catch (err) { toast(err.message); } };
+    menu.appendChild(button);
+  });
+  if (!options.length) { const text = document.createElement('p'); text.className = 'empty'; text.textContent = 'belum ada data'; menu.appendChild(text); menu.tabIndex = -1; }
+  document.body.appendChild(menu);
+  const rect = trigger.getBoundingClientRect();
+  menu.style.left = Math.max(12, Math.min(rect.left, innerWidth - menu.offsetWidth - 12)) + 'px';
+  menu.style.top = (rect.bottom + menu.offsetHeight < innerHeight - 12 ? rect.bottom + 4 : Math.max(12, rect.top - menu.offsetHeight - 4)) + 'px';
+  menu.onkeydown = e => {
+    const items = [...menu.querySelectorAll('button')];
+    if (!items.length || !['ArrowDown','ArrowUp','Home','End'].includes(e.key)) return;
+    e.preventDefault();
+    const i = items.indexOf(document.activeElement);
+    items[e.key === 'Home' ? 0 : e.key === 'End' ? items.length-1 : (i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus();
+  };
+  (menu.querySelector('button') || menu).focus();
+}
+document.addEventListener('click', e => {
+  const menu = $('#choiceMenu');
+  if (menu && !menu.contains(e.target) && !document.getElementById(menu.dataset.trigger)?.contains(e.target)) closeChoiceMenu(false);
+});
+window.addEventListener('resize', () => closeChoiceMenu(false));
+
+function keyboardRows(root, selector) {
+  root.querySelectorAll(selector).forEach(row => {
+    row.tabIndex = 0;
+    row.setAttribute('role', 'group');
+    row.setAttribute('aria-label', row.querySelector('.num-info, .chat-info')?.textContent.trim() || 'Buka');
+    row.onkeydown = e => {
+      if (e.target === row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); row.click(); }
+    };
+  });
+}
+
+function updateHeader() {
+  const chat = state.chats.find(c => c.id === state.chatId);
+  const editor = $('#contactNameEditor');
+  if (editor && Number(editor.dataset.chatId) !== state.chatId) editor.remove();
+  $('#title').textContent = chat ? chatLabel(chat) : 'pilih chat';
+  $('#title').setAttribute('role', 'button');
+  $('#title').tabIndex = chat ? 0 : -1;
+  $('#title').title = 'Ubah nama kontak';
+  $('#title').setAttribute('aria-label', chat ? 'Ubah nama kontak: ' + chatLabel(chat) : 'Pilih chat');
+  $('#title').onclick = () => { if (chat) editContactName(chat); };
+  $('#title').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#title').click(); } };
+  let detail = $('#contactDetail');
+  if (!detail) { detail = document.createElement('small'); detail.id = 'contactDetail'; $('#title').insertAdjacentElement('afterend', detail); }
+  detail.textContent = chat ? formatPhone(chat.pn || chat.jid) : '';
+  detail.className = 'contact-detail';
+  let release = $('#releaseChat');
+  if (!release) {
+    release = document.createElement('button'); release.id = 'releaseChat'; release.className = 'ghost';
+    release.title = 'Lepas penugasan'; release.setAttribute('aria-label', 'Lepas penugasan');
+    release.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a7 7 0 0 1 14 0v2M17 11h6"/></svg>';
+    $('#takeChat').insertAdjacentElement('afterend', release);
+    release.onclick = async () => {
+      if (!state.chatId) return;
+      release.disabled = true;
+      try { await call('PATCH', `/chats/${state.chatId}/assign`, { user_id:null }); await loadChats(); toast('Penugasan dilepas'); }
+      catch (err) { toast(err.message); }
+      finally { release.disabled = false; }
+    };
+  }
+  release.classList.toggle('hidden', !chat?.assignee_id);
+}
+
+function editContactName(chat) {
+  if ($('#contactNameEditor')) { $('#contactNameInput').focus(); return; }
+  const form = document.createElement('form'); form.id = 'contactNameEditor'; form.className = 'contact-name-editor'; form.dataset.chatId = chat.id;
+  form.innerHTML = '<input id="contactNameInput" aria-label="Nama kontak lokal" placeholder="Nama kontak lokal" /><button type="submit">Simpan</button><button type="button" data-remove-name>Hapus nama</button><button type="button" data-cancel-name>Batal</button>';
+  form.querySelector('input').value = chat.name || '';
+  $('.contact-heading').appendChild(form);
+  const close = () => { form.remove(); if (state.chatId === chat.id) $('#title').focus(); };
+  async function save(name) {
+    form.querySelectorAll('button').forEach(button => { button.disabled = true; });
+    try {
+      await call('PUT', `/chats/${chat.id}/name`, { name });
+      if (state.chatId === chat.id) await loadChats();
+      close(); toast(name.trim() ? 'Nama kontak disimpan' : 'Nama lokal dihapus');
+    } catch (err) { toast(err.message); }
+    finally { form.querySelectorAll('button').forEach(button => { button.disabled = false; }); }
+  }
+  form.onsubmit = e => { e.preventDefault(); save(form.querySelector('input').value); };
+  form.querySelector('[data-remove-name]').onclick = () => save('');
+  form.querySelector('[data-cancel-name]').onclick = close;
+  form.onkeydown = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+  form.querySelector('input').focus();
+}
+
+function chatEmpty() {
+  return '<div class="empty chat-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 1-8 8H5l-4 3 2-6a8 8 0 1 1 17-5Z"/></svg><strong>belum ada chat</strong><small>kirim pesan dari HP untuk memulai</small></div>';
+}
+
+function enhanceTables() {
+  $('#page').querySelectorAll('th').forEach(th => {
+    if (th.textContent.trim() !== 'Aksi') return;
+    th.classList.add('action-col');
+    const index = [...th.parentElement.children].indexOf(th);
+    th.closest('table').querySelectorAll('tbody tr').forEach(row => {
+      if (row.children.length > index) row.children[index].classList.add('action-col');
+    });
+  });
+  $('#page').querySelectorAll('td.empty').forEach(cell => {
+    if (cell.dataset.enhanced) return;
+    cell.dataset.enhanced = 'true';
+    cell.textContent = 'belum ada data';
+    const action = document.createElement('button');
+    action.className = 'ghost empty-action';
+    action.textContent = ({ numbers:'Tambah nomor', rules:'Tambah rule', templates:'Tambah template', labels:'Tambah label', agents:'Tambah agen', backups:'Buat backup', search:'Cari pesan', monitor:'Perbarui' })[currentPage] || 'Perbarui';
+    action.onclick = () => {
+      if (currentPage === 'monitor') setPage('monitor');
+      else $('#pageAction').click();
+    };
+    cell.appendChild(action);
+  });
+}
+
+new MutationObserver(enhanceTables).observe($('#page'), { childList:true, subtree:true });
+
+function hideOverlay(id) {
+  document.getElementById(id).classList.add('hidden');
+  if (id === 'mediaPreview') $('#mediaPreviewContent').replaceChildren();
+  if (id === 'qrModal') clearInterval(qrTimer);
+  const trigger = document.querySelector(`[data-return="${id}"]`);
+  if (trigger) { trigger.removeAttribute('data-return'); trigger.focus(); }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Tab') return;
+  const overlay = document.querySelector('.overlay:not(.hidden)');
+  if (!overlay) return;
+  const items = [...overlay.querySelectorAll('input, select, textarea, button')].filter(el => !el.disabled && el.getClientRects().length);
+  const first = items[0], last = items.at(-1);
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+});
+
+$('#chats').innerHTML = chatEmpty();
 boot();
 </script>
+<script src="/phase345.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-﻿# Kontrak kerja
+# Kontrak kerja
 
 Kamu mengerjakan repo wa-suite (Node 20, ESM, Express + ws + Baileys + better-sqlite3).
 ATURAN: jangan scan seluruh repo. Baca HANYA file yang kamu ubah. Jangan refactor file

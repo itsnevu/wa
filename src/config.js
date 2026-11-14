@@ -1,4 +1,4 @@
-﻿import 'dotenv/config';
+import 'dotenv/config';
 import path from 'node:path';
 
 export const config = {
@@ -8,6 +8,7 @@ export const config = {
   secureCookie: process.env.SECURE_COOKIE === '1',
   loginMax: Number(process.env.LOGIN_MAX || 5),
   loginLockMin: Number(process.env.LOGIN_LOCK_MIN || 15),
+  passMin: Math.max(12, Number.parseInt(process.env.PASS_MIN || '12', 10) || 12),
   dataDir: process.env.DATA_DIR || path.resolve('data'),
   adminUser: process.env.ADMIN_USER || 'admin',
   adminPass: process.env.ADMIN_PASS || 'admin123',
@@ -27,4 +28,6 @@ export const config = {
   backupHour: Number(process.env.BACKUP_HOUR ?? 3),
   backupMedia: process.env.BACKUP_MEDIA === '1',
   retentionDays: Number(process.env.RETENTION_DAYS || 0),
+  callAutoReject: process.env.CALL_AUTO_REJECT === '1',
+  callReply: process.env.CALL_REPLY || '',
 };

@@ -1,4 +1,4 @@
-﻿import { randomBytes } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { db, q } from './db.js';
 import { verifyPassword } from './passwords.js';
 import { config } from './config.js';

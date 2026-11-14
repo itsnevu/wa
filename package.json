@@ -4,8 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "start": "node --regexp-interpret-all src/index.js",
+    "dev": "node --regexp-interpret-all --watch src/index.js"
   },
   "engines": {
     "node": ">=20"

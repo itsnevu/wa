@@ -1,4 +1,4 @@
-﻿import fs from 'node:fs';
+import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
 import { config } from './config.js';
@@ -115,12 +115,25 @@ CREATE TABLE IF NOT EXISTS chat_labels (
 
 const cols = (t) => db.prepare(`PRAGMA table_info(${t})`).all().map((c) => c.name);
 if (!cols('chats').includes('pn')) db.exec('ALTER TABLE chats ADD COLUMN pn TEXT');
+if (!cols('chats').includes('push_name')) db.exec('ALTER TABLE chats ADD COLUMN push_name TEXT');
+db.exec('CREATE TABLE IF NOT EXISTS contacts (jid TEXT PRIMARY KEY, name TEXT NOT NULL, updated_at INTEGER NOT NULL)');
+db.exec(`CREATE TABLE IF NOT EXISTS contacts_v2 (number_id INTEGER NOT NULL, jid TEXT NOT NULL, name TEXT NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY (number_id, jid))`);
+// Nama lama bersifat global; salin sekali ke tiap nomor yang sudah punya chat dengan jid tersebut.
+// Tabel contacts lama dibiarkan sebagai arsip dan tidak lagi dipakai.
+if (!db.prepare("SELECT 1 FROM meta WHERE key = 'contacts_v2_migrated'").get()) {
+  db.transaction(() => {
+    db.exec(`INSERT OR IGNORE INTO contacts_v2 (number_id, jid, name, updated_at)
+      SELECT c.number_id, ct.jid, ct.name, ct.updated_at FROM contacts ct JOIN chats c ON c.jid = ct.jid`);
+    db.prepare("INSERT INTO meta (key, value) VALUES ('contacts_v2_migrated', ?)").run(String(Date.now()));
+  })();
+}
 if (!cols('numbers').includes('last_seen')) db.exec('ALTER TABLE numbers ADD COLUMN last_seen INTEGER');
 if (!cols('chats').includes('assignee_id')) db.exec('ALTER TABLE chats ADD COLUMN assignee_id INTEGER REFERENCES users(id) ON DELETE SET NULL');
 if (!cols('messages').includes('kind')) db.exec("ALTER TABLE messages ADD COLUMN kind TEXT NOT NULL DEFAULT 'text'");
 if (!cols('messages').includes('media_path')) db.exec('ALTER TABLE messages ADD COLUMN media_path TEXT');
 if (!cols('messages').includes('mime')) db.exec('ALTER TABLE messages ADD COLUMN mime TEXT');
 if (!cols('messages').includes('wa_id')) db.exec('ALTER TABLE messages ADD COLUMN wa_id TEXT');
+if (!cols('rules').includes('slow')) db.exec('ALTER TABLE rules ADD COLUMN slow INTEGER DEFAULT 0');
 db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_messages_wa ON messages(number_id, wa_id) WHERE wa_id IS NOT NULL');
 
 const count = db.prepare('SELECT COUNT(*) AS n FROM users').get().n;
@@ -142,6 +155,8 @@ export const q = {
   insertUser: db.prepare('INSERT INTO users (username, pass, role, created_at) VALUES (?, ?, ?, ?)'),
   deleteUser: db.prepare('DELETE FROM users WHERE id = ?'),
   setUserPass: db.prepare('UPDATE users SET pass = ? WHERE id = ?'),
+  setUsername: db.prepare('UPDATE users SET username = ? WHERE id = ?'),
+  deleteAllSessions: db.prepare('DELETE FROM sessions WHERE user_id = ?'),
 
   insertSession: db.prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)'),
   sessionByToken: db.prepare('SELECT s.token, s.expires_at, u.id, u.username, u.role FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?'),
@@ -166,20 +181,26 @@ export const q = {
 
   setChatPn: db.prepare('UPDATE chats SET pn = ? WHERE id = ?'),
   setChatName: db.prepare('UPDATE chats SET name = ? WHERE id = ?'),
+  setChatPushName: db.prepare('UPDATE chats SET push_name = ? WHERE id = ?'),
+  upsertContact: db.prepare('INSERT INTO contacts_v2 (number_id, jid, name, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(number_id, jid) DO UPDATE SET name = excluded.name, updated_at = excluded.updated_at'),
+  contactByJid: db.prepare('SELECT * FROM contacts_v2 WHERE number_id = ? AND jid = ?'),
+  deleteContact: db.prepare('DELETE FROM contacts_v2 WHERE number_id = ? AND jid = ?'),
   setAssignee: db.prepare('UPDATE chats SET assignee_id = ? WHERE id = ?'),
   insertNotification: db.prepare('INSERT INTO notifications (user_id, number_id, chat_id, created_at) VALUES (?, ?, ?, ?)'),
-  notificationsFor: db.prepare('SELECT f.*, c.name, c.pn, c.jid FROM notifications f JOIN chats c ON c.id = f.chat_id WHERE f.user_id = ? ORDER BY f.id DESC LIMIT ?'),
+  notificationsFor: db.prepare('SELECT f.*, c.name, c.push_name, c.pn, c.jid FROM notifications f JOIN chats c ON c.id = f.chat_id WHERE f.user_id = ? ORDER BY f.id DESC LIMIT ?'),
   markNotifRead: db.prepare('UPDATE notifications SET read_at = ? WHERE user_id = ? AND read_at IS NULL'),
   unreadNotifCount: db.prepare('SELECT COUNT(*) AS count FROM notifications WHERE user_id = ? AND read_at IS NULL'),
   chatsByAssignee: db.prepare('SELECT * FROM chats WHERE number_id = ? AND assignee_id = ? ORDER BY last_at DESC LIMIT 200'),
   insertMessage: db.prepare('INSERT OR IGNORE INTO messages (number_id, chat_id, from_me, body, ts, agent_id, kind, media_path, mime, wa_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'),
+  setMessageMedia: db.prepare('UPDATE messages SET media_path = ? WHERE id = ?'),
   messageByWaId: db.prepare('SELECT * FROM messages WHERE number_id = ? AND wa_id = ?'),
-  messagesByChat: db.prepare('SELECT * FROM messages WHERE chat_id = ? ORDER BY ts ASC LIMIT 500'),
+  messagesByChat: db.prepare('SELECT * FROM (SELECT * FROM messages WHERE chat_id = ? AND ts < ? ORDER BY ts DESC LIMIT 500) ORDER BY ts ASC'),
 
   rulesByNumber: db.prepare('SELECT * FROM rules WHERE number_id = ? AND enabled = 1 ORDER BY priority ASC, id ASC'),
   allRulesByNumber: db.prepare('SELECT * FROM rules WHERE number_id = ? ORDER BY priority ASC, id ASC'),
   insertRule: db.prepare('INSERT INTO rules (number_id, match_type, pattern, reply, priority) VALUES (?, ?, ?, ?, ?)'),
-  toggleRule: db.prepare('UPDATE rules SET enabled = ? WHERE id = ?'),
+  toggleRule: db.prepare('UPDATE rules SET enabled = ?, slow = 0 WHERE id = ?'),
+  markRuleSlow: db.prepare('UPDATE rules SET slow = 1 WHERE id = ?'),
   deleteRule: db.prepare('DELETE FROM rules WHERE id = ?'),
 
   allTemplates: db.prepare('SELECT * FROM templates ORDER BY id DESC'),

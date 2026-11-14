@@ -1,4 +1,4 @@
-﻿import path from 'node:path';
+import path from 'node:path';
 import fs from 'node:fs';
 import P from 'pino';
 import QRCode from 'qrcode';
@@ -12,10 +12,12 @@ import makeWASocket, {
 import { config } from './config.js';
 import { q } from './db.js';
 import * as limits from './limits.js';
+import { testPatterns } from './regexRunner.js';
 
 const logger = P({ level: 'silent' });
 const live = new Map();
 const reconnects = new Map();
+const connecting = new Set();
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -35,11 +37,27 @@ function textOf(m) {
     || m.videoMessage?.caption || m.documentMessage?.fileName || '';
 }
 
+function unwrap(m) {
+  let x = m || {};
+  for (let i = 0; i < 3; i += 1) {
+    const inner = x.viewOnceMessage?.message
+      || x.viewOnceMessageV2?.message
+      || x.viewOnceMessageV2Extension?.message
+      || x.ephemeralMessage?.message
+      || x.documentWithCaptionMessage?.message;
+    if (!inner) break;
+    x = inner;
+  }
+  return x;
+}
+
 function kindOf(msg) {
   const m = msg.message || {};
   if (m.imageMessage) return { kind: 'image', mime: m.imageMessage.mimetype };
   if (m.videoMessage) return { kind: 'video', mime: m.videoMessage.mimetype };
   if (m.audioMessage) return { kind: 'audio', mime: m.audioMessage.mimetype };
+  if (m.stickerMessage) return { kind: 'sticker', mime: 'image/webp' };
+  if (m.ptvMessage) return { kind: 'video', mime: m.ptvMessage.mimetype };
   if (m.documentMessage) return { kind: 'doc', mime: m.documentMessage.mimetype };
   return { kind: 'text', mime: null };
 }
@@ -53,22 +71,63 @@ function normalizePhone(raw) {
 function getChat(numberId, jid, name) {
   let chat = q.chatByJid.get(numberId, jid);
   if (!chat) {
-    const info = q.insertChat.run(numberId, jid, name || null, Date.now());
+    const local = q.contactByJid.get(numberId, jid);
+    const info = q.insertChat.run(numberId, jid, local?.name || name || null, Date.now());
     chat = q.chatById.get(info.lastInsertRowid);
   }
   return chat;
 }
 
-function matchRule(rules, text) {
+async function matchRule(rules, text) {
   const body = text.toLowerCase();
+  const sample = text.slice(0, 2000);
+  let best = null;
+  const regexRules = [];
+
   for (const r of rules) {
-    if (r.match_type === 'exact' && body.trim() === r.pattern.toLowerCase()) return r;
-    if (r.match_type === 'contains' && body.includes(r.pattern.toLowerCase())) return r;
-    if (r.match_type === 'regex') {
-      try { if (new RegExp(r.pattern, 'i').test(text)) return r; } catch { /* pola rusak */ }
+    if (r.match_type === 'exact' && body.trim() === r.pattern.toLowerCase()) {
+      if (!best || r.priority < best.priority) best = r;
+    } else if (r.match_type === 'contains' && body.includes(r.pattern.toLowerCase())) {
+      if (!best || r.priority < best.priority) best = r;
+    } else if (r.match_type === 'regex' && r.pattern.length <= 200) {
+      regexRules.push(r);
     }
   }
-  return null;
+
+  if (!regexRules.length) return best;
+
+  const slow = regexRules.filter((r) => r.slow);
+  const fast = regexRules.filter((r) => !r.slow);
+  let hits = [];
+
+  if (fast.length) {
+    const items = fast.map((r) => ({ id: r.id, pattern: r.pattern }));
+    try {
+      hits = await testPatterns(items, sample);
+    } catch (err) {
+      if (err.message === 'timeout') {
+        for (const r of fast) q.markRuleSlow.run(r.id);
+        try { hits = await testPatterns(items, sample, 400); }
+        catch { console.error('[regex] tetap timeout'); }
+      } else {
+        console.error('[regex]', err.message);
+      }
+    }
+  }
+
+  if (slow.length) {
+    const items = slow.map((r) => ({ id: r.id, pattern: r.pattern }));
+    try {
+      hits = hits.concat(await testPatterns(items, sample, 400));
+    } catch (err) {
+      console.error('[regex] slow', err.message);
+    }
+  }
+
+  for (const r of regexRules) {
+    if (hits.includes(r.id) && (!best || r.priority < best.priority)) best = r;
+  }
+  return best;
 }
 
 function enqueue(numberId, task) {
@@ -94,39 +153,64 @@ async function drain(numberId) {
   s.busy = false;
 }
 
+const EXT = {
+  'image/jpeg': 'jpeg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif',
+  'video/mp4': 'mp4', 'video/webm': 'webm',
+  'audio/ogg': 'ogg', 'audio/mpeg': 'mp3', 'audio/mp4': 'm4a', 'audio/amr': 'amr',
+  'application/pdf': 'pdf',
+};
+
+function extFor(mime, kind) {
+  if (kind === 'sticker') return 'webp';
+  const base = String(mime || '').split(';')[0].trim().toLowerCase();
+  const known = EXT[base];
+  if (known) return known;
+  const guess = base.split('/')[1] || '';
+  return /^[a-z0-9]{1,8}$/.test(guess) ? guess : 'bin';
+}
+
 export async function connect(numberId) {
   const number = q.numberById.get(numberId);
   if (!number) throw new Error('nomor tidak ada');
-  if (live.has(numberId)) return { status: 'sudah-aktif' };
+  if (live.has(numberId) || connecting.has(numberId)) return { status: 'sedang-menyambung' };
+  connecting.add(numberId);
   const retry = reconnects.get(numberId) || { attempt: 0, timer: null };
   clearTimeout(retry.timer);
   retry.timer = null;
   if (retry.attempt > 6) retry.attempt = 0;
   reconnects.set(numberId, retry);
 
-  const dir = path.join(config.dataDir, 'sessions', String(numberId));
-  fs.mkdirSync(dir, { recursive: true });
-  const { state, saveCreds } = await useMultiFileAuthState(dir);
-  const { version } = await fetchLatestBaileysVersion();
+  let sock;
+  let saveCreds;
+  let entry;
+  try {
+    const dir = path.join(config.dataDir, 'sessions', String(numberId));
+    fs.mkdirSync(dir, { recursive: true });
+    const auth = await useMultiFileAuthState(dir);
+    saveCreds = auth.saveCreds;
+    const { version } = await fetchLatestBaileysVersion();
 
-  const sock = makeWASocket({
-    version,
-    auth: state,
-    logger,
-    browser: Browsers.ubuntu('Chrome'),
-    markOnlineOnConnect: false,
-    syncFullHistory: false,
-    connectTimeoutMs: 60000,
-    defaultQueryTimeoutMs: 60000,
-  });
+    sock = makeWASocket({
+      version,
+      auth: auth.state,
+      logger,
+      browser: Browsers.ubuntu('Chrome'),
+      markOnlineOnConnect: false,
+      syncFullHistory: false,
+      connectTimeoutMs: 60000,
+      defaultQueryTimeoutMs: 60000,
+    });
 
-  let resolveReady;
-  let rejectReady;
-  const ready = new Promise((res, rej) => { resolveReady = res; rejectReady = rej; });
-  ready.catch(() => {});
+    let resolveReady;
+    let rejectReady;
+    const ready = new Promise((res, rej) => { resolveReady = res; rejectReady = rej; });
+    ready.catch(() => {});
 
-  const entry = { sock, queue: [], busy: false, pairingCode: null, qr: null, ready, isReady: false, resolveReady, rejectReady };
-  live.set(numberId, entry);
+    entry = { sock, queue: [], busy: false, pairingCode: null, qr: null, ready, isReady: false, resolveReady, rejectReady };
+    live.set(numberId, entry);
+  } finally {
+    connecting.delete(numberId);
+  }
 
   const markReady = () => {
     if (entry.isReady) return;
@@ -181,52 +265,105 @@ export async function connect(numberId) {
   });
 
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    if (type !== 'notify') return;
+    if (type !== 'notify' && type !== 'append') { console.error('[upsert] type=', type); return; }
     for (const msg of messages) {
+      const rawKeys = Object.keys(unwrap(msg.message) || {}).join(',');
+      console.error('[in]', msg.key?.remoteJid, '| fromMe=', msg.key?.fromMe, '|', rawKeys);
       if (!msg.message || msg.key.remoteJid === 'status@broadcast') continue;
       if (msg.key.id && (q.messageByWaId.get(numberId, msg.key.id) || limits.seen(numberId + ':' + msg.key.id))) continue;
       const jid = msg.key.remoteJid;
       const pn = msg.key.remoteJidAlt || null;
       const fromMe = Boolean(msg.key.fromMe);
-      const body = textOf(msg.message || {});
-      const { kind, mime } = kindOf(msg);
-      if (kind === 'text' && !body && !fromMe) continue;
+      const body = textOf(unwrap(msg.message));
+      const { kind, mime } = kindOf({ message: unwrap(msg.message) });
+      if (kind === 'text' && !body && !fromMe) {
+        console.error('[skip] tipe tak dikenal:', rawKeys);
+        continue;
+      }
 
       const chat = getChat(numberId, jid, msg.pushName || null);
-      if (msg.pushName) q.setChatName.run(msg.pushName, chat.id);
-      if (pn) q.setChatPn.run(pn, chat.id);
-      let mediaPath = null;
-      if (kind !== 'text') {
-        try {
-          const buf = await downloadMediaMessage(msg, 'buffer', {}, { logger, reuploadRequest: sock.updateMediaMessage });
-          const ext = String(mime || 'bin').split('/')[1]?.split(';')[0] || 'bin';
-          const file = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-          fs.writeFileSync(path.join(config.dataDir, 'media', file), buf);
-          mediaPath = file;
-        } catch (err) {
-          console.error('[media]', numberId, err.message);
-        }
+      if (msg.pushName) {
+        q.setChatPushName.run(msg.pushName, chat.id);
+        const local = q.contactByJid.get(numberId, jid);
+        if (!local) q.setChatName.run(msg.pushName, chat.id);
       }
-      const saved = q.insertMessage.run(numberId, chat.id, fromMe ? 1 : 0, body, Date.now(), null, kind, mediaPath, mime, msg.key.id || null);
+      if (pn) q.setChatPn.run(pn, chat.id);
+      const saved = q.insertMessage.run(numberId, chat.id, fromMe ? 1 : 0, body, Date.now(), null, kind, null, mime, msg.key.id || null);
       if (!saved.changes) continue;
-      q.touchChat.run(Date.now(), msg.pushName || null, chat.id);
+      const msgId = saved.lastInsertRowid;
+      q.touchChat.run(Date.now(), null, chat.id);
       if (!fromMe) q.bumpUnread.run(chat.id);
       if (!fromMe && chat.assignee_id) {
         q.insertNotification.run(chat.assignee_id, numberId, chat.id, Date.now());
         emit({ type: 'notification', userId: chat.assignee_id, numberId, chatId: chat.id, body });
       }
+      let mediaPath = null;
+      if (kind !== 'text') {
+        let mediaTimer;
+        try {
+          const content = unwrap(msg.message);
+          const mediaMessage = { ...msg, message: content.ptvMessage ? { videoMessage: content.ptvMessage } : content };
+          const buf = await Promise.race([
+            downloadMediaMessage(mediaMessage, 'buffer', {}, { logger, reuploadRequest: sock.updateMediaMessage }),
+            new Promise((_, reject) => { mediaTimer = setTimeout(() => reject(new Error('timeout 15s')), 15000); }),
+          ]);
+          const ext = extFor(mime, kind);
+          const file = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          fs.writeFileSync(path.join(config.dataDir, 'media', file), buf);
+          mediaPath = file;
+          q.setMessageMedia.run(file, msgId);
+        } catch (err) {
+          console.error('[media]', numberId, kind, err.message);
+        } finally {
+          clearTimeout(mediaTimer);
+        }
+      }
 
       emit({ type: 'message', numberId, chatId: chat.id, jid, body, fromMe, kind, mediaPath, waId: msg.key.id || null, ts: Date.now() });
 
-      if (!fromMe && body && !jid.endsWith('@g.us') && limits.withinHours()) {
+      // append bisa berisi pesan lama (catch-up); jangan balas otomatis agar tidak membalas riwayat.
+      if (type === 'notify' && !fromMe && body && !jid.endsWith('@g.us') && limits.withinHours()) {
         const rules = q.rulesByNumber.all(numberId);
-        const hit = matchRule(rules, body);
+        const hit = await matchRule(rules, body);
         if (hit && limits.chatAllowed(numberId, jid)) {
           limits.markChat(numberId, jid);
           const jitter = 1500 + Math.random() * 2500;
           setTimeout(() => {
             sendText(numberId, jid, hit.reply, null, true).catch((e) => console.error('[autoreply]', e.message));
           }, jitter);
+        }
+      }
+    }
+  });
+
+  sock.ev.on('call', async (calls) => {
+    for (const call of calls) {
+      if (call.status !== 'offer') continue;
+      const jid = call.from;
+      const chat = getChat(numberId, jid, null);
+      const label = call.isVideo ? 'Panggilan video masuk' : 'Panggilan suara masuk';
+      const body = config.callAutoReject ? `${label} - ditolak otomatis` : `${label} - tidak terjawab`;
+
+      q.insertMessage.run(numberId, chat.id, 0, body, Date.now(), null, 'call', null, null, null);
+      q.touchChat.run(Date.now(), null, chat.id);
+      q.bumpUnread.run(chat.id);
+      emit({ type: 'message', numberId, chatId: chat.id, jid, body, fromMe: false, kind: 'call', mediaPath: null, ts: Date.now() });
+
+      if (chat.assignee_id) {
+        q.insertNotification.run(chat.assignee_id, numberId, chat.id, Date.now());
+        emit({ type: 'notification', userId: chat.assignee_id, numberId, chatId: chat.id, body });
+      }
+
+      if (config.callAutoReject) {
+        try {
+          await sock.rejectCall(call.id, jid);
+          if (config.callReply) {
+            setTimeout(() => {
+              sendText(numberId, jid, config.callReply, null, true).catch((e) => console.error('[call]', e.message));
+            }, 1500);
+          }
+        } catch (err) {
+          console.error('[call]', numberId, err.message);
         }
       }
     }
@@ -360,7 +497,8 @@ export async function sendMedia(numberId, jid, buffer, mime, caption = '', agent
   const number = q.numberById.get(numberId);
   if (number) limits.assertQuota(number);
   const chat = getChat(numberId, jid, null);
-  const ext = String(mime || 'bin').split('/')[1]?.split(';')[0] || 'bin';
+  const isSticker = String(mime) === 'image/webp';
+  const ext = extFor(mime, isSticker ? 'sticker' : null);
   const file = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   fs.writeFileSync(path.join(config.dataDir, 'media', file), buffer);
 
@@ -374,17 +512,24 @@ export async function sendMedia(numberId, jid, buffer, mime, caption = '', agent
         await s.sock.sendPresenceUpdate('composing', jid);
         const isImage = String(mime).startsWith('image/');
         const isVideo = String(mime).startsWith('video/');
-        const payload = isImage
+        const isAudio = String(mime).startsWith('audio/');
+        const isVoice = isAudio && String(mime).includes('ogg');
+        const payload = isSticker ? { sticker: buffer } : isImage
           ? { image: buffer, caption }
           : isVideo
             ? { video: buffer, caption }
-            : { document: buffer, mimetype: mime, fileName: caption || file, caption };
+            : isVoice
+              ? { audio: buffer, mimetype: 'audio/ogg; codecs=opus', ptt: true }
+              : isAudio
+                ? { audio: buffer, mimetype: mime }
+                : { document: buffer, mimetype: mime, fileName: caption || file };
+        const kind = isSticker ? 'sticker' : isImage ? 'image' : isVideo ? 'video' : isAudio ? 'audio' : 'doc';
         const sent = await s.sock.sendMessage(jid, payload);
         q.insertActivity.run(agentId, numberId, 'send', String(caption).slice(0, 80), Date.now());
         await s.sock.sendPresenceUpdate('paused', jid);
-        q.insertMessage.run(numberId, chat.id, 1, caption, Date.now(), agentId, isImage ? 'image' : isVideo ? 'video' : 'doc', file, mime, sent?.key?.id || null);
+        q.insertMessage.run(numberId, chat.id, 1, caption, Date.now(), agentId, kind, file, mime, sent?.key?.id || null);
         q.touchChat.run(Date.now(), null, chat.id);
-        emit({ type: 'message', numberId, chatId: chat.id, jid, body: caption, fromMe: true, kind: isImage ? 'image' : isVideo ? 'video' : 'doc', mediaPath: file, waId: sent?.key?.id || null, ts: Date.now() });
+        emit({ type: 'message', numberId, chatId: chat.id, jid, body: caption, fromMe: true, kind, mediaPath: file, waId: sent?.key?.id || null, ts: Date.now() });
         resolve(true);
       } catch (err) {
         reject(err);

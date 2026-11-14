@@ -1,0 +1,70 @@
+/* UI refinements; the base palette is defined in index.html. */
+#msgs { gap:0; }
+.b { max-width:68%; word-break:break-word; overflow-wrap:anywhere; border-radius:10px; margin-top:10px; }
+.b.compact { margin-top:3px; }
+.b a { color:#5b21b6; text-decoration:underline; }
+.message-time { display:block; text-align:right; font-size:10.5px; color:var(--muted); margin-top:2px; }
+.message-date,.unread-divider { display:flex; align-items:center; gap:10px; font-size:11px; color:var(--muted); margin:14px 0 4px; }
+.message-date::before,.message-date::after,.unread-divider::before,.unread-divider::after { content:''; height:1px; background:var(--line); flex:1; }
+.unread-divider { color:var(--accent); }
+.unread-divider::before,.unread-divider::after { background:var(--accent); }
+#input { height:44px; min-height:44px; max-height:120px; resize:none; overflow-y:hidden; }
+button:disabled { opacity:.65; cursor:default; }
+#msgs:empty::before { content:'pilih chat di sebelah kiri'; text-align:center; margin:auto; }
+#chats:empty::before { content:none; }
+.chat-empty { display:grid; justify-items:center; gap:6px; padding:24px 8px; }
+.chat-empty svg { width:30px; height:30px; }
+.chat-empty strong { font-weight:500; }
+.chat-empty small { font-size:11px; }
+.thread-empty { margin:auto; }
+.empty-action { display:block; margin:8px auto 0; color:var(--accent); }
+.skeleton { display:grid; gap:10px; padding:12px 0; width:100%; }
+.skeleton span { display:block; height:38px; background:#e5e7eb; border-radius:10px; }
+.skeleton span:nth-child(2) { width:88%; }
+.skeleton span:nth-child(3) { width:72%; }
+#head { flex-wrap:wrap; }
+#title { flex:0 0 calc(100% - 8px); }
+.contact-detail { flex:0 0 100%; font-size:11px; color:var(--muted); margin-top:-10px; overflow-wrap:anywhere; }
+:root { --muted:#606775; }
+button:focus-visible,.chat:focus-visible,.num:focus-visible,a:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.rail button { color:#aeb8c9; }
+.dialog { border-radius:10px; }
+#app { height:100dvh; }
+#main { min-height:0; overflow:hidden; }
+#msgs { min-height:0; }
+.composer-card { flex-shrink:0; }
+thead th { position:sticky; top:0; z-index:2; background:#f9fafb; }
+tbody tr:nth-child(even) { background:#fbfbfc; }
+th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
+td.action-col button,td.action-col a { display:block; margin:2px 0; }
+td.action-col { white-space:normal; }
+@media (max-width:819px) {
+  #app { grid-template-columns:1fr; grid-template-rows:230px minmax(0,1fr) 64px; }
+  .rail { position:fixed; bottom:0; left:0; right:0; height:64px; z-index:20; flex-direction:row; overflow-x:auto; overflow-y:hidden; padding:8px; gap:4px; }
+  .rail .logo { display:none; }
+  .rail button { min-width:40px; min-height:40px; padding:10px; }
+  #btnOut { margin:0; }
+  .number-panel { grid-column:1; grid-row:1; padding:8px 12px; border-right:0; border-bottom:1px solid var(--line); }
+  .number-panel .section-head,.number-panel > select { display:none; }
+  #btnNum { width:auto; margin:0 0 4px; }
+  #nums { display:flex; overflow-x:auto; }
+  .num { flex-shrink:0; }
+  .search-head { margin:4px 0; }
+  #chats { display:flex; overflow-x:auto; }
+  .chat { flex-shrink:0; max-width:260px; }
+  #main { grid-column:1; grid-row:2; padding:8px 8px calc(var(--composer-height, 160px) + 8px); gap:8px; }
+  #head { padding:10px; gap:6px; }
+  #head button,#head select { min-height:40px; }
+  #head #labelPick { max-width:90px; }
+  #msgs { padding-bottom:72px; }
+  #input { max-height:88px; }
+  .composer-card { position:fixed; left:8px; right:8px; bottom:64px; z-index:15; padding:10px; }
+  #composer { gap:6px; }
+  #composer #btnFile { font-size:11px; padding:8px; }
+  #composer #btnSend { padding:8px; }
+  .toolbar { margin-bottom:6px; }
+  button:has(svg),.row-del { min-width:40px; min-height:40px; }
+  .row-del { visibility:visible; }
+  #workspace { grid-column:1; grid-row:1 / 3; padding:8px; max-width:100%; }
+  #phase345SearchResults { position:fixed; top:110px; left:12px; right:12px; max-height:220px; overflow:auto; background:var(--card); border:1px solid var(--line); border-radius:10px; z-index:18; }
+}

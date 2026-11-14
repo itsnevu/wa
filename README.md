@@ -1,4 +1,4 @@
-﻿# WA Suite
+# WA Suite
 
 Dashboard multi-nomor WhatsApp Business. Satu nomor = satu sesi linked device.
 
@@ -15,7 +15,11 @@ Jika server mati pada jam backup, backup dijalankan saat startup setelah jam ter
 ## Jalan
 HOST default 127.0.0.1. Akses dari HP memerlukan HOST=0.0.0.0.
 TRUST_PROXY=1 hanya bila aplikasi berada di balik satu reverse proxy terpercaya.
-SECURE_COOKIE=1 untuk akses HTTPS. Ubah password lewat halaman Akun.
+SECURE_COOKIE=1 menambahkan atribut Secure pada cookie sesi sehingga browser hanya
+mengirimnya melalui HTTPS; gunakan SECURE_COOKIE=0 untuk HTTP lokal.
+PASS_MIN default 12 (minimal 12) berlaku saat mengganti password dan membuat agen.
+Halaman Akun menyediakan ganti username, ganti password, dan keluar dari semua perangkat.
+Keluar dari semua perangkat membatalkan seluruh sesi login dashboard akun tersebut.
 
 Copy-Item .env.example .env   # ganti ADMIN_PASS
 npm i

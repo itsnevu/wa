@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { db, q } from './db.js';
 import { login, logout, setCookie, clearCookie, currentUser, requireAuth, requireAdmin, canAccessNumber } from './auth.js';
 import { hashPassword, verifyPassword } from './passwords.js';
@@ -33,7 +33,7 @@ api.post('/logout', (req, res) => { logout(req); clearCookie(res); res.json({ ok
 api.get('/me', (req, res) => {
   const user = currentUser(req);
   if (!user) return res.status(401).json({ error: 'belum login' });
-  res.json({ user });
+  res.json({ user, passMin: config.passMin });
 });
 
 api.use(requireAuth);
@@ -49,7 +49,7 @@ api.get('/search', (req, res) => {
   const nums = req.user.role === 'admin' ? q.allNumbers.all() : q.numbersByOwner.all(req.user.id);
   const ids = nums.map((n) => n.id);
   if (!ids.length) return res.json([]);
-  const rows = db.prepare(`SELECT m.id, m.body, m.ts, m.chat_id, m.number_id, c.name, c.pn, c.jid, n.name AS number
+  const rows = db.prepare(`SELECT m.id, m.body, m.ts, m.chat_id, m.number_id, c.name, c.push_name, c.pn, c.jid, n.name AS number
     FROM messages m JOIN chats c ON c.id = m.chat_id JOIN numbers n ON n.id = m.number_id
     WHERE m.body LIKE ? AND m.number_id IN (${ids.map(() => '?').join(',')})
     ORDER BY m.ts DESC LIMIT 50`).all(`%${term}%`, ...ids);
@@ -58,11 +58,24 @@ api.get('/search', (req, res) => {
 
 api.post('/password', (req, res) => {
   const { old, next } = req.body || {};
-  if (typeof next !== 'string' || next.length < 8) return res.status(400).json({ error: 'password minimal 8 karakter' });
+  if (typeof next !== 'string' || next.length < config.passMin) return res.status(400).json({ error: `password minimal ${config.passMin} karakter` });
   const row = q.userByName.get(req.user.username);
   if (!row || !verifyPassword(String(old || ''), row.pass)) return res.status(401).json({ error: 'password lama salah' });
   q.setUserPass.run(hashPassword(next), req.user.id);
   res.json({ ok: true });
+});
+
+api.post('/logout-all', (req, res) => {
+  q.deleteAllSessions.run(req.user.id);
+  clearCookie(res);
+  res.json({ ok: true });
+});
+
+api.patch('/me', (req, res) => {
+  const name = String(req.body?.username || '').trim();
+  if (name.length < 3) return res.status(400).json({ error: 'username minimal 3 karakter' });
+  try { q.setUsername.run(name, req.user.id); res.json({ ok: true }); }
+  catch { res.status(400).json({ error: 'username sudah dipakai' }); }
 });
 
 api.get('/backups', requireAdmin, (_req, res) => res.json(backup.list()));
@@ -155,11 +168,31 @@ api.get('/numbers/:id/chats', (req, res) => {
   res.json(req.query.mine === '1' ? q.chatsByAssignee.all(id, req.user.id) : q.chatsByNumber.all(id));
 });
 
+api.put('/chats/:chatId/name', (req, res) => {
+  const chat = q.chatById.get(Number(req.params.chatId));
+  if (!chat) return res.status(404).json({ error: 'chat tidak ada' });
+  if (!canAccessNumber(req.user, chat.number_id)) return res.status(403).json({ error: 'tidak punya akses' });
+  if (req.body?.name != null && typeof req.body.name !== 'string') return res.status(400).json({ error: 'nama harus berupa teks' });
+  const name = (req.body?.name || '').trim();
+  db.transaction(() => {
+    if (name) {
+      q.upsertContact.run(chat.number_id, chat.jid, name, Date.now());
+      q.setChatName.run(name, chat.id);
+    } else {
+      q.deleteContact.run(chat.number_id, chat.jid);
+      q.setChatName.run(chat.push_name || null, chat.id);
+    }
+  })();
+  res.json({ ok: true });
+});
+
 api.get('/chats/:chatId/messages', (req, res) => {
   const chat = q.chatById.get(Number(req.params.chatId));
   if (!chat) return res.status(404).json({ error: 'chat tidak ada' });
   if (!canAccessNumber(req.user, chat.number_id)) return res.status(403).json({ error: 'tidak punya akses' });
-  res.json({ messages: q.messagesByChat.all(chat.id), labels: q.labelsForChat.all(chat.id) });
+  const before = Number(req.query.before) > 0 ? Number(req.query.before) : Date.now();
+  const messages = q.messagesByChat.all(chat.id, before);
+  res.json({ messages, labels: q.labelsForChat.all(chat.id), hasMore: messages.length === 500 });
 });
 
 api.get('/chats/:chatId/export', (req, res) => {
@@ -273,16 +306,39 @@ api.post('/numbers/:id/rules', (req, res) => {
   if (!canAccessNumber(req.user, id)) return res.status(403).json({ error: 'tidak punya akses' });
   const { match_type = 'contains', pattern, reply, priority = 0 } = req.body || {};
   if (!pattern || !reply) return res.status(400).json({ error: 'pattern dan reply wajib' });
+  if (match_type === 'regex' && /\([^()]*[+*]\)[+*]/.test(pattern)) {
+    return res.status(400).json({ error: 'pola punya quantifier bersarang, misal (a+)+' });
+  }
+  if (match_type === 'regex') {
+    try { new RegExp(pattern, 'i'); } catch { return res.status(400).json({ error: 'pola regex tidak valid' }); }
+  }
   q.insertRule.run(id, match_type, pattern, reply, Number(priority));
   res.json({ ok: true });
 });
 
+function ownRule(req) {
+  const r = db.prepare('SELECT * FROM rules WHERE id = ?').get(Number(req.params.id));
+  return r && canAccessNumber(req.user, r.number_id) ? r : null;
+}
+
+function ownChat(req) {
+  const c = q.chatById.get(Number(req.params.chatId));
+  return c && canAccessNumber(req.user, c.number_id) ? c : null;
+}
+
 api.patch('/rules/:id', (req, res) => {
-  q.toggleRule.run(req.body?.enabled ? 1 : 0, Number(req.params.id));
+  const rule = ownRule(req);
+  if (!rule) return res.status(403).json({ error: 'tidak punya akses' });
+  q.toggleRule.run(req.body?.enabled ? 1 : 0, rule.id);
   res.json({ ok: true });
 });
 
-api.delete('/rules/:id', (req, res) => { q.deleteRule.run(Number(req.params.id)); res.json({ ok: true }); });
+api.delete('/rules/:id', (req, res) => {
+  const rule = ownRule(req);
+  if (!rule) return res.status(403).json({ error: 'tidak punya akses' });
+  q.deleteRule.run(rule.id);
+  res.json({ ok: true });
+});
 
 api.get('/templates', (req, res) => {
   res.json(q.allTemplates.all().filter((t) => !t.number_id || canAccessNumber(req.user, t.number_id)));
@@ -291,11 +347,19 @@ api.get('/templates', (req, res) => {
 api.post('/templates', (req, res) => {
   const { title, body, number_id } = req.body || {};
   if (!title || !body) return res.status(400).json({ error: 'title dan body wajib' });
+  if (number_id && !canAccessNumber(req.user, Number(number_id))) return res.status(403).json({ error: 'tidak punya akses' });
   q.insertTemplate.run(number_id || null, title, body);
   res.json({ ok: true });
 });
 
-api.delete('/templates/:id', (req, res) => { q.deleteTemplate.run(Number(req.params.id)); res.json({ ok: true }); });
+api.delete('/templates/:id', (req, res) => {
+  const t = db.prepare('SELECT * FROM templates WHERE id = ?').get(Number(req.params.id));
+  if (!t) return res.status(404).json({ error: 'template tidak ada' });
+  const allowed = t.number_id ? canAccessNumber(req.user, t.number_id) : req.user.role === 'admin';
+  if (!allowed) return res.status(403).json({ error: 'tidak punya akses' });
+  q.deleteTemplate.run(t.id);
+  res.json({ ok: true });
+});
 
 api.get('/labels', (_req, res) => res.json(q.allLabels.all()));
 api.post('/labels', (req, res) => {
@@ -306,14 +370,20 @@ api.post('/labels', (req, res) => {
     res.json({ ok: true });
   } catch { res.status(400).json({ error: 'label sudah ada' }); }
 });
-api.delete('/labels/:id', (req, res) => { q.deleteLabel.run(Number(req.params.id)); res.json({ ok: true }); });
+api.delete('/labels/:id', requireAdmin, (req, res) => { q.deleteLabel.run(Number(req.params.id)); res.json({ ok: true }); });
 
 api.post('/chats/:chatId/labels/:labelId', (req, res) => {
-  q.addChatLabel.run(Number(req.params.chatId), Number(req.params.labelId));
+  const chat = ownChat(req);
+  if (!chat) return res.status(403).json({ error: 'tidak punya akses' });
+  const label = db.prepare('SELECT id FROM labels WHERE id = ?').get(Number(req.params.labelId));
+  if (!label) return res.status(404).json({ error: 'label tidak ada' });
+  q.addChatLabel.run(chat.id, label.id);
   res.json({ ok: true });
 });
 api.delete('/chats/:chatId/labels/:labelId', (req, res) => {
-  q.removeChatLabel.run(Number(req.params.chatId), Number(req.params.labelId));
+  const chat = ownChat(req);
+  if (!chat) return res.status(403).json({ error: 'tidak punya akses' });
+  q.removeChatLabel.run(chat.id, Number(req.params.labelId));
   res.json({ ok: true });
 });
 
@@ -322,6 +392,7 @@ api.get('/users', requireAdmin, (_req, res) => res.json(q.allUsers.all()));
 api.post('/users', requireAdmin, (req, res) => {
   const { username, password, role = 'agent' } = req.body || {};
   if (!username || !password) return res.status(400).json({ error: 'username dan password wajib' });
+  if (typeof password !== 'string' || password.length < config.passMin) return res.status(400).json({ error: `password minimal ${config.passMin} karakter` });
   try {
     q.insertUser.run(username, hashPassword(password), role, Date.now());
     res.json({ ok: true });
