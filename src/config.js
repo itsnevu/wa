@@ -1,0 +1,30 @@
+﻿import 'dotenv/config';
+import path from 'node:path';
+
+export const config = {
+  port: Number(process.env.PORT || 3000),
+  host: process.env.HOST || '127.0.0.1',
+  trustProxy: process.env.TRUST_PROXY === '1',
+  secureCookie: process.env.SECURE_COOKIE === '1',
+  loginMax: Number(process.env.LOGIN_MAX || 5),
+  loginLockMin: Number(process.env.LOGIN_LOCK_MIN || 15),
+  dataDir: process.env.DATA_DIR || path.resolve('data'),
+  adminUser: process.env.ADMIN_USER || 'admin',
+  adminPass: process.env.ADMIN_PASS || 'admin123',
+  delayMin: Number(process.env.SEND_DELAY_MIN || 1200),
+  delayMax: Number(process.env.SEND_DELAY_MAX || 3500),
+  ratePerMinute: Number(process.env.RATE_PER_MINUTE || 8),
+  chatCooldownMin: Number(process.env.CHAT_COOLDOWN_MIN || 10),
+  dailyCap: Number(process.env.DAILY_CAP || 200),
+  warmupEnabled: process.env.WARMUP_ENABLED !== '0',
+  warmupStart: Number(process.env.WARMUP_START || 25),
+  warmupStep: Number(process.env.WARMUP_STEP || 15),
+  businessStart: Number(process.env.BUSINESS_START || 0),
+  businessEnd: Number(process.env.BUSINESS_END || 0),
+  sessionTtlDays: Number(process.env.SESSION_TTL_DAYS || 7),
+  backupDir: process.env.BACKUP_DIR || path.resolve('backups'),
+  backupKeep: Number(process.env.BACKUP_KEEP || 7),
+  backupHour: Number(process.env.BACKUP_HOUR ?? 3),
+  backupMedia: process.env.BACKUP_MEDIA === '1',
+  retentionDays: Number(process.env.RETENTION_DAYS || 0),
+};

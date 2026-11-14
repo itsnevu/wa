@@ -1,0 +1,875 @@
+﻿<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WA Suite</title>
+<style>
+:root { --page:#f6f7f9; --card:#ffffff; --line:#e5e7eb; --line2:#d1d5db; --text:#111827; --muted:#6b7280; --accent:#7c3aed; --accent-h:#6d28d9; --danger:#dc2626; --rail:#0f172a; --r:10px; }
+* { box-sizing:border-box; }
+body { background:var(--page); color:var(--text); font:13.5px/1.5 system-ui; margin:0; }
+.hidden { display:none !important; }
+input,select,textarea { background:var(--card); border:1px solid var(--line2); border-radius:8px; padding:8px 10px; font:inherit; color:inherit; width:100%; min-width:0; }
+input:focus,select:focus,textarea:focus { outline:2px solid var(--accent); outline-offset:-1px; border-color:var(--accent); }
+button { font:inherit; color:inherit; border:1px solid var(--line2); background:var(--card); border-radius:8px; padding:8px 14px; cursor:pointer; transition:background-color 120ms,color 120ms,border-color 120ms; }
+button:hover { background:#eef0f4; }
+button.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+button.primary:hover { background:var(--accent-h); }
+button.ghost { border:0; background:transparent; padding:6px; }
+button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+svg { width:20px; height:20px; stroke:currentColor; stroke-width:1.6; fill:none; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; vertical-align:middle; }
+#login { width:340px; padding:18px; margin:12vh auto; border:1px solid var(--line); background:var(--card); border-radius:var(--r); }
+#login button { width:100%; }
+#app { display:grid; grid-template-columns:64px 300px 1fr; height:100vh; }
+.rail { background:var(--rail); display:flex; align-items:center; flex-direction:column; gap:8px; padding:16px 10px; }
+.rail button { color:rgba(255,255,255,.55); border:0; background:transparent; padding:10px; }
+.rail button:hover,.rail button.active { color:#fff; background:rgba(255,255,255,.12); }
+.rail .logo { width:32px; height:32px; display:grid; place-items:center; border-radius:8px; background:var(--accent); color:white; margin:0 0 16px; }
+#btnOut { margin-top:auto; }
+.number-panel { background:var(--page); border-right:1px solid var(--line); padding:12px; overflow:auto; min-width:0; }
+.section-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; font-size:13px; }
+#btnNum { width:100%; margin:10px 0; }
+.num { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:8px; border:1px solid transparent; cursor:pointer; }
+.num:hover,.chat:hover { background:#eef0f4; }
+.num.active { background:var(--card); border-color:var(--line); }
+.num-info { flex:1; min-width:0; font-size:13px; }
+.num-info div { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.num-info small,.chat small { font-size:11px; color:var(--muted); }
+.dot { width:7px; height:7px; border-radius:50%; background:var(--line2); flex-shrink:0; }
+.dot.online { background:var(--accent); }
+.row-del { visibility:hidden; color:var(--muted); }
+.num:hover .row-del,.num:focus-within .row-del { visibility:visible; }
+.search-head { margin:20px 0 4px; }
+.chat { padding:8px 10px; border-bottom:1px solid var(--line); cursor:pointer; }
+.chat.active { background:var(--card); }
+#main { padding:16px; overflow:auto; background:var(--page); display:flex; flex-direction:column; gap:12px; min-width:0; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:14px; }
+#head { display:flex; align-items:center; gap:10px; }
+#title { flex:1; font-weight:600; }
+#labelPick,#tplPick { width:auto; max-width:220px; }
+#headDelete { color:var(--danger); }
+#msgs { flex:1; min-height:240px; overflow:auto; display:flex; flex-direction:column; gap:8px; }
+#msgs:empty::before,#chats:empty::before { color:var(--muted); font-size:12px; }
+#msgs:empty::before { content:"pilih chat"; }
+#chats:empty::before { content:"belum ada chat"; display:block; padding:10px; }
+.b { max-width:68%; align-self:flex-start; background:#f3f4f6; border-radius:8px; padding:7px 10px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.b.me { align-self:flex-end; }
+.toolbar { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+#composer { display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; }
+#quoteBar { flex:0 0 100%; border-bottom:1px solid var(--line); padding-bottom:6px; }
+#input { flex:1; height:64px; resize:vertical; }
+.chip { font-size:11px; padding:2px 7px; border-radius:8px; background:#f3f4f6; }
+#panel { flex-shrink:0; overflow:auto; }
+.panel-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+table { border-collapse:collapse; width:100%; text-align:left; }
+th { background:#f9fafb; color:var(--muted); font-size:12px; font-weight:500; }
+th,td { padding:10px 8px; border-bottom:1px solid var(--line); overflow-wrap:anywhere; }
+td input[type=checkbox],th input[type=checkbox] { width:auto; accent-color:var(--accent); }
+.actions { white-space:nowrap; }
+.actions a { color:var(--accent); margin-right:8px; }
+.actions .ghost { color:var(--muted); }
+.actions .danger,.danger { color:var(--danger); }
+.rule-form,.agent-form { display:flex; gap:8px; margin-top:14px; align-items:center; }
+.rule-form input { flex:1; }
+.rule-form select { width:120px; }
+.agent-form input { flex:1; }
+.empty { text-align:center; color:var(--muted); font-size:12px; }
+.err { color:var(--danger); min-height:16px; font-size:12px; }
+.overlay { position:fixed; inset:0; background:rgba(17,24,39,.45); display:grid; place-items:center; z-index:10; }
+.dialog { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; width:340px; max-width:calc(100vw - 24px); display:grid; gap:12px; box-shadow:0 10px 30px rgba(0,0,0,.12); }
+.dialog h2 { margin:0; font-size:15px; }
+label { display:grid; gap:5px; font-size:12px; color:var(--muted); }
+.dialog-actions { display:flex; justify-content:flex-end; gap:8px; }
+#qrModal .dialog { text-align:center; }
+#qrModal p { margin:0; color:var(--muted); font-size:12px; }
+#qrImg { background:white; border:1px solid var(--line); width:300px; max-width:100%; justify-self:center; }
+#workspace { grid-column:2 / 4; padding:16px; max-width:860px; width:100%; overflow:auto; }
+#pageTitle { font-size:16px; margin:0; }
+#workspace > header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+#page { display:grid; gap:12px; }
+.chat { display:flex; align-items:center; gap:8px; }
+.chat-info { flex:1; min-width:0; overflow-wrap:anywhere; }
+.chat:hover .row-del,.chat:focus-within .row-del { visibility:visible; }
+.page-form { display:flex; gap:8px; align-items:center; margin-top:14px; flex-wrap:wrap; }
+.page-form input,.page-form textarea { flex:1; min-width:120px; }
+.page-form select { width:130px; }
+.page-form input[type=color] { flex:0 0 54px; min-width:54px; padding:3px; height:38px; }
+.page-form input[type=checkbox] { width:auto; }
+.page-filter { max-width:260px; margin-bottom:12px; }
+.monitor-problem { background:#fef2f2; }
+.status-danger { color:var(--danger); font-weight:600; }
+.status-online { color:var(--accent); font-weight:600; }
+.rail { overflow-y:auto; }
+.rail button { flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<form id="login" class="hidden">
+  <h3 style="margin:0 0 14px">Masuk</h3>
+  <input id="u" placeholder="username" autocomplete="username" />
+  <div style="height:8px"></div>
+  <input id="p" type="password" placeholder="password" autocomplete="current-password" />
+  <div class="err" id="lerr"></div>
+  <button class="primary">Masuk</button>
+</form>
+
+<div id="app" class="hidden">
+  <nav class="rail" aria-label="Navigasi">
+    <div class="logo" title="WA Suite"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3"/><path d="m9 12 2 2 4-4"/></svg></div>
+    <button class="active" id="railChat" title="Chat" aria-label="Chat"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 1-8 8H5l-4 3 2-6a8 8 0 1 1 17-5Z"/></svg></button>
+    <button id="railNumbers" title="Nomor" aria-label="Nomor"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg></button>
+    <button id="btnRules" title="Rules" aria-label="Rules"><svg viewBox="0 0 24 24"><path d="M8 5h12M8 12h12M8 19h12M3 5h.01M3 12h.01M3 19h.01"/></svg></button>
+    <button id="railTemplates" title="Template" aria-label="Template"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg></button>
+    <button id="railLabels" title="Label" aria-label="Label"><svg viewBox="0 0 24 24"><path d="m3 3 9 0 9 9-9 9-9-9Z"/><circle cx="8" cy="8" r="1"/></svg></button>
+    <button id="btnUsers" title="Agen" aria-label="Agen"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></button>
+    <button id="railBackups" data-page="backups" class="rail-btn" title="Backup" aria-label="Backup"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="5" rx="1"/><path d="M5 8v13h14V8M10 12h4"/></svg></button>
+    <button id="railNotifications" title="Notifikasi" aria-label="Notifikasi"><svg viewBox="0 0 24 24"><path d="M5 17h14l-2-4V8a5 5 0 0 0-10 0v5ZM10 21h4"/></svg><span id="notificationBadge" style="font-size:10px"></span></button>
+    <button id="railSearch" title="Cari pesan" aria-label="Cari pesan"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg></button>
+    <button id="railMonitor" title="Monitor" aria-label="Monitor"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4M5 10h3l2-4 4 8 2-4h3"/></svg></button>
+    <button id="railAccount" title="Akun" aria-label="Akun"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>
+    <button id="btnOut" title="Keluar" aria-label="Keluar"><svg viewBox="0 0 24 24"><path d="M9 21H4V3h5M13 7l5 5-5 5M8 12h13"/></svg></button>
+  </nav>
+  <aside class="number-panel">
+    <div class="section-head"><strong>Nomor</strong></div>
+    <select aria-label="Filter nomor"><option>Semua nomor</option></select>
+    <button id="btnNum">+ Nomor</button>
+    <div id="nums"></div>
+    <div class="search-head">
+      <input id="search" placeholder="cari chat" />
+      <label style="display:flex;align-items:center;margin-top:8px"><input id="mineOnly" type="checkbox" style="width:auto" /> Chat saya</label>
+    </div>
+    <div id="chats"></div>
+  </aside>
+
+  <main id="main">
+    <div id="head" class="card"><span id="title">pilih chat</span>
+      <span id="chips"></span>
+      <button id="takeChat" class="ghost">Ambil chat</button>
+      <button id="exportChat" class="ghost">Ekspor CSV</button>
+      <select id="labelPick" style="width:auto"></select>
+      <button id="headDelete" class="ghost" title="Hapus nomor" aria-label="Hapus nomor"><svg viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg></button>
+    </div>
+    <div id="msgs" class="card"></div>
+    <div class="card">
+    <div class="toolbar">
+      <select id="tplPick" style="width:auto"><option value="">template…</option></select>
+    </div>
+    <div id="composer">
+      <div id="quoteBar" class="hidden" style="width:100%;color:var(--muted)"><span id="quoteText"></span><button id="quoteCancel" class="ghost" type="button">Batal kutip</button></div>
+      <input type="file" id="filePick" accept="image/*,video/*,application/pdf" class="hidden" />
+      <button id="btnFile" title="lampirkan">Lampirkan</button>
+      <textarea id="input" placeholder="tulis pesan"></textarea>
+      <button class="primary" id="btnSend" style="width:auto">Kirim</button>
+    </div>
+    </div>
+    <div class="card hidden" id="panel"></div>
+  </main>
+  <section id="workspace" class="hidden">
+    <header class="card"><h1 id="pageTitle">Chat</h1><button id="pageAction" class="primary">Tambah</button></header>
+    <div id="page"></div>
+  </section>
+</div>
+
+<div id="qrModal" class="hidden overlay">
+  <div class="dialog">
+    <strong>Tautkan perangkat</strong>
+    <p>WhatsApp Business - Perangkat tertaut - Tautkan perangkat - scan QR ini</p>
+    <img id="qrImg" width="300" height="300" alt="QR" />
+    <p id="qrNote">menunggu QR</p>
+    <div class="dialog-actions">
+      <button id="qrRetry">coba lagi</button>
+      <button id="qrClose">tutup</button>
+    </div>
+  </div>
+</div>
+
+<div id="numDialog" class="hidden overlay">
+  <form class="dialog" id="numForm">
+    <h2>Tambah nomor</h2>
+    <label>Nomor WhatsApp<input id="ndPhone" inputmode="numeric" placeholder="628123456789" autocomplete="off" /></label>
+    <label>Label<input id="ndName" placeholder="CS 1" autocomplete="off" /></label>
+    <label id="ndOwnerWrap">Agen<select id="ndOwner"><option value="">belum ditugaskan</option></select></label>
+    <div class="dialog-actions">
+      <button type="button" id="ndCancel">Batal</button>
+      <button type="submit" class="primary">Simpan</button>
+    </div>
+  </form>
+</div>
+
+<div id="cfDialog" class="hidden overlay">
+  <div class="dialog">
+    <h2 id="cfTitle">Anda yakin?</h2>
+    <p id="cfText" style="margin:0;color:var(--muted);font-size:12.5px"></p>
+    <div class="dialog-actions">
+      <button type="button" id="cfNo">Batal</button>
+      <button type="button" id="cfYes" style="background:var(--danger);border-color:var(--danger);color:#fff">Ya, hapus</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const state = { me: null, numberId: null, chatId: null, ws: null, chats: [] };
+state.quoteWaId = null;
+const pages = {};
+let currentPage = 'chats';
+let pageVersion = 0;
+
+function setPage(name) {
+  if (!pages[name]) return;
+  currentPage = name;
+  pageVersion++;
+  document.querySelectorAll('.rail-btn').forEach((b) => b.classList.toggle('active', b.dataset.page === name));
+  $('#pageTitle').textContent = pages[name].title;
+  $('.number-panel').classList.toggle('hidden', name !== 'chats');
+  $('#main').classList.toggle('hidden', name !== 'chats');
+  $('#workspace').classList.toggle('hidden', name === 'chats');
+  $('#page').innerHTML = '';
+  $('#pageAction').textContent = name === 'backups' ? 'Buat backup sekarang' : name === 'numbers' ? '+ Nomor' : 'Tambah';
+  $('#pageAction').onclick = name === 'backups' ? async () => {
+    const button = $('#pageAction');
+    button.disabled = true;
+    try {
+      await call('POST', '/backups');
+      if (currentPage === 'backups') setPage('backups');
+    } catch (err) { notify(err.message); }
+    finally { button.disabled = false; }
+  } : () => name === 'numbers' ? $('#btnNum').onclick() : $('#page').querySelector('form input')?.focus();
+  Promise.resolve(pages[name].render($('#page'))).catch((err) => {
+    if (currentPage === name) $('#page').textContent = err.message;
+  });
+}
+
+async function confirmDelete(text) {
+  return new Promise((resolve) => {
+    $('#cfTitle').textContent = 'Anda yakin?';
+    $('#cfText').textContent = text;
+    $('#cfDialog').classList.remove('hidden');
+    const done = (val) => {
+      $('#cfDialog').classList.add('hidden');
+      $('#cfYes').onclick = null;
+      $('#cfNo').onclick = null;
+      resolve(val);
+    };
+    $('#cfYes').onclick = () => done(true);
+    $('#cfNo').onclick = () => done(false);
+  });
+}
+
+function toast(text) {
+  const t = document.createElement('div');
+  t.textContent = text;
+  t.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 14px;border-radius:8px;font-size:12.5px;z-index:20';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+function notify(text) { toast(String(text)); }
+
+function chatLabel(c) {
+  if (c.name) return c.name;
+  if (c.pn) return c.pn;
+  const id = String(c.jid).split('@')[0];
+  return c.jid.endsWith('@lid') ? 'LID ' + id.slice(-6) : id;
+}
+
+async function call(method, url, body) {
+  const res = await fetch('/api' + url, {
+    method, headers: { 'content-type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.error || res.status);
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
+function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+async function boot() {
+  try { state.me = (await call('GET', '/me')).user; } catch { $('#login').classList.remove('hidden'); return; }
+  $('#app').classList.remove('hidden');
+  await loadNumbers(); await loadTemplates(); await loadLabels();
+  await loadNotificationCount();
+  if (state.me.role !== 'admin') {
+    $('#btnUsers').classList.add('hidden');
+    $('#railBackups').classList.add('hidden');
+    $('#railMonitor').classList.add('hidden');
+  }
+  setPage('chats');
+  state.ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws`);
+  state.ws.onmessage = (e) => {
+    const ev = JSON.parse(e.data);
+    if (ev.type === 'notification' && ev.userId === state.me.id) {
+      loadNotificationCount();
+      if (currentPage === 'notifications') setPage('notifications');
+    }
+    if (ev.type === 'message' && ev.numberId === state.numberId) {
+      if (ev.chatId === state.chatId) append(ev.body, ev.fromMe, ev.mediaPath, ev.waId);
+      loadChats();
+    }
+    if (ev.type === 'number.status') loadNumbers();
+  };
+}
+
+async function loadNumbers() {
+  const rows = await call('GET', '/numbers');
+  $('#nums').innerHTML = rows.map((n) =>
+    `<div class="num ${n.id === state.numberId ? 'active' : ''}" data-id="${n.id}">
+      <span class="dot ${n.status === 'online' ? 'online' : ''}"></span>
+      <div class="num-info"><div>${esc(n.name)}</div><small>${esc(n.phone)} · ${esc(n.status)}</small></div>
+      <button class="row-del ghost" data-del="${n.id}" title="hapus">×</button>
+    </div>`).join('');
+  $('#nums').querySelectorAll('.num').forEach((el) => el.onclick = () => pickNumber(Number(el.dataset.id)));
+  $('#nums').querySelectorAll('.row-del').forEach((b) => b.onclick = async (e) => {
+    e.stopPropagation();
+    if (!await confirmDelete('Hapus nomor ini beserta data dashboard terkait?')) return;
+    await call('DELETE', `/numbers/${b.dataset.del}`);
+    if (state.numberId === Number(b.dataset.del)) {
+      state.numberId = null; state.chatId = null; state.chats = [];
+      $('#chats').innerHTML = ''; $('#msgs').innerHTML = ''; $('#title').textContent = '';
+    }
+    await loadNumbers();
+  });
+}
+
+async function pickNumber(id) {
+  clearQuote();
+  state.numberId = id; state.chatId = null;
+  $('#msgs').innerHTML = ''; $('#title').textContent = 'pilih chat';
+  await loadNumbers(); await loadChats();
+}
+
+async function loadChats() {
+  if (!state.numberId) return;
+  state.chats = await call('GET', `/numbers/${state.numberId}/chats${$('#mineOnly').checked ? '?mine=1' : ''}`);
+  const term = $('#search').value.toLowerCase();
+  $('#chats').innerHTML = state.chats
+    .filter((c) => chatLabel(c).toLowerCase().includes(term))
+    .map((c) => `<div class="chat ${c.id === state.chatId ? 'active' : ''}" data-id="${c.id}">
+      <div class="chat-info">${esc(chatLabel(c))}${c.unread ? ` <span class="chip">${c.unread}</span>` : ''}
+      <div><small>${esc(c.pn ? c.pn.split('@')[0] : c.jid.endsWith('@lid') ? '' : c.jid.split('@')[0])}</small></div></div>
+      <button class="row-del ghost" data-chat="${c.id}" title="hapus chat">×</button></div>`).join('');
+  $('#chats').querySelectorAll('.chat').forEach((el) => el.onclick = () => openChat(Number(el.dataset.id)));
+  $('#chats').querySelectorAll('[data-chat]').forEach((b) => b.onclick = async (e) => {
+    e.stopPropagation();
+    const ok = await confirmDelete('Chat ini dihapus dari dashboard. Tetap ada di HP.');
+    if (!ok) return;
+    try {
+      await call('DELETE', `/chats/${b.dataset.chat}`);
+      if (state.chatId === Number(b.dataset.chat)) {
+        state.chatId = null;
+        $('#msgs').innerHTML = '';
+        $('#title').textContent = '';
+      }
+      await loadChats();
+    } catch (err) { notify(err.message); }
+  });
+}
+
+async function openChat(id) {
+  clearQuote();
+  state.chatId = id;
+  const data = await call('GET', `/chats/${id}/messages`);
+  $('#msgs').innerHTML = '';
+  data.messages.forEach((m) => append(m.body, m.from_me, m.media_path, m.wa_id));
+  $('#chips').innerHTML = data.labels.map((l) => `<span class="chip">${esc(l.name)}</span>`).join(' ');
+  const chat = state.chats.find((c) => c.id === id);
+  $('#title').textContent = chat ? chatLabel(chat) : '';
+  await call('POST', `/chats/${id}/read`);
+  await loadChats();
+}
+
+function append(text, me, mediaPath, waId) {
+  const d = document.createElement('div');
+  d.className = 'b' + (me ? ' me' : '');
+  if (waId) d.dataset.waId = waId;
+  d.oncontextmenu = (e) => {
+    e.preventDefault();
+    document.querySelector('#bubbleMenu')?.remove();
+    const menu = document.createElement('div');
+    menu.id = 'bubbleMenu';
+    menu.className = 'card';
+    menu.style.cssText = `position:fixed;z-index:15;left:${Math.max(0, Math.min(e.clientX, innerWidth - 260))}px;top:${Math.max(0, Math.min(e.clientY, innerHeight - 190))}px;width:250px;display:grid;gap:6px`;
+    const chatId = state.chatId;
+    const button = (label, action, disabled = false) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.disabled = disabled;
+      b.onclick = async () => { menu.remove(); try { await action(); } catch (err) { notify(err.message); } };
+      menu.appendChild(b);
+    };
+    button('Kutip', () => { state.quoteWaId = waId; $('#quoteText').textContent = String(text || 'Media').slice(0, 100); $('#quoteBar').classList.remove('hidden'); $('#input').focus(); }, !waId);
+    const reactions = document.createElement('div'); reactions.style.cssText = 'display:flex;gap:4px';
+    menu.appendChild(reactions);
+    for (const emoji of ['👍', '❤️', '😂', '😮', '🙏']) {
+      button(emoji, () => call('POST', `/chats/${chatId}/react`, { wa_id: waId, emoji }), !waId);
+      reactions.appendChild(menu.lastChild);
+    }
+    button('Tandai belum dibaca', async () => { await call('POST', `/chats/${chatId}/unread`); await loadChats(); });
+    document.body.appendChild(menu);
+  };
+  if (mediaPath) {
+    const img = document.createElement('img');
+    img.src = '/media/' + mediaPath;
+    img.style.maxWidth = '240px';
+    img.style.borderRadius = '6px';
+    img.style.display = 'block';
+    d.appendChild(img);
+  }
+  if (text) {
+    const t = document.createElement('div');
+    t.textContent = text;
+    d.appendChild(t);
+  }
+  $('#msgs').appendChild(d);
+  $('#msgs').scrollTop = $('#msgs').scrollHeight;
+}
+
+async function send() {
+  const text = $('#input').value.trim();
+  if (!text || !state.chatId) return;
+  $('#input').value = '';
+  try { await call('POST', `/chats/${state.chatId}/send`, { text, quote_wa_id: state.quoteWaId || undefined }); clearQuote(); }
+  catch (e) { notify(e.message); $('#input').value = text; }
+}
+
+async function loadTemplates() {
+  const rows = await call('GET', '/templates');
+  $('#tplPick').innerHTML = '<option value="">template…</option>' +
+    rows.map((t) => `<option value="${t.id}">${esc(t.title)}</option>`).join('');
+  $('#tplPick').onchange = (e) => {
+    const t = rows.find((x) => x.id === Number(e.target.value));
+    if (t) $('#input').value = t.body;
+  };
+}
+
+async function loadLabels() {
+  const rows = await call('GET', '/labels');
+  $('#labelPick').innerHTML = '<option value="">label…</option>' +
+    rows.map((l) => `<option value="${l.id}">${esc(l.name)}</option>`).join('');
+  $('#labelPick').onchange = async (e) => {
+    if (!state.chatId || !e.target.value) return;
+    await call('POST', `/chats/${state.chatId}/labels/${e.target.value}`);
+    openChat(state.chatId);
+  };
+}
+
+let qrTimer = null;
+
+let currentQrNumber = null;
+
+async function showQr(numberId) {
+  currentQrNumber = numberId;
+  $('#qrModal').classList.remove('hidden');
+  $('#qrImg').src = '';
+  $('#qrNote').textContent = 'menyiapkan sesi…';
+  clearInterval(qrTimer);
+  const started = Date.now();
+  await call('POST', `/numbers/${numberId}/start`).catch(() => {});
+  const tick = async () => {
+    try {
+      const out = await call('GET', `/numbers/${numberId}/qr`);
+      if (out.status === 'online') {
+        $('#qrImg').src = '';
+        $('#qrNote').textContent = 'tersambung';
+        clearInterval(qrTimer);
+        await loadNumbers();
+        setTimeout(() => $('#qrModal').classList.add('hidden'), 1200);
+        return;
+      }
+      if (out.qr) {
+        $('#qrImg').src = out.qr;
+        $('#qrNote').textContent = 'QR berlaku sekitar 60 detik dan diperbarui otomatis';
+        return;
+      }
+      const waited = Math.round((Date.now() - started) / 1000);
+      $('#qrNote').textContent = waited > 45
+        ? 'belum dapat QR. cek terminal, atau tekan coba lagi'
+        : `menunggu server WhatsApp… ${waited}s`;
+    } catch (err) {
+      $('#qrNote').textContent = err.message;
+    }
+  };
+  tick();
+  qrTimer = setInterval(tick, 4000);
+}
+
+$('#qrClose').onclick = () => { clearInterval(qrTimer); $('#qrModal').classList.add('hidden'); };
+$('#qrRetry').onclick = () => { if (currentQrNumber) showQr(currentQrNumber); };
+
+$('#login').onsubmit = async (e) => {
+  e.preventDefault();
+  try { await call('POST', '/login', { username: $('#u').value, password: $('#p').value }); location.reload(); }
+  catch (err) { $('#lerr').textContent = err.message; }
+};
+
+$('#btnNum').onclick = async () => {
+  $('#numForm').reset();
+  $('#ndOwner').innerHTML = '<option value="">belum ditugaskan</option>';
+  try {
+    const users = await call('GET', '/users');
+    for (const u of users) {
+      const o = document.createElement('option');
+      o.value = u.id;
+      o.textContent = u.username;
+      $('#ndOwner').appendChild(o);
+    }
+    $('#ndOwnerWrap').classList.remove('hidden');
+  } catch {
+    $('#ndOwnerWrap').classList.add('hidden');
+  }
+  $('#numDialog').classList.remove('hidden');
+  $('#ndPhone').focus();
+};
+
+$('#ndCancel').onclick = () => $('#numDialog').classList.add('hidden');
+
+$('#numForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const phone = $('#ndPhone').value.trim();
+  const name = $('#ndName').value.trim();
+  if (!phone || !name) return;
+  $('#numDialog').classList.add('hidden');
+  try {
+    const out = await call('POST', '/numbers', {
+      phone, name,
+      owner_id: $('#ndOwner').value ? Number($('#ndOwner').value) : null,
+    });
+    await loadNumbers();
+    await showQr(out.id);
+    if (currentPage === 'numbers') setPage('numbers');
+  } catch (err) {
+    notify(err.message);
+  }
+};
+
+$('#btnSend').onclick = send;
+function clearQuote() { state.quoteWaId = null; $('#quoteBar').classList.add('hidden'); }
+$('#quoteCancel').onclick = clearQuote;
+document.addEventListener('click', (e) => { const m = $('#bubbleMenu'); if (m && !m.contains(e.target)) m.remove(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#bubbleMenu')?.remove(); });
+$('#btnFile').onclick = () => $('#filePick').click();
+
+$('#filePick').onchange = async () => {
+  const f = $('#filePick').files[0];
+  if (!f || !state.chatId) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      await call('POST', `/chats/${state.chatId}/media`, {
+        base64: reader.result, mime: f.type || 'application/octet-stream', caption: $('#input').value.trim(),
+      });
+      $('#input').value = '';
+    } catch (err) {
+      notify(err.message);
+    }
+  };
+  reader.readAsDataURL(f);
+  $('#filePick').value = '';
+};
+$('#input').onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+$('#search').oninput = loadChats;
+$('#mineOnly').onchange = loadChats;
+$('#exportChat').onclick = () => {
+  if (!state.chatId) return notify('pilih chat dulu');
+  location.href = `/api/chats/${state.chatId}/export`;
+};
+$('#takeChat').onclick = async () => {
+  if (!state.chatId) return notify('pilih chat dulu');
+  try { await call('PATCH', `/chats/${state.chatId}/assign`, { user_id: state.me.id }); await loadChats(); notify('Chat ditugaskan kepada Anda'); } catch (err) { notify(err.message); }
+};
+$('#btnOut').onclick = async () => { await call('POST', '/logout'); location.reload(); };
+
+const pencilIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14Z"/></svg>';
+const trashIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg>';
+$('#railChat').onclick = () => $('#search').focus();
+$('#railNumbers').onclick = () => $('#btnNum').focus();
+$('#railTemplates').onclick = () => $('#tplPick').focus();
+$('#railLabels').onclick = () => $('#labelPick').focus();
+$('#headDelete').onclick = () => {
+  if (!state.numberId) return notify('pilih nomor dulu');
+  $('#nums').querySelector(`.row-del[data-del="${state.numberId}"]`)?.click();
+};
+
+$('#btnRules').onclick = async () => {
+  if (!state.numberId) return notify('pilih nomor dulu');
+  const rows = await call('GET', `/numbers/${state.numberId}/rules`);
+  const panel = $('#panel');
+  panel.classList.remove('hidden');
+  panel.innerHTML = `<div class="panel-head"><strong>Rules auto-reply</strong><button id="deleteSelected" class="ghost danger">Hapus terpilih</button></div>
+    <table><thead><tr><th><input id="selectRules" type="checkbox" aria-label="Pilih semua rules" /></th><th>Kata kunci</th><th>Balasan</th><th>Tipe</th><th>Aksi</th></tr></thead><tbody>
+    ${rows.map((r) => `<tr><td><input type="checkbox" class="rule-check" value="${r.id}" aria-label="Pilih rule ${r.id}" /></td><td>${esc(r.pattern)}</td><td>${esc(r.reply)}</td><td>${esc(r.match_type)}</td><td class="actions"><button class="ghost" data-edit="${r.id}" title="Isi form dari rule ini" aria-label="Isi form dari rule ini">${pencilIcon}</button><button class="ghost danger" data-del="${r.id}" title="Hapus rule" aria-label="Hapus rule">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada rule</td></tr>'}
+    </tbody></table>
+    <div class="rule-form"><input id="rp" placeholder="kata kunci / regex" aria-label="Kata kunci" />
+    <input id="rr" placeholder="balasan" aria-label="Balasan" />
+    <select id="rm"><option value="contains">mengandung</option><option value="exact">persis</option><option value="regex">regex</option></select>
+    <button class="primary" id="radd">Tambah</button></div>`;
+  $('#selectRules').onchange = (e) => panel.querySelectorAll('.rule-check').forEach((el) => { el.checked = e.target.checked; });
+  $('#deleteSelected').onclick = async () => {
+    if (!panel.querySelector('.rule-check:checked')) return;
+    if (!await confirmDelete('Hapus rules yang dipilih?')) return;
+    for (const el of panel.querySelectorAll('.rule-check:checked')) {
+      await call('DELETE', `/rules/${el.value}`);
+    }
+    await $('#btnRules').onclick();
+  };
+  panel.querySelectorAll('[data-edit]').forEach((b) => b.onclick = () => {
+    const r = rows.find((r) => r.id === Number(b.dataset.edit));
+    $('#rp').value = r.pattern;
+    $('#rr').value = r.reply;
+    $('#rm').value = r.match_type;
+    $('#rp').focus();
+  });
+  panel.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
+    if (!await confirmDelete('Hapus rule ini?')) return;
+    await call('DELETE', `/rules/${b.dataset.del}`); $('#btnRules').onclick();
+  });
+  $('#radd').onclick = async () => {
+    await call('POST', `/numbers/${state.numberId}/rules`, {
+      pattern: $('#rp').value, reply: $('#rr').value, match_type: $('#rm').value,
+    });
+    $('#btnRules').onclick();
+  };
+};
+
+$('#btnUsers').onclick = async () => {
+  const panel = $('#panel');
+  panel.classList.remove('hidden');
+  let rows = [];
+  try { rows = await call('GET', '/users'); } catch { panel.innerHTML = '<small>khusus admin</small>'; return; }
+  panel.innerHTML = `<div class="panel-head"><strong>Agen</strong></div>
+    <table><thead><tr><th>Nama</th><th>Peran</th><th>Aksi</th></tr></thead><tbody>
+    ${rows.map((u) => `<tr><td>${esc(u.username)}</td><td>${esc(u.role)}</td><td class="actions"><button class="ghost danger" data-del="${u.id}" title="Hapus agen" aria-label="Hapus agen">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="3" class="empty">belum ada agen</td></tr>'}
+    </tbody></table><div class="agent-form">
+    <input id="nu" placeholder="username" aria-label="Username agen" /><input id="np" type="password" placeholder="password" aria-label="Password agen" />
+    <button class="primary" id="nadd">Tambah</button></div>`;
+  panel.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
+    if (!await confirmDelete('Hapus agen ini?')) return;
+    await call('DELETE', `/users/${b.dataset.del}`); $('#btnUsers').onclick();
+  });
+  $('#nadd').onclick = async () => {
+    await call('POST', '/users', { username: $('#nu').value, password: $('#np').value });
+    $('#btnUsers').onclick();
+  };
+};
+
+pages.chats = { title: 'Chat', render: () => {} };
+
+pages.numbers = { title: 'Nomor', render: async (root) => {
+  const version = pageVersion;
+  const rows = await call('GET', '/numbers');
+  if (version !== pageVersion) return;
+  root.innerHTML = `<div class="card"><table><thead><tr><th>Nama</th><th>Nomor</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows.map((n) => `<tr><td>${esc(n.name)}</td><td>${esc(n.phone)}</td><td>${esc(n.status)}</td><td class="actions"><button data-qr="${n.id}">QR</button><button class="ghost danger" data-number-del="${n.id}" aria-label="Hapus nomor">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada nomor</td></tr>'}</tbody></table></div>`;
+  root.querySelectorAll('[data-qr]').forEach((b) => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.style.marginLeft = '8px';
+    chip.textContent = 'memuat kuota…';
+    b.closest('tr').children[2].appendChild(chip);
+    call('GET', `/numbers/${b.dataset.qr}/quota`).then((q) => {
+      if (version !== pageVersion) return;
+      chip.textContent = `kuota ${q.used}/${q.cap}`;
+      chip.title = `Token tersedia: ${q.remaining}`;
+    }).catch((err) => {
+      if (version !== pageVersion) return;
+      chip.textContent = 'kuota tidak tersedia';
+      chip.title = err.message;
+    });
+    b.onclick = () => showQr(Number(b.dataset.qr));
+  });
+  root.querySelectorAll('[data-number-del]').forEach((b) => b.onclick = async () => {
+    if (!await confirmDelete('Hapus nomor ini beserta data dashboard terkait?')) return;
+    try {
+      await call('DELETE', `/numbers/${b.dataset.numberDel}`);
+      if (state.numberId === Number(b.dataset.numberDel)) {
+        state.numberId = null; state.chatId = null; state.chats = [];
+        $('#chats').innerHTML = ''; $('#msgs').innerHTML = ''; $('#title').textContent = '';
+      }
+      await loadNumbers();
+      if (currentPage === 'numbers') setPage('numbers');
+    } catch (err) { notify(err.message); }
+  });
+} };
+
+pages.rules = { title: 'Rules', render: async (root) => {
+  const version = pageVersion;
+  const numbers = await call('GET', '/numbers');
+  if (version !== pageVersion) return;
+  root.innerHTML = `<div class="card"><label class="page-filter">Nomor<select id="rulesNumber"><option value="">pilih nomor</option>${numbers.map((n) => `<option value="${n.id}">${esc(n.name)} · ${esc(n.phone)}</option>`).join('')}</select></label><div id="rulesTable" class="empty">pilih nomor untuk melihat rules</div></div>`;
+  const select = $('#rulesNumber');
+  const render = async () => {
+    const numberId = Number(select.value);
+    const area = root.querySelector('#rulesTable');
+    if (!numberId) { area.className = 'empty'; area.textContent = 'pilih nomor untuk melihat rules'; return; }
+    const rows = await call('GET', `/numbers/${numberId}/rules`);
+    if (version !== pageVersion || Number(select.value) !== numberId) return;
+    area.className = '';
+    area.innerHTML = `<table><thead><tr><th>Kata kunci</th><th>Balasan</th><th>Tipe</th><th>Aktif</th><th>Aksi</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${esc(r.pattern)}</td><td>${esc(r.reply)}</td><td>${esc(r.match_type)}</td><td><input type="checkbox" data-toggle="${r.id}" ${r.enabled ? 'checked' : ''} aria-label="Aktifkan rule" /></td><td><button class="ghost danger" data-rule-del="${r.id}" aria-label="Hapus rule">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada rule</td></tr>'}</tbody></table><form class="page-form" id="rulesForm"><input id="rp" placeholder="kata kunci" aria-label="Kata kunci" required /><input id="rr" placeholder="balasan" aria-label="Balasan" required /><select id="rm" aria-label="Tipe"><option value="contains">mengandung</option><option value="exact">persis</option><option value="regex">regex</option></select><button id="radd" class="primary">Tambah</button></form>`;
+    area.querySelectorAll('[data-rule-del]').forEach((b) => b.onclick = async () => {
+      if (!await confirmDelete('Hapus rule ini?')) return;
+      try { await call('DELETE', `/rules/${b.dataset.ruleDel}`); await render(); } catch (err) { notify(err.message); }
+    });
+    area.querySelectorAll('[data-toggle]').forEach((b) => b.onchange = async () => {
+      try { await call('PATCH', `/rules/${b.dataset.toggle}`, { enabled: b.checked }); } catch (err) { b.checked = !b.checked; notify(err.message); }
+    });
+    $('#rulesForm').onsubmit = async (e) => {
+      e.preventDefault();
+      try { await call('POST', `/numbers/${numberId}/rules`, { pattern: $('#rp').value.trim(), reply: $('#rr').value.trim(), match_type: $('#rm').value }); await render(); } catch (err) { notify(err.message); }
+    };
+  };
+  select.onchange = () => render().catch((err) => notify(err.message));
+  if (numbers.some((n) => n.id === state.numberId)) { select.value = state.numberId; await render(); }
+} };
+
+pages.templates = { title: 'Template', render: async (root) => {
+  const version = pageVersion;
+  const rows = await call('GET', '/templates');
+  if (version !== pageVersion) return;
+  root.innerHTML = `<div class="card"><table><thead><tr><th>Judul</th><th>Isi</th><th>Aksi</th></tr></thead><tbody>${rows.map((t) => `<tr><td>${esc(t.title)}</td><td>${esc(t.body)}</td><td><button class="ghost danger" data-template-del="${t.id}" aria-label="Hapus template">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="3" class="empty">belum ada template</td></tr>'}</tbody></table><form id="templateForm" class="page-form"><input id="templateTitle" placeholder="judul" aria-label="Judul template" required /><textarea id="templateBody" placeholder="isi" aria-label="Isi template" required></textarea><button class="primary">Tambah</button></form></div>`;
+  root.querySelectorAll('[data-template-del]').forEach((b) => b.onclick = async () => {
+    if (!await confirmDelete('Hapus template ini?')) return;
+    try { await call('DELETE', `/templates/${b.dataset.templateDel}`); await loadTemplates(); if (currentPage === 'templates') setPage('templates'); } catch (err) { notify(err.message); }
+  });
+  $('#templateForm').onsubmit = async (e) => {
+    e.preventDefault();
+    try { await call('POST', '/templates', { title: $('#templateTitle').value.trim(), body: $('#templateBody').value.trim() }); await loadTemplates(); if (currentPage === 'templates') setPage('templates'); } catch (err) { notify(err.message); }
+  };
+} };
+
+pages.labels = { title: 'Label', render: async (root) => {
+  const version = pageVersion;
+  const rows = await call('GET', '/labels');
+  if (version !== pageVersion) return;
+  root.innerHTML = `<div class="card"><table><thead><tr><th>Nama</th><th>Warna</th><th>Aksi</th></tr></thead><tbody>${rows.map((l) => `<tr><td>${esc(l.name)}</td><td>${esc(l.color)}</td><td><button class="ghost danger" data-label-del="${l.id}" aria-label="Hapus label">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="3" class="empty">belum ada label</td></tr>'}</tbody></table><form id="labelsForm" class="page-form"><input id="labelName" placeholder="nama" aria-label="Nama label" required /><input id="labelColor" type="color" value="#7c3aed" aria-label="Warna label" /><button class="primary">Tambah</button></form></div>`;
+  root.querySelectorAll('[data-label-del]').forEach((b) => b.onclick = async () => {
+    if (!await confirmDelete('Hapus label ini?')) return;
+    try { await call('DELETE', `/labels/${b.dataset.labelDel}`); await loadLabels(); if (currentPage === 'labels') setPage('labels'); } catch (err) { notify(err.message); }
+  });
+  $('#labelsForm').onsubmit = async (e) => {
+    e.preventDefault();
+    try { await call('POST', '/labels', { name: $('#labelName').value.trim(), color: $('#labelColor').value }); await loadLabels(); if (currentPage === 'labels') setPage('labels'); } catch (err) { notify(err.message); }
+  };
+} };
+
+pages.agents = { title: 'Agen', render: async (root) => {
+  const version = pageVersion;
+  let rows;
+  try { rows = await call('GET', '/users'); } catch (err) {
+    if (err.status === 403) {
+      $('#btnUsers').classList.add('hidden');
+      $('#railBackups').classList.add('hidden');
+    }
+    throw err;
+  }
+  if (version !== pageVersion) return;
+  root.innerHTML = `<div class="card"><table><thead><tr><th>Nama</th><th>Peran</th><th>Aksi</th></tr></thead><tbody>${rows.map((u) => `<tr><td>${esc(u.username)}</td><td>${esc(u.role)}</td><td><button class="ghost danger" data-agent-del="${u.id}" aria-label="Hapus agen">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="3" class="empty">belum ada agen</td></tr>'}</tbody></table><form id="agentsForm" class="page-form"><input id="nu" placeholder="nama" aria-label="Nama agen" required /><input id="np" type="password" placeholder="password" aria-label="Password agen" required /><button id="nadd" class="primary">Tambah</button></form></div>`;
+  root.querySelectorAll('[data-agent-del]').forEach((b) => b.onclick = async () => {
+    if (!await confirmDelete('Hapus agen ini?')) return;
+    try { await call('DELETE', `/users/${b.dataset.agentDel}`); if (currentPage === 'agents') setPage('agents'); } catch (err) { notify(err.message); }
+  });
+  $('#agentsForm').onsubmit = async (e) => {
+    e.preventDefault();
+    try { await call('POST', '/users', { username: $('#nu').value.trim(), password: $('#np').value }); if (currentPage === 'agents') setPage('agents'); } catch (err) { notify(err.message); }
+  };
+} };
+
+async function loadNotificationCount() {
+  const out = await call('GET', '/notifications/count');
+  $('#notificationBadge').textContent = out.count ? String(out.count) : '';
+}
+
+pages.notifications = { title: 'Notifikasi', render: async (root) => {
+  const version = pageVersion;
+  const rows = await call('GET', '/notifications');
+  if (version !== pageVersion) return;
+  $('#pageAction').textContent = 'Tandai dibaca';
+  $('#pageAction').onclick = async () => { await call('POST', '/notifications/read'); await loadNotificationCount(); if (currentPage === 'notifications') setPage('notifications'); };
+  root.innerHTML = `<div class="card">${rows.map((n) => `<button class="ghost" style="display:block;width:100%;text-align:left" data-notif="${n.id}" data-chat-id="${n.chat_id}" data-number-id="${n.number_id}">${esc(chatLabel(n))} · ${esc(new Date(n.created_at).toLocaleString('id-ID'))}${n.read_at ? '' : ' · baru'}</button>`).join('') || '<p class="empty">belum ada notifikasi</p>'}</div>`;
+  root.querySelectorAll('[data-notif]').forEach((b) => b.onclick = async () => {
+    setPage('chats'); $('#mineOnly').checked = false;
+    await pickNumber(Number(b.dataset.numberId)); await openChat(Number(b.dataset.chatId));
+  });
+} };
+
+pages.search = { title: 'Cari pesan', render: (root) => {
+  const version = pageVersion;
+  root.innerHTML = '<div class="card"><form id="messageSearchForm" class="page-form" style="margin-top:0"><input id="messageSearchTerm" placeholder="Cari isi pesan" minlength="2" required aria-label="Cari isi pesan" /><button class="primary">Cari</button></form><div id="messageSearchResults"></div></div>';
+  $('#pageAction').textContent = 'Cari';
+  $('#pageAction').onclick = () => $('#messageSearchForm').requestSubmit();
+  $('#messageSearchForm').onsubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const rows = await call('GET', '/search?q=' + encodeURIComponent($('#messageSearchTerm').value.trim()));
+      if (version !== pageVersion) return;
+      $('#messageSearchResults').innerHTML = `<table><thead><tr><th>Chat</th><th>Pesan</th><th>Tanggal</th></tr></thead><tbody>${rows.map((m) => `<tr><td><button class="ghost" data-search-chat="${m.chat_id}" data-number="${m.number_id}">${esc(chatLabel(m))}</button></td><td>${esc(m.body.slice(0, 160))}</td><td>${esc(new Date(m.ts).toLocaleString('id-ID'))}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">tidak ada hasil</td></tr>'}</tbody></table>`;
+      $('#messageSearchResults').querySelectorAll('[data-search-chat]').forEach((b) => b.onclick = async () => {
+        setPage('chats'); $('#mineOnly').checked = false; $('#search').value = '';
+        await pickNumber(Number(b.dataset.number)); await openChat(Number(b.dataset.searchChat));
+      });
+    } catch (err) { if (version === pageVersion) $('#messageSearchResults').textContent = err.message; }
+  };
+} };
+
+pages.monitor = { title: 'Monitor', render: async (root) => {
+  const version = pageVersion;
+  let numbers, activity;
+  try { [numbers, activity] = await Promise.all([call('GET', '/monitor'), call('GET', '/activity')]); }
+  catch (err) { if (err.status === 403) $('#railMonitor').classList.add('hidden'); throw err; }
+  if (version !== pageVersion) return;
+  $('#pageAction').textContent = 'Perbarui';
+  $('#pageAction').onclick = () => setPage('monitor');
+  root.innerHTML = `<div class="card"><table><thead><tr><th>Nomor</th><th>Status</th><th>Terakhir aktif</th><th>Percobaan</th></tr></thead><tbody>${numbers.map((n) => `<tr class="${['loggedout', 'error'].includes(n.status) ? 'monitor-problem' : ''}"><td>${esc(n.name)}<div><small>${esc(n.phone)}</small></div></td><td class="${['loggedout', 'error'].includes(n.status) ? 'status-danger' : n.status === 'online' ? 'status-online' : ''}">${esc(n.status)}</td><td>${n.last_seen ? esc(new Date(n.last_seen).toLocaleString('id-ID')) : 'belum terhubung'}</td><td>${Number(n.attempts)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada nomor</td></tr>'}</tbody></table></div><div class="card"><strong>Log aktivitas</strong><table><thead><tr><th>Waktu</th><th>Pengguna</th><th>Nomor</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>${activity.map((a) => `<tr><td>${esc(new Date(a.at).toLocaleString('id-ID'))}</td><td>${esc(a.username || 'sistem')}</td><td>${esc(a.number_name || a.number_id || '')}</td><td>${esc(a.action)}</td><td>${esc(a.detail || '')}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada aktivitas</td></tr>'}</tbody></table></div>`;
+} };
+
+pages.account = { title: 'Akun', render: (root) => {
+  $('#pageAction').textContent = 'Simpan';
+  $('#pageAction').onclick = () => $('#passwordForm').requestSubmit();
+  root.innerHTML = '<form id="passwordForm" class="card" style="display:grid;gap:12px;max-width:420px"><label>Password lama<input id="oldPassword" type="password" autocomplete="current-password" required /></label><label>Password baru<input id="nextPassword" type="password" autocomplete="new-password" minlength="8" required /></label><button class="primary">Simpan</button><p id="passwordResult" role="status" style="margin:0"></p></form>';
+  $('#passwordForm').onsubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await call('POST', '/password', { old: $('#oldPassword').value, next: $('#nextPassword').value });
+      e.target.reset();
+      $('#passwordResult').textContent = 'Password berhasil diubah';
+    } catch (err) { $('#passwordResult').textContent = err.message; }
+  };
+} };
+
+pages.backups = { title: 'Backup', render: async (root) => {
+  const version = pageVersion;
+  let rows;
+  try { rows = await call('GET', '/backups'); } catch (err) {
+    if (err.status === 403) $('#railBackups').classList.add('hidden');
+    throw err;
+  }
+  if (version !== pageVersion) return;
+  const size = (bytes) => bytes >= 1024 * 1024 ? (bytes / (1024 * 1024)).toFixed(1) + ' MB' : (bytes / 1024).toFixed(1) + ' KB';
+  root.innerHTML = `<div class="card"><table><thead><tr><th>Nama file</th><th>Ukuran</th><th>Tanggal</th><th>Aksi</th></tr></thead><tbody>${rows.map((b) => `<tr><td>${esc(b.name)}</td><td>${size(b.size)}</td><td>${esc(new Date(b.at).toLocaleString('id-ID'))}</td><td class="actions"><a href="/api/backups/${encodeURIComponent(b.name)}" download>Unduh</a><button class="ghost danger" data-backup-del="${esc(b.name)}" aria-label="Hapus backup">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada backup</td></tr>'}</tbody></table></div>`;
+  root.querySelectorAll('[data-backup-del]').forEach((b) => b.onclick = async () => {
+    if (!await confirmDelete('Hapus backup ini?')) return;
+    try { await call('DELETE', `/backups/${encodeURIComponent(b.dataset.backupDel)}`); if (currentPage === 'backups') setPage('backups'); } catch (err) { notify(err.message); }
+  });
+} };
+
+const railPages = { railChat: 'chats', railNumbers: 'numbers', btnRules: 'rules', railTemplates: 'templates', railLabels: 'labels', btnUsers: 'agents', railBackups: 'backups', railAccount: 'account', railNotifications: 'notifications' };
+for (const [id, name] of Object.entries(railPages)) {
+  const b = $('#' + id);
+  b.classList.add('rail-btn');
+  b.dataset.page = name;
+  b.onclick = () => { $('#panel').classList.add('hidden'); setPage(name); };
+}
+
+$('#railSearch').classList.add('rail-btn');
+$('#railSearch').dataset.page = 'search';
+$('#railSearch').onclick = () => setPage('search');
+$('#railMonitor').classList.add('rail-btn');
+$('#railMonitor').dataset.page = 'monitor';
+$('#railMonitor').onclick = () => setPage('monitor');
+
+boot();
+</script>
+</body>
+</html>
