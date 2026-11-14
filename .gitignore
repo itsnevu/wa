@@ -13,13 +13,10 @@
 /shot-*.png
 /ui.png
 /test-run.ps1
+# Laporan kerja lokal (bisa memuat nomor telepon asli); jangan di-push.
 /LAPORAN.md
-/LAPORAN-ANTIBAN.md
-/LAPORAN-BACKUP.md
-/LAPORAN-MEDIA.md
-/LAPORAN-PAGES.md
-/LAPORAN-QR.md
-/LAPORAN-UI.md
+/LAPORAN-*.md
+/IDE-UPGRADE.md
 /.codex/
 /.agents/
 /.aws/
