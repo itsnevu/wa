@@ -165,7 +165,20 @@ api.delete('/numbers/:id', requireAdmin, (req, res) => {
 api.get('/numbers/:id/chats', (req, res) => {
   const id = Number(req.params.id);
   if (!canAccessNumber(req.user, id)) return res.status(403).json({ error: 'tidak punya akses' });
-  res.json(req.query.mine === '1' ? q.chatsByAssignee.all(id, req.user.id) : q.chatsByNumber.all(id));
+  const queue = req.query.queue || 'all';
+  const status = req.query.status || '';
+  if (!['all', 'unread', 'mine', 'unassigned'].includes(queue) || !['', 'new', 'in_progress', 'resolved'].includes(status)) return res.status(400).json({ error: 'filter chat tidak valid' });
+  res.json(q.inboxChats.all({ numberId:id, userId:req.user.id, mine:req.query.mine === '1' || queue === 'mine' ? 1 : 0, queue, status }));
+});
+
+api.patch('/chats/:chatId/status', (req, res) => {
+  const chat = q.chatById.get(Number(req.params.chatId));
+  if (!chat) return res.status(404).json({ error:'chat tidak ada' });
+  if (!canAccessNumber(req.user, chat.number_id)) return res.status(403).json({ error:'tidak punya akses' });
+  const status = req.body?.status;
+  if (!['new', 'in_progress', 'resolved'].includes(status)) return res.status(400).json({ error:'status tidak valid' });
+  q.setChatStatus.run(status, chat.id);
+  res.json({ ok:true, status });
 });
 
 api.put('/chats/:chatId/name', (req, res) => {

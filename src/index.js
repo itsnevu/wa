@@ -16,7 +16,12 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 if (config.trustProxy) app.set('trust proxy', 1);
 app.use(express.json({ limit: '24mb' }));
-app.use(express.static(path.join(here, '..', 'public')));
+app.use(express.static(path.join(here, '..', 'public'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.webmanifest')) res.setHeader('Content-Type', 'application/manifest+json');
+    if (path.basename(filePath) === 'sw.js') res.setHeader('Cache-Control', 'no-cache');
+  },
+}));
 app.use('/api', api);
 app.use('/media', requireAuth, express.static(path.join(config.dataDir, 'media'), {
   setHeaders: (res, filePath) => {

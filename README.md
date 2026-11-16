@@ -25,6 +25,43 @@ Copy-Item .env.example .env   # ganti ADMIN_PASS
 npm i
 npm start                     # buka http://localhost:3000
 
+## Memasang sebagai aplikasi
+WA Suite bisa dipasang sebagai aplikasi (PWA). Browser hanya mengaktifkan service worker
+dan tombol pasang di secure context: HTTPS, atau http://localhost di perangkat yang sama.
+
+**Lewat http://IP-LAN (misal http://192.168.1.10:3000) tombol pasang tidak muncul dan
+service worker tidak aktif.** Dashboard tetap bisa dipakai di browser, tetapi tidak bisa
+dipasang dan tidak punya halaman offline. Pakai salah satu opsi HTTPS di bawah.
+
+### Opsi A: Tailscale (disarankan)
+1. Install Tailscale di laptop server dan di HP, login ke tailnet yang sama.
+2. Di `.env` laptop: `HOST=127.0.0.1`, `SECURE_COOKIE=1`, `TRUST_PROXY=1`.
+3. Jalankan `npm start`, lalu `tailscale serve --bg 3000`.
+4. Di HP buka `https://<host>.<tailnet>.ts.net` (nama tampil di output `tailscale serve status`).
+5. Chrome: menu titik tiga - Pasang aplikasi / Tambahkan ke layar utama,
+   atau tombol unduh di rail dashboard.
+
+Sertifikat dari Tailscale sudah dipercaya browser, jadi tidak perlu langkah tambahan.
+
+### Opsi B: Caddy lokal
+Caddyfile:
+
+    wa.local {
+        tls internal
+        reverse_proxy localhost:3000
+    }
+
+Set `HOST=127.0.0.1`, `SECURE_COOKIE=1`, `TRUST_PROXY=1`, jalankan `caddy run`.
+HP harus bisa me-resolve `wa.local` ke IP laptop (DNS router atau entri hosts), dan
+**sertifikat root CA Caddy harus dipasang dan dipercaya di HP** (Android: Setelan -
+Keamanan - Enkripsi & kredensial - Instal sertifikat CA). Root ada di folder data Caddy,
+`pki/authorities/local/root.crt`. Tanpa itu Chrome menolak sertifikat dan PWA tidak aktif.
+
+### Pembaruan
+Service worker menyimpan aset di cache. Saat daftar aset shell berubah, naikkan versi `V`
+di `public/sw.js`; `sw.js` disajikan dengan `Cache-Control: no-cache` agar versi baru
+segera terambil.
+
 ## Alur
 Login admin - + Nomor - masukkan nomor format 62 - salin pairing code -
 di HP: WhatsApp Business - Perangkat tertaut - Tautkan dengan nomor telepon.

@@ -129,6 +129,7 @@ if (!db.prepare("SELECT 1 FROM meta WHERE key = 'contacts_v2_migrated'").get()) 
 }
 if (!cols('numbers').includes('last_seen')) db.exec('ALTER TABLE numbers ADD COLUMN last_seen INTEGER');
 if (!cols('chats').includes('assignee_id')) db.exec('ALTER TABLE chats ADD COLUMN assignee_id INTEGER REFERENCES users(id) ON DELETE SET NULL');
+if (!cols('chats').includes('status')) db.exec("ALTER TABLE chats ADD COLUMN status TEXT NOT NULL DEFAULT 'new' CHECK(status IN ('new','in_progress','resolved'))");
 if (!cols('messages').includes('kind')) db.exec("ALTER TABLE messages ADD COLUMN kind TEXT NOT NULL DEFAULT 'text'");
 if (!cols('messages').includes('media_path')) db.exec('ALTER TABLE messages ADD COLUMN media_path TEXT');
 if (!cols('messages').includes('mime')) db.exec('ALTER TABLE messages ADD COLUMN mime TEXT');
@@ -171,6 +172,17 @@ export const q = {
 
   chatsByNumber: db.prepare('SELECT * FROM chats WHERE number_id = ? ORDER BY last_at DESC LIMIT 200'),
   chatById: db.prepare('SELECT * FROM chats WHERE id = ?'),
+  inboxChats: db.prepare(`SELECT c.*, u.username AS assignee_name,
+    m.body AS last_body, m.kind AS last_kind, m.from_me AS last_from_me
+    FROM chats c LEFT JOIN users u ON u.id = c.assignee_id
+    LEFT JOIN messages m ON m.id = (SELECT id FROM messages WHERE chat_id = c.id ORDER BY ts DESC, id DESC LIMIT 1)
+    WHERE c.number_id = @numberId AND (@mine = 0 OR c.assignee_id = @userId)
+    AND (@queue != 'unread' OR c.unread > 0)
+    AND (@queue != 'unassigned' OR c.assignee_id IS NULL)
+    AND (@status = '' OR c.status = @status)
+    ORDER BY c.last_at DESC, c.id DESC LIMIT 200`),
+  setChatStatus: db.prepare('UPDATE chats SET status = ? WHERE id = ?'),
+  reopenChat: db.prepare("UPDATE chats SET status = 'new' WHERE id = ? AND status = 'resolved'"),
   deleteChat: db.prepare('DELETE FROM chats WHERE id = ?'),
   chatByJid: db.prepare('SELECT * FROM chats WHERE number_id = ? AND jid = ?'),
   insertChat: db.prepare('INSERT INTO chats (number_id, jid, name, last_at) VALUES (?, ?, ?, ?)'),

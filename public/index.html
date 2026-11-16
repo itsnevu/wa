@@ -2,8 +2,14 @@
 <html lang="id">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>WA Suite</title>
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#171717" />
+<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/icon.svg" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
 <style>
 :root { --page:#f6f7f9; --card:#ffffff; --line:#e5e7eb; --line2:#d1d5db; --text:#111827; --muted:#6b7280; --accent:#7c3aed; --accent-h:#6d28d9; --danger:#dc2626; --rail:#0f172a; --r:10px; }
 * { box-sizing:border-box; }
@@ -149,7 +155,7 @@ svg { width:18px; height:18px; }
 thead th { position:sticky; top:0; }
 tbody tr:nth-child(even) { background:#fbfbfc; }
 th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
-@media(max-width:819px) {
+@media(max-width:820px) {
   #app { grid-template-columns:1fr; }
   #head { flex-wrap:wrap; }
   #head .contact-heading { flex:1 0 calc(100% - 8px); }
@@ -161,11 +167,132 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
   #workspace { max-width:860px; }
 }
 </style>
+<style id="safe-area">
+/* Safe area untuk mode standalone (notch dan home indicator). */
+#app { padding-top:env(safe-area-inset-top); padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); }
+.rail { padding-bottom:max(16px, env(safe-area-inset-bottom)); }
+@media (max-width:820px) {
+  #app { grid-template-rows:230px minmax(0,1fr) calc(64px + env(safe-area-inset-bottom)); }
+  .rail { height:calc(64px + env(safe-area-inset-bottom)); padding:8px max(8px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+  .composer-card,#main > .composer-card { bottom:calc(64px + env(safe-area-inset-bottom)); left:max(8px, env(safe-area-inset-left)); right:max(8px, env(safe-area-inset-right)); width:auto; }
+  #phase345SearchResults { top:calc(110px + env(safe-area-inset-top)); }
+}
+</style>
+<style id="mobile-ux">
+.m-only { display:none; }
+@media (max-width:820px) {
+  body { -webkit-tap-highlight-color:transparent; }
+  button { touch-action:manipulation; }
+  html,body { overflow-x:hidden; }
+
+  /* Tata letak: daftar chat atau thread, rail 56px di bawah */
+  #app { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) calc(56px + env(safe-area-inset-bottom)); }
+  .number-panel,#main,#workspace { grid-column:1; grid-row:1; min-height:0; overscroll-behavior-y:contain; }
+  body.m-thread .number-panel { display:none; }
+  body:not(.m-thread) #main { display:none; }
+  .m-typing #app { grid-template-rows:minmax(0,1fr) 0; }
+  .m-typing .rail { display:none; }
+
+  /* Rail bawah: 5 slot 56x56, ikon 22px, label 10px */
+  .rail { position:fixed; left:0; right:0; bottom:0; height:calc(56px + env(safe-area-inset-bottom)); padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); flex-direction:row; justify-content:space-around; align-items:flex-start; gap:0; overflow:hidden; z-index:20; }
+  .rail > button:not(.m-slot) { display:none; }
+  .rail > button.m-slot { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; width:56px; height:56px; min-width:56px; min-height:56px; padding:0; margin:0; border-radius:10px; }
+  .rail > button.m-slot svg { width:22px; height:22px; }
+  .rail > button.m-slot::after { content:attr(data-label); font-size:10px; line-height:12px; white-space:nowrap; }
+  .rail > button.m-slot.active { background:transparent; color:#fff; }
+  #notificationBadge:empty { display:none; }
+  #notificationBadge { position:absolute; top:4px; right:6px; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:var(--danger); color:#fff; font-size:10px !important; line-height:16px; }
+
+  /* Sasaran sentuh */
+  button:has(svg),.row-del { min-width:44px; min-height:44px; }
+
+  /* Panel daftar */
+  .number-panel { display:flex; flex-direction:column; padding:0; border:0; overflow:auto; background:var(--page); padding-top:env(safe-area-inset-top); }
+  #nums { display:flex; gap:6px; overflow-x:auto; padding:8px 12px 0; scrollbar-width:none; flex-shrink:0; }
+  #nums::-webkit-scrollbar { display:none; }
+  .num { flex-shrink:0; min-height:56px; max-width:240px; padding:6px 4px 6px 12px; }
+  #btnNum { margin:8px 12px 0; width:auto; align-self:flex-start; min-height:44px; }
+  .search-head { margin:8px 12px; }
+  #search { height:44px; font-size:16px; }
+  .search-head label { display:flex; align-items:center; min-height:44px; margin-top:0 !important; gap:8px; }
+  #phase345SearchResults { position:static; max-height:none; margin-top:8px; }
+  #phase345SearchResults button { min-height:48px; }
+  #chats { display:block; overflow:visible; border-top:1px solid var(--line); }
+
+  /* Baris chat: 56px, geser kiri untuk aksi */
+  .chat { position:relative; display:block; max-width:none; min-height:56px; padding:0; overflow:hidden; touch-action:pan-y; border-bottom:1px solid var(--line); }
+  .chat .row-del { display:none; }
+  .chat .chat-info { position:relative; z-index:1; display:flex; flex-direction:column; justify-content:center; min-height:56px; padding:6px 44px 6px 16px; background:var(--page); font-size:14px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:transform 180ms ease; }
+  .chat.dragging .chat-info { transition:none; }
+  .chat.active .chat-info { background:var(--card); }
+  .chat .chat-info small { display:block; font-size:12px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; }
+  .chat-info .chip { position:absolute; right:14px; top:50%; transform:translateY(-50%); min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:var(--accent); color:#fff; font-size:11px; line-height:18px; text-align:center; }
+  .chat .m-swipe { position:absolute; top:0; right:0; bottom:0; display:flex; }
+  .m-swipe button { width:72px; min-width:72px; height:100%; border:0; border-radius:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:11px; padding:0; }
+  .m-swipe .m-rename { background:#e5e7eb; color:var(--text); }
+  .m-swipe .m-del { background:var(--danger); color:#fff; }
+
+  /* Thread */
+  #main { padding:0; gap:0; overflow:hidden; display:flex; flex-direction:column; }
+  #main > #head,#main > .composer-card,#msgs { max-width:none; margin:0; }
+  #head { flex-wrap:nowrap; align-items:center; gap:0; min-height:52px; padding:calc(3px + env(safe-area-inset-top)) 4px 3px 0; border:0; border-bottom:1px solid var(--line); border-radius:0; }
+  #head > :not(#mBack):not(.contact-heading):not(#mMore):not(#wsDown) { display:none !important; }
+  #head #mBack,#head #mMore { display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; flex:0 0 44px; padding:0; border:0; background:transparent; }
+  #mMore svg { stroke-width:3; }
+  #head .contact-heading { flex:1 1 auto; min-width:0; }
+  #head #title { font-size:15px; line-height:20px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #head .contact-detail { font-size:11px; line-height:14px; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #msgs { flex:1 1 auto; min-height:0; padding:8px 12px 12px; border:0; border-radius:0; overscroll-behavior-y:contain; }
+  #msgs .b { max-width:84%; padding:9px 12px; border-radius:12px; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+  #msgs .b:has(img),#msgs .b:has(video),#msgs .b:has(audio) { max-width:min(84%,224px); }
+  #msgs .b img,#msgs .b video,#msgs .b audio { max-width:200px; max-height:200px; }
+  #msgs .b.plain img { max-width:120px; }
+
+  /* Composer menempel di bawah thread, tepat di atas rail */
+  .composer-card,#main > .composer-card { position:sticky; bottom:0; left:auto; right:auto; width:auto; z-index:5; padding:8px max(8px, env(safe-area-inset-right)) 8px max(8px, env(safe-area-inset-left)); border:0; border-top:1px solid var(--line); border-radius:0; }
+  .m-typing .composer-card,.m-typing #main > .composer-card { padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+  #mTake { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:44px; margin-bottom:8px; }
+  #mTake.hidden { display:none; }
+  #composer { gap:4px; align-items:flex-end; }
+  #composer #tplPick,#composer #btnFile { width:44px; height:44px; flex:0 0 44px; padding:0; font-size:inherit; }
+  #composer #input { font-size:16px; height:44px; min-height:44px; max-height:88px; padding:10px 12px; border-radius:22px; }
+  #composer #btnSend { width:44px; min-width:44px; height:44px; flex:0 0 44px; padding:0; border-radius:22px; font-size:0; display:inline-flex; align-items:center; justify-content:center; }
+  #composer #btnSend::before { content:''; width:20px; height:20px; background:currentColor; -webkit-mask:var(--m-send) center/contain no-repeat; mask:var(--m-send) center/contain no-repeat; }
+  #quoteBar:not(.hidden) { display:flex; align-items:center; gap:8px; font-size:12px; }
+  #quoteBar #quoteText { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #quoteCancel { min-height:44px; }
+
+  /* Workspace */
+  #workspace { padding:8px; padding-top:calc(8px + env(safe-area-inset-top)); max-width:100%; overflow-x:hidden; }
+  #workspace .card:has(table) { overflow-x:auto; }
+
+  /* Bottom sheet: menu sendiri, menu bubble, menu pilihan, dialog */
+  #mSheetBackdrop { position:fixed; inset:0; background:rgba(17,24,39,.45); z-index:30; }
+  .m-sheet,#bubbleMenu,#choiceMenu { position:fixed !important; left:0 !important; right:0 !important; top:auto !important; bottom:0 !important; width:auto !important; min-width:0 !important; max-width:none !important; max-height:70dvh !important; overflow:auto; overscroll-behavior:contain; z-index:31 !important; display:grid !important; gap:0 !important; margin:0; padding:8px 8px calc(16px + env(safe-area-inset-bottom)) !important; border:0 !important; border-radius:14px 14px 0 0 !important; background:var(--card); box-shadow:0 -8px 24px rgba(17,24,39,.12) !important; }
+  .m-sheet > button,#bubbleMenu > button,#choiceMenu button { display:flex; align-items:center; gap:12px; width:100%; min-height:48px; padding:0 12px; border:0; border-radius:8px; background:transparent; text-align:left; font-size:14px; }
+  .m-sheet > button.danger { color:var(--danger); }
+  #bubbleMenu > div { display:flex !important; flex-wrap:wrap; gap:6px !important; padding:4px 4px 8px; }
+  #bubbleMenu > div button { flex:1 1 auto; min-height:44px; padding:0 12px; }
+  .overlay:not(#mediaPreview) { place-items:end stretch; }
+  .overlay:not(#mediaPreview) .dialog { width:100%; max-width:100%; max-height:90dvh; overflow:auto; border:0; border-radius:14px 14px 0 0; padding:16px 16px calc(16px + env(safe-area-inset-bottom)); }
+  .dialog-actions button { min-height:44px; }
+
+  /* Keadaan kosong */
+  .empty,.chat-empty,.thread-empty { font-size:13px; color:var(--muted); padding:24px; }
+  #msgs:empty::before { font-size:13px; padding:24px; }
+  .chat-empty svg { display:none; }
+  .chat-empty strong { font-weight:400; }
+  .chat-empty small { font-size:13px; }
+}
+:root { --m-send:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E"); }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="/dashboard.css?v=inbox-6" />
 </head>
 <body>
 
 <form id="login" class="hidden">
-  <h3 style="margin:0 0 14px">Masuk</h3>
+  <div class="login-brand">WA Suite</div><h3>Selamat datang kembali</h3><p class="login-intro">Satu workspace untuk semua percakapan bisnis Anda.</p>
   <input id="u" placeholder="username" autocomplete="username" />
   <div style="height:8px"></div>
   <input id="p" type="password" placeholder="password" autocomplete="current-password" />
@@ -175,8 +302,9 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 
 <div id="app" class="hidden">
   <nav class="rail" aria-label="Navigasi">
+    <button id="railDashboard" title="Ringkasan" aria-label="Ringkasan"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></button>
     <div class="logo" title="WA Suite"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3"/><path d="m9 12 2 2 4-4"/></svg></div>
-    <button class="active" id="railChat" title="Chat" aria-label="Chat"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 1-8 8H5l-4 3 2-6a8 8 0 1 1 17-5Z"/></svg></button>
+    <button class="active" id="railChat" title="Chat" aria-label="Chat"><svg viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></button>
     <button id="railNumbers" title="Nomor" aria-label="Nomor"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg></button>
     <button id="btnRules" title="Rules" aria-label="Rules"><svg viewBox="0 0 24 24"><path d="M8 5h12M8 12h12M8 19h12M3 5h.01M3 12h.01M3 19h.01"/></svg></button>
     <button id="railTemplates" title="Template" aria-label="Template"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg></button>
@@ -196,13 +324,17 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
     <div id="nums"></div>
     <div class="search-head">
       <input id="search" placeholder="cari chat" />
-      <label style="display:flex;align-items:center;margin-top:8px"><input id="mineOnly" type="checkbox" style="width:auto" /> Chat saya</label>
+      <label class="hidden"><input id="mineOnly" type="checkbox" /> Chat saya</label>
+      <div class="inbox-filters" role="group" aria-label="Filter antrean"><button data-queue="all" aria-pressed="true">Semua</button><button data-queue="unread" aria-pressed="false">Belum dibaca</button><button data-queue="mine" aria-pressed="false">Milik saya</button><button data-queue="unassigned" aria-pressed="false">Belum ditugaskan</button></div>
+      <div class="inbox-status-filter"><label for="inboxStatus">Status</label><select id="inboxStatus"><option value="">Semua status</option><option value="new">Baru</option><option value="in_progress">Diproses</option><option value="resolved">Selesai</option></select></div>
+      <small id="inboxCount" aria-live="polite"></small>
     </div>
     <div id="chats"></div>
   </aside>
 
   <main id="main">
     <div id="head" class="card"><div class="contact-heading"><span id="title">pilih chat</span></div>
+      <select id="conversationStatus" aria-label="Status percakapan" disabled><option value="new">Baru</option><option value="in_progress">Diproses</option><option value="resolved">Selesai</option></select>
       <span id="chips"></span>
       <span id="wsDown" class="chip hidden" role="status" title="Koneksi realtime terputus, mencoba menyambung ulang">terputus</span>
       <button id="takeChat" class="ghost" title="Ambil chat" aria-label="Ambil chat"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a7 7 0 0 1 14 0v2M19 8v6M16 11h6"/></svg></button>
@@ -217,7 +349,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
       <button id="tplPick" class="ghost" title="Pilih template" aria-label="Pilih template" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M5 3h9l5 5v13H5ZM14 3v6h5M8 13h8M8 17h6"/></svg></button>
       <input type="file" id="filePick" accept="image/*,audio/*,video/*,application/pdf" class="hidden" />
       <button id="btnFile" class="ghost" title="Lampirkan" aria-label="Lampirkan"><svg viewBox="0 0 24 24"><path d="m8 13 7-7a3 3 0 0 1 4 4L9 20a5 5 0 0 1-7-7L12 3M5 16l10-10"/></svg></button>
-      <textarea id="input" placeholder="tulis pesan"></textarea>
+      <textarea id="input" placeholder="tulis pesan" enterkeyhint="send" autocapitalize="sentences"></textarea>
       <button class="primary" id="btnSend" style="width:auto">Kirim</button>
     </div>
     </div>
@@ -284,6 +416,7 @@ function setPage(name) {
   pageVersion++;
   document.querySelectorAll('.rail-btn').forEach((b) => b.classList.toggle('active', b.dataset.page === name));
   $('#pageTitle').textContent = pages[name].title;
+  $('#pageAction').classList.toggle('hidden', ['dashboard', 'account', 'monitor', 'notifications', 'search'].includes(name));
   $('.number-panel').classList.toggle('hidden', name !== 'chats');
   $('#main').classList.toggle('hidden', name !== 'chats');
   $('#workspace').classList.toggle('hidden', name === 'chats');
@@ -375,7 +508,7 @@ async function boot() {
     $('#railBackups').classList.add('hidden');
     $('#railMonitor').classList.add('hidden');
   }
-  setPage('chats');
+  setPage('dashboard');
   openSocket();
 }
 
@@ -414,7 +547,10 @@ function openSocket() {
       if (ev.chatId === state.chatId) append(ev.body, ev.fromMe, ev.mediaPath, ev.kind, ev.waId, ev.ts);
       loadChats();
     }
-    if (ev.type === 'number.status') loadNumbers();
+    if (ev.type === 'number.status') {
+      loadNumbers();
+      if (currentPage === 'dashboard') setPage('dashboard');
+    }
   };
 }
 
@@ -454,16 +590,26 @@ async function loadChats() {
   if (!state.numberId) return;
   const numberId = state.numberId;
   const mine = $('#mineOnly').checked;
+  const queue = mine ? 'mine' : state.inboxQueue === 'mine' ? 'all' : state.inboxQueue || 'all';
+  document.querySelectorAll('[data-queue]').forEach(b => b.setAttribute('aria-pressed',String(b.dataset.queue === queue)));
+  const status = $('#inboxStatus').value;
+  const requestVersion = state.inboxVersion = (state.inboxVersion || 0) + 1;
   if (!$('#chats').querySelector('.chat')) $('#chats').innerHTML = skeleton();
-  const rows = await call('GET', `/numbers/${numberId}/chats${mine ? '?mine=1' : ''}`);
-  if (state.numberId !== numberId || $('#mineOnly').checked !== mine) return;
+  let rows;
+  try { rows = await call('GET', `/numbers/${numberId}/chats?queue=${queue}&status=${status}`); }
+  catch (err) { if (requestVersion === state.inboxVersion) { $('#chats').innerHTML = '<div class="chat-empty">Gagal memuat percakapan.<button id="retryInbox">Coba lagi</button></div>'; $('#retryInbox').onclick = loadChats; toast(err.message); } return; }
+  if (state.numberId !== numberId || requestVersion !== state.inboxVersion) return;
+  state.activeChat = rows.find(c => c.id === state.chatId) || state.activeChat;
   state.chats = rows;
+  $('#inboxCount').textContent = rows.length === 200 ? '200 percakapan terbaru' : `${rows.length} percakapan`;
   const term = $('#search').value.toLowerCase();
   $('#chats').innerHTML = state.chats
     .filter((c) => chatLabel(c).toLowerCase().includes(term))
     .map((c) => `<div class="chat ${c.id === state.chatId ? 'active' : ''}" data-id="${c.id}">
-      <div class="chat-info">${esc(chatListLabel(c))}${c.unread ? ` <span class="chip">${c.unread}</span>` : ''}
-      <div><small>${esc(c.pn ? c.pn.split('@')[0] : c.jid.endsWith('@lid') ? '' : c.jid.split('@')[0])}</small></div></div>
+      <span class="chat-avatar" aria-hidden="true">${esc(chatLabel(c).trim().slice(0,2).toUpperCase())}</span>
+      <div class="chat-info"><div class="chat-topline"><strong>${esc(chatListLabel(c))}</strong><time>${esc(inboxTime(c.last_at))}</time></div>
+      <div class="chat-preview">${esc((c.last_from_me ? 'Anda: ' : '') + (c.last_body || ({ image:'Foto', video:'Video', audio:'Pesan suara', document:'Dokumen', sticker:'Stiker' }[c.last_kind] || 'Belum ada pesan')))}</div>
+      <div class="chat-bottomline"><span class="conversation-tag">${esc(({new:'Baru',in_progress:'Diproses',resolved:'Selesai'})[c.status] || 'Baru')}</span><small>${esc(c.assignee_name || 'Belum ditugaskan')}</small>${c.unread ? `<span class="unread-count">${c.unread}</span>` : ''}</div></div>
       <button class="row-del ghost" data-chat="${c.id}" title="hapus chat" aria-label="Hapus chat">×</button></div>`).join('') || chatEmpty();
   $('#chats').querySelectorAll('.chat').forEach((el) => el.onclick = () => openChat(Number(el.dataset.id)));
   keyboardRows($('#chats'), '.chat');
@@ -487,6 +633,7 @@ async function loadChats() {
 async function openChat(id) {
   clearQuote();
   state.chatId = id;
+  state.activeChat = state.chats.find(c => c.id === id) || null;
   $('#msgs').innerHTML = skeleton();
   const data = await call('GET', `/chats/${id}/messages`);
   if (state.chatId !== id) return;
@@ -828,6 +975,30 @@ new MutationObserver(updateComposer).observe($('#title'), { childList:true, subt
 updateComposer();
 $('#search').oninput = loadChats;
 $('#mineOnly').onchange = loadChats;
+function inboxTime(ts) {
+  if (!ts) return '';
+  const date = new Date(ts);
+  return date.toDateString() === new Date().toDateString() ? date.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) : date.toLocaleDateString('id-ID',{day:'numeric',month:'short'});
+}
+document.querySelectorAll('[data-queue]').forEach(button => button.onclick = () => {
+  state.inboxQueue = button.dataset.queue;
+  $('#mineOnly').checked = state.inboxQueue === 'mine';
+  document.querySelectorAll('[data-queue]').forEach(b => b.setAttribute('aria-pressed',String(b === button)));
+  loadChats();
+});
+$('#inboxStatus').onchange = loadChats;
+$('#conversationStatus').onchange = async () => {
+  const id = state.chatId;
+  const status = $('#conversationStatus').value;
+  $('#conversationStatus').disabled = true;
+  try {
+    await call('PATCH', `/chats/${id}/status`, {status});
+    if (state.activeChat?.id === id) state.activeChat.status = status;
+    await loadChats();
+    toast('Status percakapan diperbarui');
+  } catch (err) { toast(err.message); }
+  finally { updateHeader(); }
+};
 $('#exportChat').onclick = () => {
   if (!state.chatId) return notify('pilih chat dulu');
   location.href = `/api/chats/${state.chatId}/export`;
@@ -910,6 +1081,21 @@ $('#btnUsers').onclick = async () => {
     $('#btnUsers').onclick();
   };
 };
+
+pages.dashboard = { title: 'Ringkasan', render: async (root) => {
+  const version = pageVersion;
+  const numbers = await call('GET', '/numbers');
+  if (currentPage !== 'dashboard' || version !== pageVersion) return;
+  const online = numbers.filter(n => n.status === 'online').length;
+  root.innerHTML = `<div class="dashboard-welcome"><div><span class="eyebrow">WORKSPACE BISNIS ANDA</span><h2>Halo, ${esc(state.me.username)}</h2><p>Semua percakapan, satu tempat. Siap terhubung dengan pelanggan hari ini?</p></div><span class="dashboard-date">${esc(new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }))}</span></div>
+  <div class="stat-grid"><article class="card stat"><span>Total nomor</span><strong>${numbers.length}</strong><small>Nomor di workspace Anda</small></article><article class="card stat"><span>Nomor online</span><strong class="status-online">${online}</strong><small>Terhubung dan siap digunakan</small></article><article class="card stat"><span>Belum online</span><strong>${numbers.length - online}</strong><small>Periksa koneksi nomor Anda</small></article></div>
+  <div class="dashboard-grid"><article class="card dashboard-inbox"><span class="eyebrow">PERCAKAPAN PELANGGAN</span><h2>Bangun koneksi yang lebih dekat.</h2><p>Balas pesan, gunakan template, dan kelola percakapan bersama tim Anda.</p><button class="primary" id="dashboardChat">Buka kotak masuk ↗</button></article><article class="card quick-actions"><h3>Akses cepat</h3><p>Atur workspace sesuai kebutuhan bisnis.</p><button data-go="numbers"><span>Kelola nomor<small>Hubungkan akun WhatsApp bisnis</small></span><span>↗</span></button><button data-go="templates"><span>Template pesan<small>Respons lebih cepat dan konsisten</small></span><span>↗</span></button><button data-go="labels"><span>Label pelanggan<small>Rapikan dan kelompokkan percakapan</small></span><span>↗</span></button></article></div>
+  <article class="card"><div class="panel-head"><div><h3 style="margin:0">Status koneksi</h3><p class="section-description">Pantau kesiapan nomor WhatsApp Anda.</p></div><button id="dashboardRefresh">Perbarui</button></div><table><thead><tr><th>Nama nomor</th><th>WhatsApp</th><th>Status</th></tr></thead><tbody>${numbers.map(n => `<tr><td><strong>${esc(n.name)}</strong></td><td>${esc(n.phone)}</td><td><span class="connection-badge ${n.status === 'online' ? 'connected' : ''}">${esc(n.status)}</span></td></tr>`).join('') || '<tr><td colspan="3"><div class="dashboard-empty"><strong>Mulai dengan nomor pertama Anda</strong><p>Hubungkan WhatsApp untuk mengelola pesan dari workspace ini.</p><button id="dashboardAdd" class="primary">+ Hubungkan nomor</button></div></td></tr>'}</tbody></table></article>`;
+  $('#dashboardChat').onclick = () => setPage('chats');
+  $('#dashboardRefresh').onclick = () => setPage('dashboard');
+  root.querySelectorAll('[data-go]').forEach(b => b.onclick = () => setPage(b.dataset.go));
+  if ($('#dashboardAdd')) $('#dashboardAdd').onclick = () => $('#btnNum').click();
+} };
 
 pages.chats = { title: 'Chat', render: () => {} };
 
@@ -1126,7 +1312,7 @@ pages.backups = { title: 'Backup', render: async (root) => {
   });
 } };
 
-const railPages = { railChat: 'chats', railNumbers: 'numbers', btnRules: 'rules', railTemplates: 'templates', railLabels: 'labels', btnUsers: 'agents', railBackups: 'backups', railAccount: 'account', railNotifications: 'notifications' };
+const railPages = { railDashboard: 'dashboard', railChat: 'chats', railNumbers: 'numbers', btnRules: 'rules', railTemplates: 'templates', railLabels: 'labels', btnUsers: 'agents', railBackups: 'backups', railAccount: 'account', railNotifications: 'notifications' };
 for (const [id, name] of Object.entries(railPages)) {
   const b = $('#' + id);
   b.classList.add('rail-btn');
@@ -1244,7 +1430,9 @@ function keyboardRows(root, selector) {
 }
 
 function updateHeader() {
-  const chat = state.chats.find(c => c.id === state.chatId);
+  const chat = state.chats.find(c => c.id === state.chatId) || (state.activeChat?.id === state.chatId ? state.activeChat : null);
+  $('#conversationStatus').disabled = !chat;
+  $('#conversationStatus').value = chat?.status || 'new';
   const editor = $('#contactNameEditor');
   if (editor && Number(editor.dataset.chatId) !== state.chatId) editor.remove();
   $('#title').textContent = chat ? chatLabel(chat) : 'pilih chat';
@@ -1299,7 +1487,8 @@ function editContactName(chat) {
 }
 
 function chatEmpty() {
-  return '<div class="empty chat-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 1-8 8H5l-4 3 2-6a8 8 0 1 1 17-5Z"/></svg><strong>belum ada chat</strong><small>kirim pesan dari HP untuk memulai</small></div>';
+  if (state.numberId && ($('#inboxStatus').value || $('#mineOnly').checked || (state.inboxQueue && state.inboxQueue !== 'all'))) return '<div class="empty chat-empty"><strong>Tidak ada percakapan yang cocok</strong><small>Coba antrean atau status yang lain.</small></div>';
+  return '<div class="empty chat-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><strong>belum ada chat</strong><small>kirim pesan dari HP untuk memulai</small></div>';
 }
 
 function enhanceTables() {
@@ -1350,5 +1539,6 @@ $('#chats').innerHTML = chatEmpty();
 boot();
 </script>
 <script src="/phase345.js"></script>
+<script src="/pwa.js"></script>
 </body>
 </html>

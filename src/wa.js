@@ -292,7 +292,10 @@ export async function connect(numberId) {
       if (!saved.changes) continue;
       const msgId = saved.lastInsertRowid;
       q.touchChat.run(Date.now(), null, chat.id);
-      if (!fromMe) q.bumpUnread.run(chat.id);
+        if (!fromMe) {
+          q.bumpUnread.run(chat.id);
+          q.reopenChat.run(chat.id);
+        }
       if (!fromMe && chat.assignee_id) {
         q.insertNotification.run(chat.assignee_id, numberId, chat.id, Date.now());
         emit({ type: 'notification', userId: chat.assignee_id, numberId, chatId: chat.id, body });
