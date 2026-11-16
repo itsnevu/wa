@@ -1,0 +1,18 @@
+.module-guide-button { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:7px 10px; white-space:nowrap; font-size:12px; }
+.module-guide-button svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+#workspace > header .module-guide-button { margin-left:auto; }
+.module-guide-button[aria-busy=true] { cursor:progress; opacity:.6; }
+.driver-popover.raqio-guide { max-width:min(340px,calc(100vw - 32px)); padding:20px; border:1px solid var(--line); border-radius:16px; background:var(--card,#fff); color:var(--text,#262626); font-family:inherit; box-shadow:0 16px 56px #00000026; }
+.raqio-guide .driver-popover-title { font-family:inherit; font-size:17px; font-weight:600; line-height:1.4; }
+.raqio-guide .driver-popover-description { margin-top:10px; font-family:inherit; font-size:13px; line-height:1.7; color:var(--muted,#666); }
+.raqio-guide .driver-popover-footer { gap:10px; margin-top:18px; }
+.raqio-guide .driver-popover-progress-text { font-family:inherit; font-size:11px; }
+.raqio-guide .driver-popover-footer button { padding:8px 12px; border:1px solid var(--line,#ddd); border-radius:8px; background:var(--card,#fff); color:var(--text,#262626); font:inherit; font-size:12px; text-shadow:none; }
+.raqio-guide .driver-popover-footer .driver-popover-next-btn { background:var(--accent,#262626); border-color:var(--accent,#262626); color:#fff; }
+.raqio-guide button:focus-visible { outline:2px solid var(--accent,#262626); outline-offset:3px; }
+@media(max-width:820px) {
+ .number-panel .section-head:has([data-module-guide]) { display:flex; margin:12px; }
+ .module-guide-button { min-height:44px; }
+ .raqio-guide .driver-popover-footer button { min-height:44px; }
+ #workspace > header { flex-wrap:wrap; gap:8px; }
+}

@@ -1,6 +1,6 @@
 // Naikkan V setiap kali daftar SHELL berubah.
-const V = 'wa-suite-v6';
-const SHELL = ['/', '/offline.html', '/icon.svg', '/manifest.webmanifest', '/phase345.js', '/pwa.js', '/style-extra.css', '/dashboard.css?v=inbox-6'];
+const V = 'wa-suite-v23';
+const SHELL = ['/', '/offline.html', '/icon.svg', '/icon.png', '/brand-transparent.svg', '/conversation-art.svg', '/icon-192.png', '/icon-maskable.png', '/apple-touch-icon.png', '/manifest.webmanifest', '/phase345.js', '/select-menu.js?v=2', '/action-icons.js', '/form-feedback.js', '/pwa.js', '/style-extra.css', '/dashboard.css?v=layout-18', '/module-guide.js', '/module-guide.css', '/vendor/driver/driver.js.mjs', '/vendor/driver/driver.css', '/ai.js', '/ai.css'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(V).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

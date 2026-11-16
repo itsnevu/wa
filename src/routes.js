@@ -9,6 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
 import * as backup from './backup.js';
+import { aiApi } from './ai/routes.js';
 
 export const api = Router();
 
@@ -37,6 +38,7 @@ api.get('/me', (req, res) => {
 });
 
 api.use(requireAuth);
+api.use(aiApi);
 
 api.get('/monitor', requireAdmin, (_req, res) => {
   res.json(q.allNumbers.all().map((n) => ({ id: n.id, name: n.name, phone: n.phone, status: n.status, last_seen: n.last_seen, attempts: wa.attemptsOf(n.id) })));
@@ -101,7 +103,9 @@ api.delete('/backups/:name', requireAdmin, (req, res) => {
 
 api.get('/numbers', (req, res) => {
   const rows = req.user.role === 'admin' ? q.allNumbers.all() : q.numbersByOwner.all(req.user.id);
-  res.json(rows);
+  const day = limits.aiDay();
+  const stopped = db.prepare("SELECT number_id FROM ai_alerts WHERE day=? AND level='stop'").all(day);
+  res.json(rows.map(n=>({...n,ai_stopped:stopped.some(a=>a.number_id===n.id)})));
 });
 
 api.post('/numbers', requireAdmin, (req, res) => {
@@ -155,6 +159,16 @@ api.post('/numbers/:id/reconnect', requireAdmin, async (req, res) => {
   try { await wa.connect(id); res.json({ ok: true }); } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+api.patch('/numbers/:id/name', requireAuth, (req, res) => {
+  const id = Number(req.params.id);
+  if (!canAccessNumber(req.user, id)) return res.status(403).json({ error: 'tidak punya akses' });
+  if (!q.numberById.get(id)) return res.status(404).json({ error: 'nomor tidak ada' });
+  const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+  if (!name || name.length > 60) return res.status(400).json({ error: 'nama wajib 1–60 karakter' });
+  db.prepare('UPDATE numbers SET name = ? WHERE id = ?').run(name, id);
+  res.json({ ok: true, name });
+});
+
 api.delete('/numbers/:id', requireAdmin, (req, res) => {
   const id = Number(req.params.id);
   wa.disconnect(id, true);
@@ -169,6 +183,15 @@ api.get('/numbers/:id/chats', (req, res) => {
   const status = req.query.status || '';
   if (!['all', 'unread', 'mine', 'unassigned'].includes(queue) || !['', 'new', 'in_progress', 'resolved'].includes(status)) return res.status(400).json({ error: 'filter chat tidak valid' });
   res.json(q.inboxChats.all({ numberId:id, userId:req.user.id, mine:req.query.mine === '1' || queue === 'mine' ? 1 : 0, queue, status }));
+});
+
+api.patch('/chats/:chatId/pin', requireAuth, (req, res) => {
+  const chat = q.chatById.get(Number(req.params.chatId));
+  if (!chat) return res.status(404).json({ error: 'chat tidak ada' });
+  if (!canAccessNumber(req.user, chat.number_id)) return res.status(403).json({ error: 'tidak punya akses' });
+  if (typeof req.body?.pinned !== 'boolean') return res.status(400).json({ error: 'pinned harus boolean' });
+  db.prepare('UPDATE chats SET pinned = ? WHERE id = ?').run(Number(req.body.pinned), chat.id);
+  res.json({ ok: true });
 });
 
 api.patch('/chats/:chatId/status', (req, res) => {
@@ -290,6 +313,10 @@ api.patch('/chats/:chatId/assign', (req, res) => {
   const user = id == null ? null : q.userById.get(id);
   if (id != null && (!user || !canAccessNumber(user, chat.number_id))) return res.status(400).json({ error: 'agen tidak punya akses nomor ini' });
   q.setAssignee.run(id, chat.id);
+  if (id != null) {
+    const minutes = q.aiSettings.get(chat.number_id)?.ai_paused_minutes || 30;
+    q.pauseAiChat.run(Date.now() + minutes * 60000, chat.id);
+  }
   res.json({ ok: true });
 });
 

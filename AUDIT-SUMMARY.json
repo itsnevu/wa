@@ -1,0 +1,48 @@
+{
+  "files": 60,
+  "routes": 69,
+  "tables": 23,
+  "verify": {
+    "pass": 16,
+    "fail": 2,
+    "files": [
+      { "file": "scripts/verify-ai-final.mjs", "exit": 1 },
+      { "file": "scripts/verify-ai1.mjs", "exit": 0 },
+      { "file": "scripts/verify-ai2.mjs", "exit": 0 },
+      { "file": "scripts/verify-ai3.mjs", "exit": 0 },
+      { "file": "scripts/verify-ai4.mjs", "exit": 0 },
+      { "file": "scripts/verify-ai5.mjs", "exit": 0 },
+      { "file": "scripts/verify-ai6.mjs", "exit": 0 },
+      { "file": "scripts/verify-hardening.mjs", "exit": 1 },
+      { "file": "scripts/verify-inbox.mjs", "exit": 0 },
+      { "file": "scripts/verify-module-guide.mjs", "exit": 0 },
+      { "file": "scripts/verify-phase1.mjs", "exit": 0 },
+      { "file": "scripts/verify-phase2.mjs", "exit": 0 },
+      { "file": "scripts/verify-phase3.mjs", "exit": 0 },
+      { "file": "scripts/verify-phase345.mjs", "exit": 0 },
+      { "file": "scripts/verify-phase4.mjs", "exit": 0 },
+      { "file": "scripts/verify-phase5.mjs", "exit": 0 },
+      { "file": "scripts/verify-qr-dialog.mjs", "exit": 0 },
+      { "file": "scripts/verify-wa1.mjs", "exit": 0 }
+    ]
+  },
+  "counts": { "bug": 15, "security": 12, "ops": 9, "debt": 8, "ux": 5 },
+  "deadFiles": [
+    "public/fonts/ (kosong)",
+    "public/icon.svg (hanya di cache sw.js)",
+    "tabel contacts (src/db.js:164)",
+    "dependensi driver.js (duplikat public/vendor/driver)",
+    "ui.png",
+    "err.log",
+    "AGENT_PROMPT.md",
+    "artifacts/"
+  ],
+  "topRisks": [
+    { "judul": "API key AI bocor/SSRF via base_url oleh pemilik nomor non-admin", "file": "src/ai/routes.js", "line": 25, "dampak": "kunci provider dikirim ke server pihak ketiga; akses jaringan internal" },
+    { "judul": "AI tetap membalas setelah eskalasi (guard tidak membaca state)", "file": "src/ai/guard.js", "line": 4, "dampak": "pelanggan yang minta manusia tetap dijawab bot" },
+    { "judul": "Rate per jam memakai hitungan harian", "file": "src/ai/guard.js", "line": 17, "dampak": "AI bisu setelah 6 balasan/hari tanpa notice" },
+    { "judul": "Backup tak terenkripsi berisi kredensial WA dan api_key, restore tak pernah diuji", "file": "src/backup.js", "line": 53, "dampak": "pengambilalihan nomor bila zip bocor; pemulihan tak terjamin" },
+    { "judul": "Reconnect menyerah setelah 6 percobaan tanpa alert", "file": "src/wa.js", "line": 261, "dampak": "nomor offline diam-diam sampai pelanggan komplain" }
+  ],
+  "scores": { "security": 2, "resilience": 2, "usability": 3, "maintainability": 2, "business": 2 }
+}

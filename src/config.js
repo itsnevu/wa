@@ -2,6 +2,13 @@ import 'dotenv/config';
 import path from 'node:path';
 
 export const config = {
+  aiProvider: process.env.AI_PROVIDER === 'ollama' ? 'ollama' : 'venice',
+  aiModel: process.env.AI_MODEL || 'venice-uncensored',
+  aiOllamaUrl: process.env.AI_OLLAMA_URL || 'http://127.0.0.1:11434/v1',
+  aiVeniceUrl: process.env.AI_VENICE_URL || 'https://api.venice.ai/api/v1',
+  aiVeniceKey: process.env.AI_VENICE_KEY || '',
+  aiTimeoutMs: Number(process.env.AI_TIMEOUT_MS || 20000),
+  aiMaxToolSteps: Math.min(3, Math.max(1, Number(process.env.AI_MAX_TOOL_STEPS || 3))),
   port: Number(process.env.PORT || 3000),
   host: process.env.HOST || '127.0.0.1',
   trustProxy: process.env.TRUST_PROXY === '1',

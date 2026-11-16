@@ -7,6 +7,12 @@ try {
   const outsider = await h.agent('outside-agent');
   const number = h.number(agent.id);
   const chat = Number(h.q.insertChat.run(number,'123456789@lid','Pelanggan',Date.now()).lastInsertRowid);
+  assert.equal((await h.request(`/chats/${chat}/name`,'PUT',{name:'Pelanggan Jakarta'},outsider.cookie)).status,403);
+  assert.equal((await h.request(`/chats/${chat}/name`,'PUT',{name:'Pelanggan Jakarta'},agent.cookie)).status,200);
+  assert.equal(h.q.chatById.get(chat).local_name,'Pelanggan Jakarta');
+  assert.equal((await h.json(`/numbers/${number}/chats`,agent.cookie))[0].local_name,'Pelanggan Jakarta');
+  assert.equal((await h.request(`/chats/${chat}/name`,'PUT',{name:''},agent.cookie)).status,200);
+  assert.equal(h.q.chatById.get(chat).local_name,null);
   const patch = (status,cookie=agent.cookie) => h.request(`/chats/${chat}/status`,'PATCH',{status},cookie);
   assert.equal(h.q.chatById.get(chat).status,'new');
   assert.equal((await patch('invalid')).status,400);

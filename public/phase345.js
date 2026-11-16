@@ -269,7 +269,7 @@
   chats.addEventListener('pointerdown', (e) => {
     if (!mobile() || !e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
     const row = e.target.closest('.chat');
-    if (!row || e.target.closest('.m-swipe')) return;
+    if (!row || e.target.closest('.m-swipe,button')) return;
     drag = { row, x: e.clientX, y: e.clientY, base: Number(row.dataset.offset || 0), active: false, id: e.pointerId };
   });
   chats.addEventListener('pointermove', (e) => {

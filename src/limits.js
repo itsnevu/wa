@@ -1,4 +1,4 @@
-import { db } from './db.js';
+import { db, q } from './db.js';
 import { config } from './config.js';
 
 const buckets = new Map();
@@ -94,4 +94,20 @@ export function withinHours() {
   return config.businessStart <= config.businessEnd
     ? h >= config.businessStart && h < config.businessEnd
     : h >= config.businessStart || h < config.businessEnd;
+}
+
+export function aiDay() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+}
+
+export function aiUsage(numberId) {
+  return q.aiUsageGet.get(numberId, aiDay()) || { number_id: numberId, day: aiDay(), tokens: 0, replies: 0 };
+}
+
+export function bumpAi(numberId, tokens) {
+  q.aiUsageBump.run(numberId, aiDay(), Math.max(0, Math.trunc(Number(tokens) || 0)), 1);
+}
+
+export function aiPercent(numberId, budget) {
+  return budget > 0 ? aiUsage(numberId).tokens / budget * 100 : 0;
 }

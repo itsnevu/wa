@@ -13,6 +13,9 @@ import { config } from './config.js';
 import { q } from './db.js';
 import * as limits from './limits.js';
 import { testPatterns } from './regexRunner.js';
+import * as aiGuard from './ai/guard.js';
+import * as notice from './ai/notice.js';
+import { runTurn } from './ai/agent.js';
 
 const logger = P({ level: 'silent' });
 const live = new Map();
@@ -325,9 +328,12 @@ export async function connect(numberId) {
       emit({ type: 'message', numberId, chatId: chat.id, jid, body, fromMe, kind, mediaPath, waId: msg.key.id || null, ts: Date.now() });
 
       // append bisa berisi pesan lama (catch-up); jangan balas otomatis agar tidak membalas riwayat.
+      // Rule dan AI saling eksklusif: rule yang cocok memiliki pesan ini, juga saat cooldown menahan balasannya.
+      let ruleHandled = false;
       if (type === 'notify' && !fromMe && body && !jid.endsWith('@g.us') && limits.withinHours()) {
         const rules = q.rulesByNumber.all(numberId);
         const hit = await matchRule(rules, body);
+        if (hit) ruleHandled = true;
         if (hit && limits.chatAllowed(numberId, jid)) {
           limits.markChat(numberId, jid);
           const jitter = 1500 + Math.random() * 2500;
@@ -335,6 +341,10 @@ export async function connect(numberId) {
             sendText(numberId, jid, hit.reply, null, true).catch((e) => console.error('[autoreply]', e.message));
           }, jitter);
         }
+      }
+      if (!ruleHandled && type === 'notify' && typeof aiGuard !== 'undefined') {
+        try { await handleAiMessage({ numberId, chat: q.chatById.get(chat.id), jid, body, fromMe, waId: msg.key.id }); }
+        catch (err) { console.error('[ai]', numberId, err.message); }
       }
     }
   });
@@ -411,13 +421,14 @@ export function hasQr(numberId) {
   return Boolean(live.get(numberId)?.qr);
 }
 
-export async function sendText(numberId, jid, text, agentId = null, isAuto = false) {
+export async function sendText(numberId, jid, text, agentId = null, isAuto = false, source = 'agent') {
   const s = live.get(numberId);
   if (!s) throw new Error('nomor tidak aktif');
   const number = q.numberById.get(numberId);
   if (number) limits.assertQuota(number);
 
   const chat = getChat(numberId, jid, null);
+  if (source !== 'ai' && agentId) pauseAiForAgent(numberId, chat.id);
   return new Promise((resolve, reject) => {
     enqueue(numberId, async () => {
       try {
@@ -442,12 +453,64 @@ export async function sendText(numberId, jid, text, agentId = null, isAuto = fal
   });
 }
 
+function pauseAiForAgent(numberId, chatId) {
+  const minutes = q.aiSettings?.get(numberId)?.ai_paused_minutes || 30;
+  // Use existing query interface so all sends persist the same pause state.
+  q.pauseAiChat.run(Date.now() + minutes * 60000, chatId);
+}
+
+const aiTurns = new Map();
+export async function handleAiMessage(input) {
+  const previous = aiTurns.get(input.numberId) || Promise.resolve();
+  const task = previous.catch(() => {}).then(() => processAiMessage(input));
+  aiTurns.set(input.numberId, task);
+  try { await task; }
+  finally { if (aiTurns.get(input.numberId) === task) aiTurns.delete(input.numberId); }
+}
+
+async function processAiMessage({numberId, chat, jid, body, fromMe, waId}) {
+  chat = q.chatById.get(chat.id) || chat;
+  const g = aiGuard.check({ numberId, chat, jid, body, fromMe, waId });
+  if (g.action === 'stop') {
+    const text = notice.stopNotice(numberId, chat, g.s);
+    if (text) await sendText(numberId, jid, text, null, true, 'ai');
+    if (g.reason === 'budget') notice.warnOnce(numberId, 'stop');
+    return;
+  }
+  if (g.action === 'reply') {
+    if (g.pct >= g.s.warn_percent) notice.warnOnce(numberId, 'warn');
+    try {
+      const out = await runTurn({ numberId, chat, jid, text: body });
+      limits.bumpAi(numberId, out.tokens);
+      if (waId) q.aiSeenPut.run(waId, Date.now());
+      // An agent may take over while the model request is in flight.
+      const fresh = q.chatById.get(chat.id);
+      const settings = q.aiSettings.get(numberId);
+      if (!fresh || fresh.ai_paused_until > Date.now() || !settings?.enabled) return;
+      if (out.reply) await sendText(numberId, jid, out.reply, null, true, 'ai');
+      q.insertAiLog.run(numberId, chat.id, body, out.reply || null, out.tokens, config.aiModel, null, Date.now());
+      if (out.escalated) {
+        const t = notice.stopNotice(numberId, chat, g.s);
+        if (t && !out.reply) await sendText(numberId, jid, t, null, true, 'ai');
+      }
+      const pct = limits.aiPercent(numberId, g.s.daily_tokens);
+      if (pct >= 100) notice.warnOnce(numberId, 'stop');
+      else if (pct >= g.s.warn_percent) notice.warnOnce(numberId, 'warn');
+    } catch (err) {
+      q.insertAiLog.run(numberId, chat.id, body, null, 0, config.aiModel, err.message, Date.now());
+      const text = notice.stopNotice(numberId, chat, g.s);
+      if (text) await sendText(numberId, jid, text, null, true, 'ai');
+    }
+  }
+}
+
 export async function sendQuote(numberId, jid, text, waId, agentId = null) {
   const s = live.get(numberId);
   if (!s) throw new Error('nomor tidak aktif');
   const number = q.numberById.get(numberId);
   if (number) limits.assertQuota(number);
   const chat = getChat(numberId, jid, null);
+  if (agentId) pauseAiForAgent(numberId, chat.id);
   const original = q.messageByWaId.get(numberId, waId);
   if (!original || original.chat_id !== chat.id) throw new Error('pesan kutipan tidak ditemukan');
   return new Promise((resolve, reject) => {
@@ -500,6 +563,7 @@ export async function sendMedia(numberId, jid, buffer, mime, caption = '', agent
   const number = q.numberById.get(numberId);
   if (number) limits.assertQuota(number);
   const chat = getChat(numberId, jid, null);
+  if (agentId) pauseAiForAgent(numberId, chat.id);
   const isSticker = String(mime) === 'image/webp';
   const ext = extFor(mime, isSticker ? 'sticker' : null);
   const file = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
