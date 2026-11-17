@@ -1,0 +1,35 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-media-browser.mjs
+SHA: ccd67d18de315c62bd45daed1b93172c306d409b
+exit: 1
+file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33
+    throw new Error('Server fixture tidak siap: ' + output);
+          ^
+
+Error: Server fixture tidak siap: node:internal/modules/esm/resolve:271
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\staticBoundary.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\httpSurface.js
+    at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:992:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+    at #resolve (node:internal/modules/esm/loader:683:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+    at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'
+}
+
+Node.js v24.19.0
+
+    at start (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async mediaFixture (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:51:5)
+    at async file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-media-browser.mjs:8:11
+
+Node.js v24.19.0
+

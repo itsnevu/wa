@@ -1,0 +1,282 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-hardening.mjs
+SHA: ccd67d18de315c62bd45daed1b93172c306d409b
+exit: 1
+[1] "image/svg+xml; charset=x" kind=image -> 1-abc.bin
+[1] "text/html/../../evil" kind=doc -> 1-abc.html
+[1] "application/x\\..\\..\\..\\src\\evil" kind=doc -> 1-abc.bin
+[1] "audio/ogg; codecs=opus" kind=audio -> 1-abc.ogg
+[1] "image/jpeg" kind=image -> 1-abc.jpeg
+[1] undefined kind=doc -> 1-abc.bin
+[1] "apa saja" kind=sticker -> 1-abc.webp
+[1] PASS nama file media aman
+[2] a.html status=200 nosniff=nosniff csp=sandbox; default-src 'none'
+[2] b.jpeg status=200 nosniff=nosniff csp=null
+[2] PASS header aman pada /media
+[3] tanpa cookie=401 dengan cookie=200 /api/health tanpa cookie=200
+[3] PASS /media wajib login
+[db] admin dibuat: harness-admin
+[schema] {"version":1,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phasehardening-knnmxt\\migration-backups\\pre-t01-04b0ac59-6a74-41dc-9179-d89c2693e91e.sqlite","backupCount":1,"backupBytes":4096}
+[4] A PATCH /rules/1 -> 403
+[4] A DELETE /rules/1 -> 403
+[4] A POST /chats/2/labels/1 -> 403
+[4] A DELETE /chats/2/labels/1 -> 403
+[4] A PUT /chats/2/name -> 403
+[4] A DELETE /templates/2 -> 403
+[4] A DELETE /templates/1 -> 403
+[4] A POST /templates -> 403
+[4] A DELETE /labels/1 -> 403
+[4] A PUT /chats/1/name -> 200
+[4] chat A name=Nama versi A | chat B (jid sama) name=null
+[4] B POST /chats/2/labels/1 -> 200
+[4] B POST /chats/2/labels/99999 -> 404
+[4] admin PATCH /rules/1 -> 200
+[4] admin PUT /chats/2/name -> 200
+[4] admin DELETE /chats/2/labels/1 -> 200
+[4] admin DELETE /templates/1 -> 200
+[4] admin DELETE /rules/1 -> 200
+[4] admin DELETE /labels/1 -> 200
+[4] FAIL otorisasi per objek: AssertionError [ERR_ASSERTION]: file:///C:/Users/user/wa-suite/artifacts/t03-regression-F0ZnY4/src/schemaMigrations.js:19
+  if(!Object.values(known.legacy).includes(actual) && actual!==known.t01) throw Error('Schema fingerprint mismatch before migration; startup refused');
+                                                                                ^
+
+Error: Schema fingerprint mismatch before migration; startup refused
+    at ensureSchema (file:///C:/Users/user/wa-suite/artifacts/t03-regression-F0ZnY4/src/schemaMigrations.js:19:81)
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-F0ZnY4/src/db.js:13:7
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async file:///C:/Users/user/wa-suite/artifacts/t03-regression-F0ZnY4/[eval1]:1:16
+
+Node.js v24.19.0
+
+
+1 !== 0
+
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-F0ZnY4/scripts/verify-hardening.mjs:242:12
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async step (file:///C:/Users/user/wa-suite/artifacts/t03-regression-F0ZnY4/scripts/verify-hardening.mjs:39:9)
+    at async file:///C:/Users/user/wa-suite/artifacts/t03-regression-F0ZnY4/scripts/verify-hardening.mjs:171:1
+[5] 5.1 pola 190 karakter, teks 1500 (tidak bisa cocok): 262.1 ms, hasil=null
+[5] 5.2 '^(a+)+$' pada 1500a+b: 454.3 ms, hasil=null
+[5] 5.3 setelah timeout, '^halo\s+pag?i$' pada 'halo pagi': 25.9 ms, hasil=3
+[5] 5.4 regex jahat (urutan 1) + contains 'promo' (urutan 2): 458.5 ms, hasil=5 (contains)
+[5] 5.4b regex timeout, exact tidak cocok: 469.2 ms, hasil=null
+[5] 5.x log error tercatat: ["[regex] tetap timeout","[regex] tetap timeout","[regex] tetap timeout"] | markRuleSlow untuk rule: [1,2,4,6]
+[5] 5.6 median matchRule 20 pesan: 0.031 ms (min 0.016, maks 0.216)
+[5] 5.6b panggilan pertama dengan worker baru (spawn dingin): 23.4 ms
+[5] 5.5 POST rule regex "(a+)+" -> 400 {"error":"pola punya quantifier bersarang, misal (a+)+"}
+[5] 5.5 POST rule regex "^halo\\s+pag?i$" -> 200 {"ok":true}
+[5] 5.5 POST rule regex "(" -> 400 {"error":"pola regex tidak valid"}
+[5] 5.7 proses anak: exit=0 signal=null dalam 150 ms | timeout: timeout | hits [1] [3]
+[5] PASS regex di worker
+[6] halaman 1: 500 pesan, pertama="pesan 101", terakhir="pesan 600", hasMore=true
+[6] halaman 2 (before=ts pesan 101): 100 pesan, "pesan 1".."pesan 100", hasMore=false
+[6] skrip inline index.html ter-parse; renderLoadOlder dan loadOlder ada (perilaku DOM belum diuji di browser)
+[6] PASS pesan terbaru pada chat panjang
+[7] FAIL WebSocket menyambung ulang: AssertionError [ERR_ASSERTION]: The input did not match the regular expression /\n {2}setPage\('chats'\);\n {2}openSocket\(\);\n\}/. Input:
+
+'<!doctype html>\n' +
+  '<html lang="id">\n' +
+  '<head>\n' +
+  '<meta charset="utf-8" />\n' +
+  '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />\n' +
+  '<title>WA Suite</title>\n' +
+  '<link rel="manifest" href="/manifest.webmanifest" />\n' +
+  '<meta name="theme-color" content="#171717" />\n' +
+  '<link rel="icon" href="/icon.png" type="image/png" />\n' +
+  '<link rel="apple-touch-icon" href="/apple-touch-icon.png" />\n' +
+  '<meta name="apple-mobile-web-app-capable" content="yes" />\n' +
+  '<meta name="mobile-web-app-capable" content="yes" />\n' +
+  '<style>\n' +
+  ':root { --page:#f6f7f9; --card:#ffffff; --line:#e5e7eb; --line2:#d1d5db; --text:#111827; --muted:#6b7280; --accent:#7c3aed; --accent-h:#6d28d9; --danger:#dc2626; --rail:#0f172a; --r:10px; }\n' +
+  '* { box-sizing:border-box; }\n' +
+  'body { background:var(--page); color:var(--text); font:13.5px/1.5 system-ui; margin:0; }\n' +
+  '.hidden { display:none !important; }\n' +
+  'input,select,textarea { background:var(--card); border:1px solid var(--line2); border-radius:8px; padding:8px 10px; font:inherit; color:inherit; width:100%; min-width:0; }\n' +
+  'input:focus,select:focus,textarea:focus { outline:2px solid var(--accent); outline-offset:-1px; border-color:var(--accent); }\n' +
+  'button { font:inherit; color:inherit; border:1px solid var(--line2); background:var(--card); border-radius:8px; padding:8px 14px; cursor:pointer; transition:background-color 120ms,color 120ms,border-color 120ms; }\n' +
+  'button:hover { background:#eef0f4; }\n' +
+  'button.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }\n' +
+  'button.primary:hover { background:var(--accent-h); }\n' +
+  'button.ghost { border:0; background:transparent; padding:6px; }\n' +
+  'button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }\n' +
+  'svg { width:20px; height:20px; stroke:currentColor; stroke-width:1.6; fill:none; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; vertical-align:middle; }\n' +
+  '#login { width:340px; padding:18px; margin:12vh auto; border:1px solid var(--line); background:var(--card); border-radius:var(--r); }\n' +
+  '#login button { width:100%; }\n' +
+  '#app { display:grid; grid-template-columns:64px 300px 1fr; height:100vh; }\n' +
+  '.rail { background:var(--rail); display:flex; align-items:center; flex-direction:column; gap:8px; padding:16px 10px; }\n' +
+  '.rail button { color:rgba(255,255,255,.55); border:0; background:transparent; padding:10px; }\n' +
+  '.rail button:hover,.rail button.active { color:#fff; background:rgba(255,255,255,.12); }\n' +
+  '.rail .logo { width:32px; height:32px; display:grid; place-items:center; border-radius:8px; background:var(--accent); color:white; margin:0 0 16px; }\n' +
+  '#btnOut { margin-top:auto; }\n' +
+  '.number-panel { background:var(--page); border-right:1px solid var(--line); padding:12px; overflow:auto; min-width:0; }\n' +
+  '.section-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; font-size:13px; }\n' +
+  '#btnNum { width:100%; margin:10px 0; }\n' +
+  '.num { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:8px; border:1px solid transparent; cursor:pointer; }\n' +
+  '.num:hover,.chat:hover { background:#eef0f4; }\n' +
+  '.num.active { background:var(--card); border-color:var(--line); }\n' +
+  '.num-info { flex:1; min-width:0; font-size:13px; }\n' +
+  '.num-info div { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }\n' +
+  '.num-info small,.chat small { font-size:11px; color:var(--muted); }\n' +
+  '.dot { width:7px; height:7px; border-radius:50%; background:var(--line2); flex-shrink:0; }\n' +
+  '.dot.online { background:var(--accent); }\n' +
+  '.row-del { visibility:hidden; color:var(--muted); }\n' +
+  '.num:hover .row-del,.num:focus-within .row-del { visibility:visible; }\n' +
+  '.search-head { margin:20px 0 4px; }\n' +
+  '.chat { padding:8px 10px; border-bottom:1px solid var(--line); cursor:pointer; }\n' +
+  '.chat.active { background:var(--card); }\n' +
+  '#main { padding:16px; overflow:auto; background:var(--page); display:flex; flex-direction:column; gap:12px; min-width:0; }\n' +
+  '.card { background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:14px; }\n' +
+  '#head { display:flex; align-items:center; gap:10px; }\n' +
+  '#title { flex:1; font-weight:600; }\n' +
+  '#labelPick,#tplPick { width:auto; max-width:220px; }\n' +
+  '#headDelete { color:var(--danger); }\n' +
+  '#msgs { flex:1; min-height:240px; overflow:auto; display:flex; flex-direction:column; gap:8px; }\n' +
+  '#msgs:empty::before,#chats:empty::before { color:var(--muted); font-size:12px; }\n' +
+  '#msgs:empty::before { content:"pilih chat"; }\n' +
+  '#chats:empty::before { content:"belum ada chat"; display:block; padding:10px; }\n' +
+  '.b { max-width:68%; align-self:flex-start; background:#f3f4f6; border-radius:8px; padding:7px 10px; white-space:pre-wrap; overflow-wrap:anywhere; }\n' +
+  '.b.me { align-self:flex-end; }\n' +
+  '.b.plain { background:transparent; padding:0; }\n' +
+  '.toolbar { display:flex; align-items:center; gap:8px; margin-bottom:10px; }\n' +
+  '#composer { display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; }\n' +
+  '#quoteBar { flex:0 0 100%; border-bottom:1px solid var(--line); padding-bottom:6px; }\n' +
+  '#input { flex:1; height:64px; resize:vertical; }\n' +
+  '.chip { font-size:11px; padding:2px 7px; border-radius:8px; background:#f3f4f6; }\n' +
+  '#panel { flex-shrink:0; overflow:auto; }\n' +
+  '.panel-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }\n' +
+  'table { border-collapse:collapse; width:100%; text-align:left; }\n' +
+  'th { background:#f9fafb; color:var(--muted); font-size:12px; font-weight:500; }\n' +
+  'th,td { padding:10px 8px; border-bottom:1px solid var(--line); overflow-wrap:anywhere; }\n' +
+  'td input[type=checkbox],th input[type=checkbox] { width:auto; accent-color:var(--accent); }\n' +
+  '.actions { white-space:nowrap; }\n' +
+  '.actions a { color:var(--accent); margin-right:8px; }\n' +
+  '.actions .ghost { color:var(--muted); }\n' +
+  '.actions .danger,.danger { color:var(--danger); }\n' +
+  '.rule-form,.agent-form { display:flex; gap:8px; margin-top:14px; align-items:center; }\n' +
+  '.rule-form input { flex:1; }\n' +
+  '.rule-form select { width:120px; }\n' +
+  '.agent-form input { flex:1; }\n' +
+  '.empty { text-align:center; color:var(--muted); font-size:12px; }\n' +
+  '.err { color:var(--danger); min-height:16px; font-size:12px; }\n' +
+  '.overlay { position:fixed; inset:0; background:rgba(17,24,39,.45); display:grid; place-items:center; z-index:10; }\n' +
+  '.dialog { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; width:340px; max-width:calc(100vw - 24px); display:grid; gap:12px; box-shadow:0 10px 30px rgba(0,0,0,.12); }\n' +
+  '.dialog h2 { margin:0; font-size:15px; }\n' +
+  'label { display:grid; gap:5px; font-size:12px; color:var(--muted); }\n' +
+  '.dialog-actions { display:flex; justify-content:flex-end; gap:8px; }\n' +
+  '#qrModal .dialog { text-align:center; }\n' +
+  '#qrModal p { margin:0; color:var(--muted); font-size:12px; }\n' +
+  '#qrImg { background:white; border:1px solid var(--line); width:300px; max-width:100%; justify-self:center; }\n' +
+  '#qrPlaceholder { display:grid; place-items:center; gap:12px; padding:28px; min-height:140px; color:var(--muted); background:var(--page); border-radius:12px; }\n' +
+  '#qrPlaceholder[hidden],#qrImg[hidden] { display:none; }\n' +
+  '#qrPlaceholder svg { width:40px; height:40px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }\n' +
+  '#qrPlaceholder[data-state=online] { color:#218754; }\n' +
+  '#qrPlaceholder[data-state=error] { color:var(--danger); }\n' +
+  '#workspace { grid-column:2 / 4; padding:16px; max-width:860px; width:100%; overflow:auto; }\n' +
+  '#pageTitle { font-size:16px; margin:0; }\n' +
+  '#workspace > header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }\n' +
+  '#page { display:grid; gap:12px; }\n' +
+  '.chat { display:flex; align-items:center; gap:8px; }\n' +
+  '.chat-info { flex:1; min-width:0; overflow-wrap:anywhere; }\n' +
+  '.chat:hover .row-del,.chat:focus-within .row-del { visibility:visible; }\n' +
+  '.page-form { display:flex; gap:8px; align-items:center; margin-top:14px; flex-wrap:wrap; }\n' +
+  '.page-form input,.page-form textarea { flex:1; min-width:120px; }\n' +
+  '.page-form select { width:130px; }\n' +
+  '.page-form input[type=color] { flex:0 0 54px; min-width:54px; padding:3px; height:38px; }\n' +
+  '.page-form input[type=checkbox] { width:auto; }\n' +
+  '.page-filter { max-width:260px; margin-bottom:12px; }\n' +
+  '.monitor-problem { background:#fef2f2; }\n' +
+  '.status-danger { color:var(--danger); font-weight:600; }\n' +
+  '.status-online { color:var(--accent); font-weight:600; }\n' +
+  '.rail { overflow-y:auto; }\n' +
+  '.rail button { flex-shrink:0; }\n' +
+  '</style>\n' +
+  '<link rel="stylesheet" href="/style-extra.css" />\n' +
+  '<style id="thread-proportions">\n' +
+  'svg { width:18px; height:18px; }\n' +
+  '.chat-empty svg { width:18px; height:18px; }\n' +
+  '#title[role=button] { cursor:pointer; border-radius:4px; }\n' +
+  '#title:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }\n' +
+  '.contact-name-editor { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }\n' +
+  '.contact-name-editor input { flex:1 0 100%; height:36px; }\n' +
+  '#head .contact-name-editor button { width:auto; flex:0 0 auto; height:32px; padding:4px 8px; font-size:12px; }\n' +
+  '#app { grid-template-columns:56px 300px minmax(0,1fr); }\n' +
+  '.rail { gap:4px; padding:16px 8px; }\n' +
+  '.rail button.active { background:rgba(255,255,255,.14); border:0; border-radius:8px; }\n' +
+  '#main > #head,#main > .composer-card,#msgs { max-width:860px; margin:0 auto; width:100%; }\n' +
+  '#msgs { padding:20px 24px; scrollbar-width:thin; scrollbar-color:var(--line2) transparent; }\n' +
+  '::-webkit-scrollbar { width:8px; height:8px; }\n' +
+  '::-webkit-scrollbar-thumb { background:var(--line2); border-radius:999px; }\n' +
+  '#msgs .b { max-width:68%; padding:8px 12px; border-radius:10px; background:#f3f4f6; margin-top:8px; }\n' +
+  '#msgs .b.compact { margin-top:3px; }\n' +
+  '#msgs .b.me { align-self:flex-end; background:#ede9fe; }\n' +
+  '#msgs .b:has(img),#msgs .b:has(video),#msgs .b:has(audio) { max-width:min(68%,284px); }\n' +
+  '#msgs .b.plain { background:transparent; padding:0; }\n' +
+  '#msgs .b img,#msgs .b video,#msgs .b audio { max-width:min(260px,100%); max-height:320px; object-fit:cover; border-radius:8px; display:block; cursor:zoom-in; }\n' +
+  '#msgs .message-time { font-size:10.5px; color:var(--muted); text-align:right; margin-top:3px; }\n' +
+  '#msgs .message-date { position:relative; gap:0; margin:16px 0 8px; }\n' +
+  '.message-date > sp'... 99079 more characters
+
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-F0ZnY4/scripts/verify-hardening.mjs:371:10
+    at step (file:///C:/Users/user/wa-suite/artifacts/t03-regression-F0ZnY4/scripts/verify-hardening.mjs:39:15)
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-F0ZnY4/scripts/verify-hardening.mjs:366:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[8] dua connect bersamaan: socket=1, hasil=[{"status":"pairing"},{"status":"sedang-menyambung"}]
+[8] connect berurutan saat sudah hidup: socket=1, hasil={"status":"sedang-menyambung"}
+[8] nomor 2: gagal pertama="auth gagal", percobaan berikut={"status":"pairing"}, socket total=2
+[8] PASS satu socket per nomor
+[9] klien WebSocket terbuka sebelum shutdown
+[9]   [db] admin dibuat: harness-admin
+[9]   [schema] {"version":1,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-shutdown-0ljY00\\data\\migration-backups\\pre-t01-66ec6b9f-37a3-425f-8af3-6d708172600f.sqlite","backupCount":1,"backupBytes":4096}
+[9]   [http] http://localhost:59874
+[9]   [regex] PERINGATAN: jalankan dengan "npm start" atau node --regexp-interpret-all; rule regex berat bisa timeout bergantian
+[9]   listener SIGTERM=1 SIGINT=1 unhandledRejection=1 uncaughtException=1
+[9]   [unhandled] Error: uji penolakan tak tertangani
+[9]       at Timeout._onTimeout (file:///C:/Users/user/AppData/Local/Temp/wa-shutdown-0ljY00/preload.mjs:3:18)
+[9]       at listOnTimeout (node:internal/timers:635:17)
+[9]       at process.processTimers (node:internal/timers:571:7)
+[9]   masih hidup setelah penolakan, kirim SIGTERM
+[9]   [shutdown] menutup
+[9]   exit code=0 setelah 1 ms
+[9] PASS ketahanan proses dan shutdown
+[10] urutan di src/index.js: reset offline @2270, restoreAll @2313
+[10] status setelah start (sebelumnya online/reconnecting/error): offline, offline, offline
+[10] tersimpan: [{"wa_id":"APP1","body":"halo dari append"},{"wa_id":"NOT1","body":"halo dari notify"}]
+[10] auto-reply dipicu: 1 kali (hanya notify) | log: ["[upsert] type= prepend"]
+[10] PASS status basi direset dan append diproses
+[11] 11.1 contains p5 + regex p1, keduanya cocok -> menang id=5 (regex, p1)
+[11] 11.2 regex p5 + contains p1, keduanya cocok -> menang id=7 (contains, p1)
+[11] 11.2b exact p3 + regex p2 -> menang id=9 (regex)
+[11] 11.3 pola 190, teks cocok 200 karakter: hasil=10, 254 ms, slow=1
+[11] 11.3b 5 pesan pendek berikutnya (worker hangat): 0.2, 0.1, 0.1, 0.1, 0.1 ms
+[11] 11.3c pola 190, teks cocok 1500 karakter, worker baru: hasil=10, 251 ms (tanpa --regexp-interpret-all: null, karena kompilasi native ~1.5 s)
+[11] 11.4 '^(a+)+$' pada 1500a+b: hasil=null, 464 ms, slow=1
+[11] 11.x log: ["[regex] tetap timeout"]
+[11] 11.5 setelah PATCH /rules/11: slow=0; rule baru slow=0
+[11] 11.6 badge "berat" di index.html: 2 tempat (panel rules dan halaman Rules); GET rules menyertakan kolom slow
+[11] PASS prioritas rule dan jalur lambat regex
+[12] 12.1 nomor A (ada nama lokal): name="Pak Budi (lokal)" push_name="Budi Baru" | nomor B (tanpa nama lokal): name="Budi Baru" push_name="Budi Baru"
+[12] 12.2 rule slow, pesan 1/2/3: 195.2 / 0.3 / 0.1 ms | log timeout: []
+[12] 12.3 contains + rule slow, 5 pesan: 0.2 / 0.1 / 0.1 / 0.1 / 0.1 ms, menang id=14 (contains)
+[12] 12.3b pesan 1500 karakter: 0 ms, log [] | pesan pendek berikutnya: 0 ms
+[12] 12.4 pola 190, teks cocok 900 karakter (rule slow=0): hasil=15, 254 ms, slow=1, log []
+[12] 12.4b pola 190, teks cocok 1000 karakter (rule slow=0): hasil=16, 250 ms, slow=1, log []
+[12] 12.4c rule yang sama (kini slow=1), teks cocok 2000 karakter: hasil=16, 0.2 ms
+[12] 12.5 contains p5 + regex p1 -> menang id=18 (regex)
+[12] 12.6 flag proses uji: --regexp-interpret-all | package.json start="node --regexp-interpret-all src/index.js" dev="node --regexp-interpret-all --watch src/index.js"
+[12] kegagalan terkumpul: []
+[12] PASS push name terbaru dan jalur cepat rule slow
+
+RINGKASAN
+PASS 1. nama file media aman
+PASS 2. header aman pada /media
+PASS 3. /media wajib login
+FAIL 4. otorisasi per objek
+PASS 5. regex di worker
+PASS 6. pesan terbaru pada chat panjang
+FAIL 7. WebSocket menyambung ulang
+PASS 8. satu socket per nomor
+PASS 9. ketahanan proses dan shutdown
+PASS 10. status basi direset dan append diproses
+PASS 11. prioritas rule dan jalur lambat regex
+PASS 12. push name terbaru dan jalur cepat rule slow
+

@@ -1,0 +1,93 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-route-inventory-meta.mjs
+SHA: ccd67d18de315c62bd45daed1b93172c306d409b
+exit: 1
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Missing tenant scope: GET \/__unscoped_injected/. Input:
+
+'node:internal/modules/esm/resolve:271\n' +
+  '    throw new ERR_MODULE_NOT_FOUND(\n' +
+  '          ^\n' +
+  '\n' +
+  "Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\\Users\\user\\wa-suite\\artifacts\\t03-regression-mLExxs\\src\\staticBoundary.js' imported from C:\\Users\\user\\wa-suite\\artifacts\\t03-regression-mLExxs\\src\\httpSurface.js\n" +
+  '    at finalizeResolution (node:internal/modules/esm/resolve:271:11)\n' +
+  '    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n' +
+  '    at defaultResolve (node:internal/modules/esm/resolve:992:11)\n' +
+  '    at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)\n' +
+  '    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)\n' +
+  '    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)\n' +
+  '    at #resolve (node:internal/modules/esm/loader:683:17)\n' +
+  '    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)\n' +
+  '    at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)\n' +
+  '    at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {\n' +
+  "  code: 'ERR_MODULE_NOT_FOUND',\n" +
+  "  url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'\n" +
+  '}\n' +
+  '\n' +
+  'Node.js v24.19.0\n' +
+  '✖ tests\\route-inventory.test.mjs (274.073ms)\n' +
+  'ℹ tests 1\n' +
+  'ℹ suites 0\n' +
+  'ℹ pass 0\n' +
+  'ℹ fail 1\n' +
+  'ℹ cancelled 0\n' +
+  'ℹ skipped 0\n' +
+  'ℹ todo 0\n' +
+  'ℹ duration_ms 279.782\n' +
+  '\n' +
+  '✖ failing tests:\n' +
+  '\n' +
+  'test at tests\\route-inventory.test.mjs:1:1\n' +
+  '✖ tests\\route-inventory.test.mjs (274.073ms)\n' +
+  "  'test failed'\n"
+
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-route-inventory-meta.mjs:10:22
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'node:internal/modules/esm/resolve:271\n' +
+    '    throw new ERR_MODULE_NOT_FOUND(\n' +
+    '          ^\n' +
+    '\n' +
+    "Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\\Users\\user\\wa-suite\\artifacts\\t03-regression-mLExxs\\src\\staticBoundary.js' imported from C:\\Users\\user\\wa-suite\\artifacts\\t03-regression-mLExxs\\src\\httpSurface.js\n" +
+    '    at finalizeResolution (node:internal/modules/esm/resolve:271:11)\n' +
+    '    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n' +
+    '    at defaultResolve (node:internal/modules/esm/resolve:992:11)\n' +
+    '    at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)\n' +
+    '    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)\n' +
+    '    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)\n' +
+    '    at #resolve (node:internal/modules/esm/loader:683:17)\n' +
+    '    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)\n' +
+    '    at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)\n' +
+    '    at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {\n' +
+    "  code: 'ERR_MODULE_NOT_FOUND',\n" +
+    "  url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'\n" +
+    '}\n' +
+    '\n' +
+    'Node.js v24.19.0\n' +
+    '✖ tests\\route-inventory.test.mjs (274.073ms)\n' +
+    'ℹ tests 1\n' +
+    'ℹ suites 0\n' +
+    'ℹ pass 0\n' +
+    'ℹ fail 1\n' +
+    'ℹ cancelled 0\n' +
+    'ℹ skipped 0\n' +
+    'ℹ todo 0\n' +
+    'ℹ duration_ms 279.782\n' +
+    '\n' +
+    '✖ failing tests:\n' +
+    '\n' +
+    'test at tests\\route-inventory.test.mjs:1:1\n' +
+    '✖ tests\\route-inventory.test.mjs (274.073ms)\n' +
+    "  'test failed'\n",
+  expected: /Missing tenant scope: GET \/__unscoped_injected/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
+

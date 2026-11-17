@@ -1,5 +1,7 @@
 # ADR 0002: Fondasi tenant di SQLite
 
+Review sebelum T03: konflik `tests/route-inventory.baseline.json` pada PR paralel wajib diselesaikan dengan rebase ke base terbaru, menerapkan pengurangan pending milik kedua PR, lalu regenerasi `npm run inventory:routes`. Jumlah per PR dan himpunan key tidak boleh dinaikkan untuk menyelesaikan konflik. Jalankan gate terhadap base SHA terbaru. Jangan memilih salah satu baseline lama melalui ours/theirs untuk mengembalikan budget yang sudah turun.
+
 Tanggal: 18 November 2026 (Asia/Jakarta). Status: diterima untuk T01; aktivasi multi-tenant belum tersedia.
 
 Review lanjutan sebelum T02: startup kini hanya menerima `schema_migrations.version=1` dengan fingerprint yang cocok. Default `ALLOW_AUTO_MIGRATE=0`; operator menjalankan `ALLOW_AUTO_MIGRATE=1 node scripts/migrate-schema.mjs` pada maintenance window. Versi yang tidak memiliki migrasi terdaftar tetap ditolak meski flag aktif. Legacy bootstrap dibekukan di legacySchema.js dan hanya berjalan dalam transaksi migrasi IMMEDIATE yang sama dengan rebuild tenant dan pencatatan versi. Snapshot dibuat sebelum transaksi; fingerprint diperiksa lagi sesudah lock didapat untuk menolak perubahan saat menunggu. Database T01 lama yang belum mempunyai schema_migrations dapat diadopsi secara eksplisit dengan flag yang sama.

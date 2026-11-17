@@ -1,0 +1,344 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-media.mjs
+SHA: ccd67d18de315c62bd45daed1b93172c306d409b
+exit: 1
+✖ legacy path nomor B ditolak untuk A; tidak boleh ada fallback static (266.772ms)
+✖ penerbitan URL mengecek sesi dan akses chat, termasuk admin (0.0543ms)
+✖ URL valid terikat pengguna, tetap membutuhkan sesi, dan private/no-store (0.0382ms)
+✖ signature, pengguna, expiry, UUID dan query duplikat tidak dapat diubah (0.057ms)
+✖ ownership dicek ulang setelah URL diterbitkan dan registry mismatch ditolak (0.0535ms)
+✖ HTML aktif dipaksa unduh dan disandbox; URL basename tidak dipublikasikan (0.0352ms)
+✖ path traversal mentah, encoded, backslash dan path Windows ditolak (0.0313ms)
+✖ registry backfill stabil dan tidak menimpa ownership; pesan baru ikut terdaftar (0.0329ms)
+✖ file hilang ditolak tanpa membocorkan path filesystem (0.0496ms)
+✖ symlink di media menuju luar direktori tidak bisa diunduh (0.0586ms)
+✖ flag nonaktif menutup akses media, tidak menghidupkan static lama (0.0294ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 0
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 279.3788
+
+✖ failing tests:
+
+test at scripts\verify-media.mjs:18:1
+✖ legacy path nomor B ditolak untuk A; tidak boleh ada fallback static (266.772ms)
+  Error: Server fixture tidak siap: node:internal/modules/esm/resolve:271
+      throw new ERR_MODULE_NOT_FOUND(
+            ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\staticBoundary.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\httpSurface.js
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+      at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'
+  }
+  
+  Node.js v24.19.0
+  
+      at start (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async mediaFixture (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:51:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-media.mjs:10:26)
+      at async TestHook.run (node:internal/test_runner/test:1389:7)
+
+test at scripts\verify-media.mjs:21:1
+✖ penerbitan URL mengecek sesi dan akses chat, termasuk admin (0.0543ms)
+  Error: Server fixture tidak siap: node:internal/modules/esm/resolve:271
+      throw new ERR_MODULE_NOT_FOUND(
+            ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\staticBoundary.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\httpSurface.js
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+      at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'
+  }
+  
+  Node.js v24.19.0
+  
+      at start (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async mediaFixture (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:51:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-media.mjs:10:26)
+      at async TestHook.run (node:internal/test_runner/test:1389:7)
+
+test at scripts\verify-media.mjs:27:1
+✖ URL valid terikat pengguna, tetap membutuhkan sesi, dan private/no-store (0.0382ms)
+  Error: Server fixture tidak siap: node:internal/modules/esm/resolve:271
+      throw new ERR_MODULE_NOT_FOUND(
+            ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\staticBoundary.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\httpSurface.js
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+      at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'
+  }
+  
+  Node.js v24.19.0
+  
+      at start (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async mediaFixture (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:51:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-media.mjs:10:26)
+      at async TestHook.run (node:internal/test_runner/test:1389:7)
+
+test at scripts\verify-media.mjs:40:1
+✖ signature, pengguna, expiry, UUID dan query duplikat tidak dapat diubah (0.057ms)
+  Error: Server fixture tidak siap: node:internal/modules/esm/resolve:271
+      throw new ERR_MODULE_NOT_FOUND(
+            ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\staticBoundary.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\httpSurface.js
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+      at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'
+  }
+  
+  Node.js v24.19.0
+  
+      at start (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async mediaFixture (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:51:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-media.mjs:10:26)
+      at async TestHook.run (node:internal/test_runner/test:1389:7)
+
+test at scripts\verify-media.mjs:58:1
+✖ ownership dicek ulang setelah URL diterbitkan dan registry mismatch ditolak (0.0535ms)
+  Error: Server fixture tidak siap: node:internal/modules/esm/resolve:271
+      throw new ERR_MODULE_NOT_FOUND(
+            ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\staticBoundary.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\httpSurface.js
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+      at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'
+  }
+  
+  Node.js v24.19.0
+  
+      at start (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async mediaFixture (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:51:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-media.mjs:10:26)
+      at async TestHook.run (node:internal/test_runner/test:1389:7)
+
+test at scripts\verify-media.mjs:69:1
+✖ HTML aktif dipaksa unduh dan disandbox; URL basename tidak dipublikasikan (0.0352ms)
+  Error: Server fixture tidak siap: node:internal/modules/esm/resolve:271
+      throw new ERR_MODULE_NOT_FOUND(
+            ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\staticBoundary.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\httpSurface.js
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+      at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'
+  }
+  
+  Node.js v24.19.0
+  
+      at start (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async mediaFixture (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:51:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-media.mjs:10:26)
+      at async TestHook.run (node:internal/test_runner/test:1389:7)
+
+test at scripts\verify-media.mjs:79:1
+✖ path traversal mentah, encoded, backslash dan path Windows ditolak (0.0313ms)
+  Error: Server fixture tidak siap: node:internal/modules/esm/resolve:271
+      throw new ERR_MODULE_NOT_FOUND(
+            ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\staticBoundary.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\httpSurface.js
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+      at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'
+  }
+  
+  Node.js v24.19.0
+  
+      at start (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async mediaFixture (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:51:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-media.mjs:10:26)
+      at async TestHook.run (node:internal/test_runner/test:1389:7)
+
+test at scripts\verify-media.mjs:89:1
+✖ registry backfill stabil dan tidak menimpa ownership; pesan baru ikut terdaftar (0.0329ms)
+  Error: Server fixture tidak siap: node:internal/modules/esm/resolve:271
+      throw new ERR_MODULE_NOT_FOUND(
+            ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\staticBoundary.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\httpSurface.js
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+      at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'
+  }
+  
+  Node.js v24.19.0
+  
+      at start (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async mediaFixture (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:51:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-media.mjs:10:26)
+      at async TestHook.run (node:internal/test_runner/test:1389:7)
+
+test at scripts\verify-media.mjs:98:1
+✖ file hilang ditolak tanpa membocorkan path filesystem (0.0496ms)
+  Error: Server fixture tidak siap: node:internal/modules/esm/resolve:271
+      throw new ERR_MODULE_NOT_FOUND(
+            ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\staticBoundary.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\httpSurface.js
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+      at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'
+  }
+  
+  Node.js v24.19.0
+  
+      at start (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async mediaFixture (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:51:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-media.mjs:10:26)
+      at async TestHook.run (node:internal/test_runner/test:1389:7)
+
+test at scripts\verify-media.mjs:104:1
+✖ symlink di media menuju luar direktori tidak bisa diunduh (0.0586ms)
+  Error: Server fixture tidak siap: node:internal/modules/esm/resolve:271
+      throw new ERR_MODULE_NOT_FOUND(
+            ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\staticBoundary.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\httpSurface.js
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+      at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'
+  }
+  
+  Node.js v24.19.0
+  
+      at start (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async mediaFixture (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:51:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-media.mjs:10:26)
+      at async TestHook.run (node:internal/test_runner/test:1389:7)
+
+test at scripts\verify-media.mjs:111:1
+✖ flag nonaktif menutup akses media, tidak menghidupkan static lama (0.0294ms)
+  Error: Server fixture tidak siap: node:internal/modules/esm/resolve:271
+      throw new ERR_MODULE_NOT_FOUND(
+            ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\staticBoundary.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-mLExxs\src\httpSurface.js
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+      at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/src/staticBoundary.js'
+  }
+  
+  Node.js v24.19.0
+  
+      at start (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:33:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async mediaFixture (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/media-fixture.mjs:51:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-regression-mLExxs/scripts/verify-media.mjs:10:26)
+      at async TestHook.run (node:internal/test_runner/test:1389:7)
+

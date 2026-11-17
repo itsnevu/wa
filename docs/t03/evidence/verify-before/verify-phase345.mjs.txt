@@ -1,0 +1,35 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-phase345.mjs
+SHA: ccd67d18de315c62bd45daed1b93172c306d409b
+exit: 0
+$ node --check src/db.js
+exit 0
+$ node --check src/wa.js
+exit 0
+$ node --check src/routes.js
+exit 0
+$ node --check src/config.js
+exit 0
+$ node --check src/index.js
+exit 0
+$ node --check public/phase345.js
+exit 0
+$ node --check scripts/phase-harness.mjs
+exit 0
+$ node --check scripts/verify-phase345.mjs
+exit 0
+Inline UI syntax: OK; phase345.js included once
+[db] admin dibuat: harness-admin
+[schema] {"version":1,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase345-RoxnnZ\\migration-backups\\pre-t01-1821d899-3d52-4e8e-b730-436046cac584.sqlite","backupCount":1,"backupBytes":4096}
+1. PASS assign + incoming (including duplicate): notifications A=1, B=0; event A=1
+2. PASS mine: A=[assigned chat], B=[] with temporary fixture ownership; B without access=403
+3. PASS search: 2 characters=1 result; 1 character=[]
+4. PASS search access: A sees only A number; B sees only B number; admin sees both
+5. PASS CSV: header, escaped quotes, comma, embedded newline, download headers; unauthorized=403
+[retensi] 1 pesan dihapus
+6. PASS production retention callback: disabled=preserved; RETENTION_DAYS=2 deletes 3-day-old message, keeps recent
+Additional: mark notifications read=PASS; temporary database=PASS; real WhatsApp not connected
+Cleanup: temporary database closed and removed
+phase345: PASS
+[in] 123456789@lid | fromMe= false | conversation
+[in] 123456789@lid | fromMe= false | conversation
+

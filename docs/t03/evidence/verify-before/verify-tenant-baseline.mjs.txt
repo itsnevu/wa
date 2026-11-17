@@ -1,0 +1,22 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-tenant-baseline.mjs
+SHA: ccd67d18de315c62bd45daed1b93172c306d409b
+exit: 1
+node:fs:622
+  return binding.open(
+                 ^
+
+Error: EISDIR: illegal operation on a directory, open 'C:\Users\user\wa-suite\artifacts\t03-regression-F0ZnY4\artifacts\t01-baseline-qkFuSa'
+    at Object.openSync (node:fs:622:18)
+    at Object.writeFileSync (node:fs:2497:35)
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-F0ZnY4/scripts/verify-tenant-baseline.mjs:14:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  errno: -4068,
+  code: 'EISDIR',
+  syscall: 'open',
+  path: 'C:\\Users\\user\\wa-suite\\artifacts\\t03-regression-F0ZnY4\\artifacts\\t01-baseline-qkFuSa'
+}
+
+Node.js v24.19.0
+

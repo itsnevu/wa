@@ -223,6 +223,7 @@ await step(4, 'otorisasi per objek', async () => {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'wa-contacts-mig-'));
   try {
     const seed = `import Database from 'better-sqlite3';
+import {bootstrapLegacy} from './src/legacySchema.js';
 const d = new Database(process.env.DATA_DIR + '/app.db');
 d.exec("CREATE TABLE numbers (id INTEGER PRIMARY KEY AUTOINCREMENT, phone TEXT NOT NULL UNIQUE, name TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'offline', owner_id INTEGER, created_at INTEGER NOT NULL)");
 d.exec("CREATE TABLE chats (id INTEGER PRIMARY KEY AUTOINCREMENT, number_id INTEGER NOT NULL, jid TEXT NOT NULL, name TEXT, last_at INTEGER NOT NULL DEFAULT 0, unread INTEGER NOT NULL DEFAULT 0, UNIQUE (number_id, jid))");
@@ -230,6 +231,7 @@ d.exec("CREATE TABLE contacts (jid TEXT PRIMARY KEY, name TEXT NOT NULL, updated
 d.exec("INSERT INTO numbers (phone,name,created_at) VALUES ('1','a',0),('2','b',0)");
 d.exec("INSERT INTO chats (number_id,jid) VALUES (1,'x@s'),(2,'x@s'),(1,'y@s')");
 d.exec("INSERT INTO contacts VALUES ('x@s','Lama X',5),('z@s','Tanpa chat',6)");
+bootstrapLegacy(d,{adminUser:'fixture-admin',adminPass:'fixture-password-123'});
 d.close();`;
     const check = `const { db } = await import('./src/db.js');
 console.log(JSON.stringify(db.prepare('SELECT number_id, jid, name FROM contacts_v2 ORDER BY number_id, jid').all()));

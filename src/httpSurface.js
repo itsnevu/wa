@@ -6,14 +6,17 @@ import {WebSocketServer} from 'ws';
 import {config} from './config.js';
 import {api} from './routes.js';
 import {mediaRouter} from './media.js';
+import {assertStaticBoundary} from './staticBoundary.js';
 
 // Shared construction for production and inventory; does not listen or restore WA.
 export function createHttpSurface() {
+  const staticRoot=path.join(path.dirname(fileURLToPath(import.meta.url)),'..','public');
+  assertStaticBoundary(staticRoot,config.dataDir);
   const app=express();
   if(config.trustProxy)app.set('trust proxy',1);
   const json=express.json({limit:'24mb'});
   app.use(json);
-  app.use(express.static(path.join(path.dirname(fileURLToPath(import.meta.url)),'..','public'),{
+  app.use(express.static(staticRoot,{
     setHeaders:(res,filePath)=>{
       if(filePath.endsWith('.webmanifest'))res.setHeader('Content-Type','application/manifest+json');
       if(path.basename(filePath)==='sw.js')res.setHeader('Cache-Control','no-cache');

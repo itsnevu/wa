@@ -5,13 +5,14 @@ import Database from 'better-sqlite3';
 
 const sha = '5c033e42231fa7dff1e81bd2b39ba91c3e17ae06';
 const root = process.cwd();
+const repository=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();
 const artifacts = path.join(root,'artifacts'); fs.mkdirSync(artifacts,{recursive:true});
 const dir = fs.mkdtempSync(path.join(artifacts,'t01-baseline-'));
 try {
-  const files = execFileSync('git',['ls-tree','-r','--name-only',sha,'src','package.json'],{encoding:'utf8'}).trim().split('\n');
+  const files = execFileSync('git',['-C',repository,'ls-tree','-r','--name-only',sha,'src','package.json'],{encoding:'utf8'}).trim().split('\n');
   for (const file of files) {
     const target = path.join(dir,file); fs.mkdirSync(path.dirname(target),{recursive:true});
-    fs.writeFileSync(target,execFileSync('git',['show',`${sha}:${file}`]));
+    fs.writeFileSync(target,execFileSync('git',['-C',repository,'show',`${sha}:${file}`]));
   }
   fs.mkdirSync(path.join(dir,'tests')); fs.mkdirSync(path.join(dir,'data'));
   for(const file of ['tenant-t01.test.mjs','tenant-fixture.mjs']) fs.copyFileSync(path.join(root,'tests',file),path.join(dir,'tests',file));

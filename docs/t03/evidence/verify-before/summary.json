@@ -1,0 +1,141 @@
+{
+  "sha": "ccd67d18de315c62bd45daed1b93172c306d409b",
+  "phase": "before",
+  "results": [
+    {
+      "file": "verify-ai-final.mjs",
+      "exit": 1,
+      "error": null
+    },
+    {
+      "file": "verify-ai-profile.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-ai-rules.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-ai-security.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-ai1.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-ai2.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-ai3.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-ai4.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-ai5.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-ai6.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-hardening.mjs",
+      "exit": 1,
+      "error": null
+    },
+    {
+      "file": "verify-inbox.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-media-browser.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-media-edge.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-media-paths.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-media.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-module-guide.mjs",
+      "exit": 1,
+      "error": null
+    },
+    {
+      "file": "verify-phase1.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-phase2.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-phase3.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-phase345.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-phase4.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-phase5.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-qr-dialog.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-route-inventory-meta.mjs",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-tenant-baseline.mjs",
+      "exit": 1,
+      "error": null
+    },
+    {
+      "file": "verify-wa1.mjs",
+      "exit": 0,
+      "error": null
+    }
+  ]
+}

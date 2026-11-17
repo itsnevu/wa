@@ -1,0 +1,21 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-phase4.mjs
+SHA: ccd67d18de315c62bd45daed1b93172c306d409b
+exit: 0
+[db] admin dibuat: harness-admin
+[schema] {"version":1,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase4-h1esmX\\migration-backups\\pre-t01-be1eaa48-67a0-4de2-ba43-b0e0d70e4b69.sqlite","backupCount":1,"backupBytes":4096}
+{
+  "phase": 4,
+  "syntax": "OK",
+  "ownMessageFound": true,
+  "foreignMessagesExcluded": true,
+  "noNumbersReturnsEmpty": true,
+  "oneCharacterReturnsEmpty": true,
+  "sqlInputDoesNotEscapeScope": true,
+  "limit": 50,
+  "newestFirst": true,
+  "uiResultHandlerOpensMatchingChat": true,
+  "isolatedDatabase": true
+}
+[in] 123456789@lid | fromMe= false | conversation
+[in] 123456789@lid | fromMe= false | conversation
+
