@@ -1,0 +1,19 @@
+node --check src/config.js: exit 0
+node --check src/db.js: exit 0
+node --check src/index.js: exit 0
+node --check src/routes.js: exit 0
+node --check src/media.js: exit 0
+node --check src/mediaPaths.js: exit 0
+node --check public/media.js: exit 0
+node --check public/sw.js: exit 0
+node --check scripts/media-fixture.mjs: exit 0
+node --check scripts/verify-media.mjs: exit 0
+node --check scripts/verify-media-edge.mjs: exit 0
+node --check scripts/verify-media-paths.mjs: exit 0
+node --check scripts/verify-media-browser.mjs: exit 0
+node --check scripts/audit-media.mjs: exit 0
+node --check scripts/run-media-check.mjs: exit 0
+node --check scripts/verify-hardening.mjs: exit 0
+node --check scripts/check-media-source.mjs: exit 0
+Inline HTML script syntax: exit 0
+git diff --check: exit 0

@@ -27,9 +27,9 @@ Exit code: 1
 test at scripts\verify-media.mjs:18:1
 ✖ legacy path nomor B ditolak untuk A; tidak boleh ada fallback static (1078.3426ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   200 !== 403
-  
+
       at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:19:10)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
       at async Test.run (node:internal/test_runner/test:1389:7)
@@ -45,9 +45,9 @@ test at scripts\verify-media.mjs:18:1
 test at scripts\verify-media.mjs:21:1
 ✖ penerbitan URL mengecek sesi dan akses chat, termasuk admin (18.8699ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   404 !== 403
-  
+
       at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:23:10)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
       at async Test.run (node:internal/test_runner/test:1389:7)
@@ -63,9 +63,9 @@ test at scripts\verify-media.mjs:21:1
 test at scripts\verify-media.mjs:27:1
 ✖ URL valid terikat pengguna, tetap membutuhkan sesi, dan private/no-store (7.3472ms)
   AssertionError [ERR_ASSERTION]: URL media harus diterbitkan untuk pemilik sah
-  
+
   404 !== 200
-  
+
       at signed (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:14:10)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
       at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:28:19)
@@ -82,9 +82,9 @@ test at scripts\verify-media.mjs:27:1
 test at scripts\verify-media.mjs:40:1
 ✖ signature, pengguna, expiry, UUID dan query duplikat tidak dapat diubah (15.526ms)
   AssertionError [ERR_ASSERTION]: URL media harus diterbitkan untuk pemilik sah
-  
+
   404 !== 200
-  
+
       at signed (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:14:10)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
       at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:41:19)
@@ -101,9 +101,9 @@ test at scripts\verify-media.mjs:40:1
 test at scripts\verify-media.mjs:58:1
 ✖ ownership dicek ulang setelah URL diterbitkan dan registry mismatch ditolak (15.5123ms)
   AssertionError [ERR_ASSERTION]: URL media harus diterbitkan untuk pemilik sah
-  
+
   404 !== 200
-  
+
       at signed (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:14:10)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
       at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:59:19)
@@ -120,9 +120,9 @@ test at scripts\verify-media.mjs:58:1
 test at scripts\verify-media.mjs:69:1
 ✖ HTML aktif dipaksa unduh dan disandbox; URL basename tidak dipublikasikan (15.5242ms)
   AssertionError [ERR_ASSERTION]: URL media harus diterbitkan untuk pemilik sah
-  
+
   404 !== 200
-  
+
       at signed (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:14:10)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
       at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:70:19)
@@ -139,9 +139,9 @@ test at scripts\verify-media.mjs:69:1
 test at scripts\verify-media.mjs:79:1
 ✖ path traversal mentah, encoded, backslash dan path Windows ditolak (4.679ms)
   AssertionError [ERR_ASSERTION]: ../outside.txt
-  
+
   404 !== 403
-  
+
       at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:85:12)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
       at async Test.run (node:internal/test_runner/test:1389:7)
@@ -169,9 +169,9 @@ test at scripts\verify-media.mjs:89:1
 test at scripts\verify-media.mjs:104:1
 ✖ symlink di media menuju luar direktori tidak bisa diunduh (14.2646ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   404 !== 403
-  
+
       at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:109:10)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
       at async Test.run (node:internal/test_runner/test:1389:7)
@@ -187,9 +187,9 @@ test at scripts\verify-media.mjs:104:1
 test at scripts\verify-media.mjs:111:1
 ✖ flag nonaktif menutup akses media, tidak menghidupkan static lama (15.3982ms)
   AssertionError [ERR_ASSERTION]: URL media harus diterbitkan untuk pemilik sah
-  
+
   404 !== 200
-  
+
       at signed (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:14:10)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
       at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:112:19)

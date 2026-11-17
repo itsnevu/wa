@@ -10,6 +10,7 @@ import path from 'node:path';
 import { config } from './config.js';
 import * as backup from './backup.js';
 import { aiApi } from './ai/routes.js';
+import { issueMediaUrl, mediaError } from './media.js';
 
 export const api = Router();
 
@@ -39,6 +40,13 @@ api.get('/me', (req, res) => {
 
 api.use(requireAuth);
 api.use(aiApi);
+
+api.post('/chats/:chatId/media-url', (req, res, next) => {
+  res.setHeader('Cache-Control', 'private, no-store');
+  try {
+    res.json(issueMediaUrl(Number(req.params.chatId), req.body?.media_path, req.user));
+  } catch (err) { mediaError(err, req, res, next); }
+});
 
 api.get('/monitor', requireAdmin, (_req, res) => {
   res.json(q.allNumbers.all().map((n) => ({ id: n.id, name: n.name, phone: n.phone, status: n.status, last_seen: n.last_seen, attempts: wa.attemptsOf(n.id) })));

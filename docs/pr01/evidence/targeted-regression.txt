@@ -1,0 +1,27 @@
+Executed 18 November 2026 WIB, against the PR01 working tree.
+
+node --test scripts/verify-media-paths.mjs
+PASS Windows containment memakai batas direktori, bukan prefix string yang ambigu
+PASS nama Windows berbahaya dan encoding tidak diterima pada semua OS
+PASS konfigurasi kunci invalid gagal sebelum database dibuat dan tidak mencetak nilainya
+tests 3; pass 3; fail 0; skipped 0; exit 0
+
+node --regexp-interpret-all scripts/verify-hardening.mjs 2 3
+[2] a.html status=200 nosniff=nosniff csp=sandbox; default-src 'none'
+[2] b.jpeg status=200 nosniff=nosniff csp=null
+[2] PASS header aman pada /media
+[3] tanpa cookie=401 dengan cookie=200 /api/health tanpa cookie=200
+[3] PASS /media wajib login
+RINGKASAN
+PASS 2. header aman pada /media
+PASS 3. /media wajib login
+exit 0
+
+Earlier targeted run 1 2 3:
+PASS 1. nama file media aman
+FAIL 2. header aman pada /media: TypeError: fetch failed
+PASS 3. /media wajib login
+exit 1
+
+Step 2 alone subsequently passed, before the final combined successful run above.
+No assertion was relaxed or skipped. The existing reconnect assertion was not executed or modified in this batch.

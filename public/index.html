@@ -415,6 +415,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
   </div>
 </div>
 
+<script src="/media.js"></script>
 <script>
 const $ = (s) => document.querySelector(s);
 const state = { me: null, numberId: null, chatId: null, ws: null, chats: [] };
@@ -850,24 +851,18 @@ function append(text, me, mediaPath, kind, waId, ts = Date.now(), unread = false
     d.appendChild(tag);
   }
   if (mediaPath) {
-    const src = '/media/' + mediaPath;
     const el = document.createElement(kind === 'audio' ? 'audio' : kind === 'video' ? 'video' : kind === 'sticker' || kind === 'image' ? 'img' : 'a');
     if (kind === 'audio' || kind === 'video') el.controls = true;
     if (kind === 'audio' || kind === 'video' || kind === 'sticker' || kind === 'image') {
-      el.src = src;
       el.style.display = 'block';
       if (kind === 'sticker') { el.style.width = '120px'; el.alt = 'Sticker'; }
       el.tabIndex = 0;
       el.setAttribute('aria-label', 'Buka pratinjau media');
-      el.onclick = () => previewMedia(el);
-      el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); previewMedia(el); } };
     } else {
-      el.href = src;
-      el.target = '_blank';
-      el.rel = 'noopener';
       el.textContent = 'unduh lampiran';
     }
     d.appendChild(el);
+    mountSignedMedia(d, el, mediaPath, state.chatId, previewMedia);
   }
   if (text) {
     const t = document.createElement('div');

@@ -5,7 +5,8 @@ import express from 'express';
 import { WebSocketServer } from 'ws';
 import { config } from './config.js';
 import { api } from './routes.js';
-import { currentUser, canAccessNumber, requireAuth } from './auth.js';
+import { currentUser, canAccessNumber } from './auth.js';
+import { mediaRouter } from './media.js';
 import { restoreAll } from './wa.js';
 import * as wa from './wa.js';
 import * as backup from './backup.js';
@@ -23,14 +24,7 @@ app.use(express.static(path.join(here, '..', 'public'), {
   },
 }));
 app.use('/api', api);
-app.use('/media', requireAuth, express.static(path.join(config.dataDir, 'media'), {
-  setHeaders: (res, filePath) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    if (filePath.endsWith('.html') || filePath.endsWith('.htm')) {
-      res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'; img-src data:; style-src 'unsafe-inline'");
-    }
-  },
-}));
+app.use('/media', mediaRouter);
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });

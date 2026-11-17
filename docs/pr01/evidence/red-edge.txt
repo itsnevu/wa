@@ -1,0 +1,36 @@
+Command: node --test --test-reporter=spec scripts/verify-media-edge.mjs
+Base HEAD: 9c9c77f7621814410707a82cbf5665161b32fb97
+Test SHA256: a9e3009b8d3f0908dce234833522dbfd6174d4281b93fb91c5d319b8032b7409
+Exit code: 1
+✖ file legacy yang direferensikan lintas nomor dikarantina, termasuk untuk admin (1008.5788ms)
+✔ nomor pesan berbeda dengan chat ditolak bahkan untuk admin (17.6961ms)
+✔ logout mencabut URL; HEAD/range juga tetap melakukan otorisasi (45.5912ms)
+✔ file dihapus sesudah issuance menjadi 404 dengan error generik (5.3436ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1193.2928
+
+✖ failing tests:
+
+test at scripts\verify-media-edge.mjs:10:1
+✖ file legacy yang direferensikan lintas nomor dikarantina, termasuk untuk admin (1008.5788ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  200 !== 403
+
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media-edge.mjs:13:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
