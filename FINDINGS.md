@@ -1,5 +1,13 @@
 # Temuan Fase 0
 
+## T01 — 18 November 2026
+
+- T01-W01 — Fondasi tenant ditambahkan: 21 tabel resource ber-tenant_id NOT NULL/FK, membership banyak tenant per user, satu owner maksimal, resolver sesi/membership/status. Migrasi pada salinan database lokal mempertahankan 535 pesan dan seluruh jumlah baris; nol tenant_id kosong. Bukti dan matriks: [laporan T01](docs/t01/REPORT.md), keputusan: [ADR 0002](docs/adr/0002-tenant-foundation-sqlite.md).
+- T01-W02 — Isolasi aplikasi belum lengkap: rute, query, worker, socket, direktori, onboarding dan backup tenant menunggu T02–T15. Flag default 0; flag 1 sengaja menggagalkan startup sebelum membuka database sampai tahap isolasi selesai. DEFAULT 'default' hanya kompatibilitas writer lama dan harus dicabut/dilindungi sebelum aktivasi.
+- T01-W03 — Snapshot database lokal memiliki 20 tabel resource; bootstrap kode saat ini membuat media_records dan mendaftarkan 79 media sebelum T01. Test final tetap mewajibkan 21 tabel dan menjaga jumlah 20 tabel asli. Database asli belum dimigrasikan dalam sesi ini.
+- T01-W04 — Suite T01 7/7 hijau; regresi inbox, aturan AI dan path media hijau. Red awal tersedia untuk tiga test sebelum implementasi; suite lengkap juga terbukti merah 0/7 pada source SHA baseline. Test ketahanan tambahan ditulis sesudah implementasi awal; riwayat ini dinyatakan terbuka pada laporan.
+- T01-W05 — Bearer cookie B sendiri mengautentikasi B; test sesi tertukar T01 memeriksa principal A + cookie B, bukan ketahanan pencurian cookie. Session binding/rotation dan browser E2E tetap menunggu T03/T15. Tidak ada klaim seluruh matriks endpoint/E2E sudah hijau.
+
 Tanggal: 17 November 2026. Kode fitur belum diubah.
 
 - F0-W01 — `scripts/verify-hardening.mjs:344` gagal pada assertion regex bentuk sumber reconnect di `public/index.html`. Suite mencatat 11 PASS dan 1 FAIL. Ini membuktikan baseline test merah; belum membuktikan reconnect runtime rusak. Perlu test perilaku browser sebelum memutuskan perubahan.

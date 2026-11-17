@@ -1,0 +1,4 @@
+﻿command: node --regexp-interpret-all scripts/verify-ai-rules.mjs
+exit: 0
+[db] admin dibuat: harness-admin
+PASS ai-rules: rule+AI one message no model call, rule cooldown blocks AI, no-match AI answers, no-rule AI answers; exit 0

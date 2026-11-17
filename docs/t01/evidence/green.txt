@@ -1,0 +1,22 @@
+﻿command: node --test tests/tenant-t01.test.mjs
+baseline: 5c033e42231fa7dff1e81bd2b39ba91c3e17ae06
+exit: 0
+MIGRATION_MATRIX [{"name":"numbers","before":1,"after":1,"unscoped":0},{"name":"chats","before":1,"after":1,"unscoped":0},{"name":"messages","before":1,"after":1,"unscoped":0},{"name":"labels","before":1,"after":1,"unscoped":0}]
+✔ expand/backfill/contract preserves rows, indexes, FKs; backup first; idempotent (25.2313ms)
+✔ backup failure leaves schema unchanged (0.9882ms)
+SCOPE_MATRIX: A/A PASS; B/B PASS; body/URL/query spoof PASS; swapped identity PASS; anonymous PASS; platform-only PASS; revoked PASS; suspended PASS; expired PASS
+✔ resolver matrix: authoritative session, membership, status, spoofing, revocation (11.3257ms)
+✔ failed verification rolls all schema changes back and restores FK enforcement (11.0473ms)
+PRODUCTION_COPY_MATRIX [{"name":"activity","before":4,"after":4,"unscoped":0},{"name":"numbers","before":2,"after":2,"unscoped":0},{"name":"send_count","before":2,"after":2,"unscoped":0},{"name":"chats","before":28,"after":28,"unscoped":0},{"name":"messages","before":535,"after":535,"unscoped":0},{"name":"notifications","before":2,"after":2,"unscoped":0},{"name":"rules","before":0,"after":0,"unscoped":0},{"name":"templates","before":2,"after":2,"unscoped":0},{"name":"labels","before":2,"after":2,"unscoped":0},{"name":"chat_labels","before":2,"after":2,"unscoped":0},{"name":"ai_settings","before":2,"after":2,"unscoped":0},{"name":"ai_usage","before":1,"after":1,"unscoped":0},{"name":"ai_notice","before":0,"after":0,"unscoped":0},{"name":"ai_alerts","before":0,"after":0,"unscoped":0},{"name":"ai_seen","before":0,"after":0,"unscoped":0},{"name":"ai_logs","before":5,"after":5,"unscoped":0},{"name":"products","before":0,"after":0,"unscoped":0},{"name":"orders","before":0,"after":0,"unscoped":0},{"name":"contacts","before":0,"after":0,"unscoped":0},{"name":"contacts_v2","before":0,"after":0,"unscoped":0},{"name":"media_records","before":79,"after":79,"unscoped":0}]
+FULL_FIXTURE_MATRIX: A/B each owner+agent+2 numbers; all 21 resource tables PASS; shared keys PASS; immutable scope PASS; cross-tenant references PASS; multi-membership PASS; P denied PASS
+✔ production database COPY: all resource counts preserved, zero unscoped rows (129.0312ms)
+✔ fresh bootstrap, legacy writes, restart, and activation fail closed before DB creation (268.6044ms)
+✔ complete A/B fixture: every resource scoped; tenant-local keys; cross-tenant relations rejected (160.5049ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 700.1362

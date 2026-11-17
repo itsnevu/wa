@@ -4,6 +4,8 @@ import Database from 'better-sqlite3';
 import { config } from './config.js';
 import { hashPassword } from './passwords.js';
 import { randomUUID } from 'node:crypto';
+import { backupBeforeTenantMigration, migrateTenantSchema, tenantMigrationDone } from './tenantMigration.js';
+import { configureTenantScope } from './tenantScope.js';
 
 fs.mkdirSync(config.dataDir, { recursive: true });
 fs.mkdirSync(path.join(config.dataDir, 'media'), { recursive: true });
@@ -12,6 +14,11 @@ fs.mkdirSync(path.join(config.dataDir, 'sessions'), { recursive: true });
 export const db = new Database(path.join(config.dataDir, 'app.db'));
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+
+// Before ANY legacy bootstrap changes, preserve the pre-T01 database including WAL.
+if (!tenantMigrationDone(db)) {
+  await backupBeforeTenantMigration(db, path.join(config.dataDir, 'migration-backups'));
+}
 
 db.exec(`
 CREATE TABLE IF NOT EXISTS meta (
@@ -223,6 +230,9 @@ if (count === 0) {
     .run(config.adminUser, hashPassword(config.adminPass), 'admin', Date.now());
   console.log(`[db] admin dibuat: ${config.adminUser}`);
 }
+
+await migrateTenantSchema(db, { backupDir: path.join(config.dataDir, 'migration-backups') });
+configureTenantScope(db, config.multitenantEnabled);
 
 export const q = {
   aiSettings: db.prepare('SELECT * FROM ai_settings WHERE number_id = ?'),

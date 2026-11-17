@@ -1,0 +1,7 @@
+﻿command: node --regexp-interpret-all scripts/verify-inbox.mjs
+exit: 0
+[db] admin dibuat: harness-admin
+[in] 123456789@lid | fromMe= false | conversation
+[in] 123456789@lid | fromMe= false | conversation
+[in] 123456789@lid | fromMe= true | conversation
+PASS: status persistence, validation, access, queue filters, previews, read removal, incoming reopen, duplicate and own-message behavior

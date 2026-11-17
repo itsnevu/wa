@@ -2,6 +2,7 @@ import 'dotenv/config';
 import path from 'node:path';
 
 export const config = {
+  multitenantEnabled: process.env.MULTITENANT_ENABLED === '1',
   aiProvider: process.env.AI_PROVIDER === 'ollama' ? 'ollama' : 'venice',
   aiModel: process.env.AI_MODEL || 'venice-uncensored',
   aiOllamaUrl: process.env.AI_OLLAMA_URL || 'http://127.0.0.1:11434/v1',
@@ -40,6 +41,11 @@ export const config = {
   callAutoReject: process.env.CALL_AUTO_REJECT === '1',
   callReply: process.env.CALL_REPLY || '',
 };
+
+// T01 only: routes/workers/sockets still require T02–T15 before activation.
+if (config.multitenantEnabled) {
+  throw new Error('MULTITENANT_ENABLED requires the remaining tenant isolation stages; T01 is foundation only');
+}
 
 // Validate before db.js can create/migrate a database. Never log the supplied key.
 if (config.mediaSignedUrlsEnabled && config.mediaSigningKey.length < 32) {

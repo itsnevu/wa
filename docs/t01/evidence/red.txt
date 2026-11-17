@@ -1,0 +1,67 @@
+command: node --test tests/tenant-t01.test.mjs
+baseline: 5c033e42231fa7dff1e81bd2b39ba91c3e17ae06
+exit: 1
+? expand/backfill/contract preserves rows, indexes, FKs; backup first; idempotent (1.0007ms)
+? backup failure leaves schema unchanged (0.3111ms)
+? resolver matrix: authoritative session, membership, status, spoofing, revocation (0.3612ms)
+? tests 3
+? suites 0
+? pass 0
+? fail 3
+? cancelled 0
+? skipped 0
+? todo 0
+? duration_ms 117.2783
+
+? failing tests:
+
+test at tests\tenant-t01.test.mjs:24:1
+? expand/backfill/contract preserves rows, indexes, FKs; backup first; idempotent (1.0007ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\src\tenantMigration.js' imported from C:\Users\user\wa-suite\tests\tenant-t01.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/src/tenantMigration.js'
+  }
+
+test at tests\tenant-t01.test.mjs:50:1
+? backup failure leaves schema unchanged (0.3111ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\src\tenantMigration.js' imported from C:\Users\user\wa-suite\tests\tenant-t01.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/src/tenantMigration.js'
+  }
+
+test at tests\tenant-t01.test.mjs:59:1
+? resolver matrix: authoritative session, membership, status, spoofing, revocation (0.3612ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\src\tenantMigration.js' imported from C:\Users\user\wa-suite\tests\tenant-t01.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/src/tenantMigration.js'
+  }
