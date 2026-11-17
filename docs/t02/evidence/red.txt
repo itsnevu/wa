@@ -1,0 +1,281 @@
+﻿command: node --test tests/route-inventory.test.mjs
+SHA: 3d14f14eda64744773d15c22d30514efec6da81f
+exit: 1
+[db] admin dibuat: inventory-fixture
+[schema] {"version":1,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\t02-inventory-F5ghVf\\migration-backups\\pre-t01-e514ca22-b48f-4286-b3ef-63374c2ecab8.sqlite","backupCount":1,"backupBytes":4096}
+INVENTORY {"total":74,"public":3,"scoped":0,"pending":{}}
+✖ all registered HTTP, USE and upgrade surfaces have scope or reviewed exemption (2.234ms)
+✔ nested fake router and route().stack per method are detected (0.4979ms)
+✖ meta: inject unmarked route => fail; remove => green (0.4072ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 468.4198
+
+✖ failing tests:
+
+test at tests\route-inventory.test.mjs:21:1
+✖ all registered HTTP, USE and upgrade surfaces have scope or reviewed exemption (2.234ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'Missing tenant scope: POST /api/logout',
+  +   'Missing tenant scope: GET /api/me',
+  +   'Missing tenant scope: GET /api/numbers/:id/ai',
+  +   'Missing tenant scope: PATCH /api/numbers/:id/ai',
+  +   'Missing tenant scope: GET /api/numbers/:id/ai/usage',
+  +   'Missing tenant scope: GET /api/numbers/:id/ai/logs',
+  +   'Missing tenant scope: POST /api/numbers/:id/ai/test',
+  +   'Missing tenant scope: POST /api/numbers/:id/ai/resume',
+  +   'Missing tenant scope: GET /api/ai/alerts',
+  +   'Missing tenant scope: POST /api/numbers/:id/ai/profile-draft',
+  +   'Missing tenant scope: POST /api/numbers/:id/products/ai-draft',
+  +   'Missing tenant scope: GET /api/numbers/:id/products',
+  +   'Missing tenant scope: POST /api/numbers/:id/products',
+  +   'Missing tenant scope: PATCH /api/numbers/:id/products/:productId',
+  +   'Missing tenant scope: DELETE /api/numbers/:id/products/:productId',
+  +   'Missing tenant scope: GET /api/orders',
+  +   'Missing tenant scope: PATCH /api/orders/:id/status',
+  +   'Missing tenant scope: POST /api/chats/:chatId/media-url',
+  +   'Missing tenant scope: GET /api/monitor',
+  +   'Missing tenant scope: GET /api/activity',
+  +   'Missing tenant scope: GET /api/search',
+  +   'Missing tenant scope: POST /api/password',
+  +   'Missing tenant scope: POST /api/logout-all',
+  +   'Missing tenant scope: PATCH /api/me',
+  +   'Missing tenant scope: GET /api/backups',
+  +   'Missing tenant scope: POST /api/backups',
+  +   'Missing tenant scope: GET /api/backups/:name',
+  +   'Missing tenant scope: DELETE /api/backups/:name',
+  +   'Missing tenant scope: GET /api/numbers',
+  +   'Missing tenant scope: POST /api/numbers',
+  +   'Missing tenant scope: POST /api/numbers/:id/start',
+  +   'Missing tenant scope: POST /api/numbers/:id/pairing',
+  +   'Missing tenant scope: GET /api/numbers/:id/qr',
+  +   'Missing tenant scope: GET /api/numbers/:id/quota',
+  +   'Missing tenant scope: POST /api/numbers/:id/reconnect',
+  +   'Missing tenant scope: PATCH /api/numbers/:id/name',
+  +   'Missing tenant scope: DELETE /api/numbers/:id',
+  +   'Missing tenant scope: GET /api/numbers/:id/chats',
+  +   'Missing tenant scope: PATCH /api/chats/:chatId/pin',
+  +   'Missing tenant scope: PATCH /api/chats/:chatId/status',
+  +   'Missing tenant scope: PUT /api/chats/:chatId/name',
+  +   'Missing tenant scope: GET /api/chats/:chatId/messages',
+  +   'Missing tenant scope: GET /api/chats/:chatId/export',
+  +   'Missing tenant scope: POST /api/chats/:chatId/send',
+  +   'Missing tenant scope: POST /api/chats/:chatId/react',
+  +   'Missing tenant scope: POST /api/chats/:chatId/unread',
+  +   'Missing tenant scope: POST /api/chats/:chatId/media',
+  +   'Missing tenant scope: POST /api/chats/:chatId/read',
+  +   'Missing tenant scope: PATCH /api/chats/:chatId/assign',
+  +   'Missing tenant scope: GET /api/notifications',
+  +   'Missing tenant scope: GET /api/notifications/count',
+  +   'Missing tenant scope: POST /api/notifications/read',
+  +   'Missing tenant scope: DELETE /api/chats/:chatId',
+  +   'Missing tenant scope: GET /api/numbers/:id/rules',
+  +   'Missing tenant scope: POST /api/numbers/:id/rules',
+  +   'Missing tenant scope: PATCH /api/rules/:id',
+  +   'Missing tenant scope: DELETE /api/rules/:id',
+  +   'Missing tenant scope: GET /api/templates',
+  +   'Missing tenant scope: POST /api/templates',
+  +   'Missing tenant scope: DELETE /api/templates/:id',
+  +   'Missing tenant scope: GET /api/labels',
+  +   'Missing tenant scope: POST /api/labels',
+  +   'Missing tenant scope: DELETE /api/labels/:id',
+  +   'Missing tenant scope: POST /api/chats/:chatId/labels/:labelId',
+  +   'Missing tenant scope: DELETE /api/chats/:chatId/labels/:labelId',
+  +   'Missing tenant scope: GET /api/users',
+  +   'Missing tenant scope: POST /api/users',
+  +   'Missing tenant scope: DELETE /api/users/:id',
+  +   'Missing tenant scope: USE /media/*',
+  +   'Missing tenant scope: USE /media/*',
+  +   'Missing tenant scope: UPGRADE /ws'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/route-inventory.test.mjs:24:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [
+      'Missing tenant scope: POST /api/logout',                            'Missing tenant scope: GET /api/me',
+      'Missing tenant scope: GET /api/numbers/:id/ai',                     'Missing tenant scope: PATCH /api/numbers/:id/ai',
+      'Missing tenant scope: GET /api/numbers/:id/ai/usage',               'Missing tenant scope: GET /api/numbers/:id/ai/logs',
+      'Missing tenant scope: POST /api/numbers/:id/ai/test',               'Missing tenant scope: POST /api/numbers/:id/ai/resume',
+      'Missing tenant scope: GET /api/ai/alerts',                          'Missing tenant scope: POST /api/numbers/:id/ai/profile-draft',
+      'Missing tenant scope: POST /api/numbers/:id/products/ai-draft',     'Missing tenant scope: GET /api/numbers/:id/products',
+      'Missing tenant scope: POST /api/numbers/:id/products',              'Missing tenant scope: PATCH /api/numbers/:id/products/:productId',
+      'Missing tenant scope: DELETE /api/numbers/:id/products/:productId', 'Missing tenant scope: GET /api/orders',
+      'Missing tenant scope: PATCH /api/orders/:id/status',                'Missing tenant scope: POST /api/chats/:chatId/media-url',
+      'Missing tenant scope: GET /api/monitor',                            'Missing tenant scope: GET /api/activity',
+      'Missing tenant scope: GET /api/search',                             'Missing tenant scope: POST /api/password',
+      'Missing tenant scope: POST /api/logout-all',                        'Missing tenant scope: PATCH /api/me',
+      'Missing tenant scope: GET /api/backups',                            'Missing tenant scope: POST /api/backups',
+      'Missing tenant scope: GET /api/backups/:name',                      'Missing tenant scope: DELETE /api/backups/:name',
+      'Missing tenant scope: GET /api/numbers',                            'Missing tenant scope: POST /api/numbers',
+      'Missing tenant scope: POST /api/numbers/:id/start',                 'Missing tenant scope: POST /api/numbers/:id/pairing',
+      'Missing tenant scope: GET /api/numbers/:id/qr',                     'Missing tenant scope: GET /api/numbers/:id/quota',
+      'Missing tenant scope: POST /api/numbers/:id/reconnect',             'Missing tenant scope: PATCH /api/numbers/:id/name',
+      'Missing tenant scope: DELETE /api/numbers/:id',                     'Missing tenant scope: GET /api/numbers/:id/chats',
+      'Missing tenant scope: PATCH /api/chats/:chatId/pin',                'Missing tenant scope: PATCH /api/chats/:chatId/status',
+      'Missing tenant scope: PUT /api/chats/:chatId/name',                 'Missing tenant scope: GET /api/chats/:chatId/messages',
+      'Missing tenant scope: GET /api/chats/:chatId/export',               'Missing tenant scope: POST /api/chats/:chatId/send',
+      'Missing tenant scope: POST /api/chats/:chatId/react',               'Missing tenant scope: POST /api/chats/:chatId/unread',
+      'Missing tenant scope: POST /api/chats/:chatId/media',               'Missing tenant scope: POST /api/chats/:chatId/read',
+      'Missing tenant scope: PATCH /api/chats/:chatId/assign',             'Missing tenant scope: GET /api/notifications',
+      'Missing tenant scope: GET /api/notifications/count',                'Missing tenant scope: POST /api/notifications/read',
+      'Missing tenant scope: DELETE /api/chats/:chatId',                   'Missing tenant scope: GET /api/numbers/:id/rules',
+      'Missing tenant scope: POST /api/numbers/:id/rules',                 'Missing tenant scope: PATCH /api/rules/:id',
+      'Missing tenant scope: DELETE /api/rules/:id',                       'Missing tenant scope: GET /api/templates',
+      'Missing tenant scope: POST /api/templates',                         'Missing tenant scope: DELETE /api/templates/:id',
+      'Missing tenant scope: GET /api/labels',                             'Missing tenant scope: POST /api/labels',
+      'Missing tenant scope: DELETE /api/labels/:id',                      'Missing tenant scope: POST /api/chats/:chatId/labels/:labelId',
+      'Missing tenant scope: DELETE /api/chats/:chatId/labels/:labelId',   'Missing tenant scope: GET /api/users',
+      'Missing tenant scope: POST /api/users',                             'Missing tenant scope: DELETE /api/users/:id',
+      'Missing tenant scope: USE /media/*',                                'Missing tenant scope: USE /media/*',
+      'Missing tenant scope: UPGRADE /ws'
+    ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\route-inventory.test.mjs:36:1
+✖ meta: inject unmarked route => fail; remove => green (0.4072ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'Missing tenant scope: POST /api/logout',
+  +   'Missing tenant scope: GET /api/me',
+  +   'Missing tenant scope: GET /api/numbers/:id/ai',
+  +   'Missing tenant scope: PATCH /api/numbers/:id/ai',
+  +   'Missing tenant scope: GET /api/numbers/:id/ai/usage',
+  +   'Missing tenant scope: GET /api/numbers/:id/ai/logs',
+  +   'Missing tenant scope: POST /api/numbers/:id/ai/test',
+  +   'Missing tenant scope: POST /api/numbers/:id/ai/resume',
+  +   'Missing tenant scope: GET /api/ai/alerts',
+  +   'Missing tenant scope: POST /api/numbers/:id/ai/profile-draft',
+  +   'Missing tenant scope: POST /api/numbers/:id/products/ai-draft',
+  +   'Missing tenant scope: GET /api/numbers/:id/products',
+  +   'Missing tenant scope: POST /api/numbers/:id/products',
+  +   'Missing tenant scope: PATCH /api/numbers/:id/products/:productId',
+  +   'Missing tenant scope: DELETE /api/numbers/:id/products/:productId',
+  +   'Missing tenant scope: GET /api/orders',
+  +   'Missing tenant scope: PATCH /api/orders/:id/status',
+  +   'Missing tenant scope: POST /api/chats/:chatId/media-url',
+  +   'Missing tenant scope: GET /api/monitor',
+  +   'Missing tenant scope: GET /api/activity',
+  +   'Missing tenant scope: GET /api/search',
+  +   'Missing tenant scope: POST /api/password',
+  +   'Missing tenant scope: POST /api/logout-all',
+  +   'Missing tenant scope: PATCH /api/me',
+  +   'Missing tenant scope: GET /api/backups',
+  +   'Missing tenant scope: POST /api/backups',
+  +   'Missing tenant scope: GET /api/backups/:name',
+  +   'Missing tenant scope: DELETE /api/backups/:name',
+  +   'Missing tenant scope: GET /api/numbers',
+  +   'Missing tenant scope: POST /api/numbers',
+  +   'Missing tenant scope: POST /api/numbers/:id/start',
+  +   'Missing tenant scope: POST /api/numbers/:id/pairing',
+  +   'Missing tenant scope: GET /api/numbers/:id/qr',
+  +   'Missing tenant scope: GET /api/numbers/:id/quota',
+  +   'Missing tenant scope: POST /api/numbers/:id/reconnect',
+  +   'Missing tenant scope: PATCH /api/numbers/:id/name',
+  +   'Missing tenant scope: DELETE /api/numbers/:id',
+  +   'Missing tenant scope: GET /api/numbers/:id/chats',
+  +   'Missing tenant scope: PATCH /api/chats/:chatId/pin',
+  +   'Missing tenant scope: PATCH /api/chats/:chatId/status',
+  +   'Missing tenant scope: PUT /api/chats/:chatId/name',
+  +   'Missing tenant scope: GET /api/chats/:chatId/messages',
+  +   'Missing tenant scope: GET /api/chats/:chatId/export',
+  +   'Missing tenant scope: POST /api/chats/:chatId/send',
+  +   'Missing tenant scope: POST /api/chats/:chatId/react',
+  +   'Missing tenant scope: POST /api/chats/:chatId/unread',
+  +   'Missing tenant scope: POST /api/chats/:chatId/media',
+  +   'Missing tenant scope: POST /api/chats/:chatId/read',
+  +   'Missing tenant scope: PATCH /api/chats/:chatId/assign',
+  +   'Missing tenant scope: GET /api/notifications',
+  +   'Missing tenant scope: GET /api/notifications/count',
+  +   'Missing tenant scope: POST /api/notifications/read',
+  +   'Missing tenant scope: DELETE /api/chats/:chatId',
+  +   'Missing tenant scope: GET /api/numbers/:id/rules',
+  +   'Missing tenant scope: POST /api/numbers/:id/rules',
+  +   'Missing tenant scope: PATCH /api/rules/:id',
+  +   'Missing tenant scope: DELETE /api/rules/:id',
+  +   'Missing tenant scope: GET /api/templates',
+  +   'Missing tenant scope: POST /api/templates',
+  +   'Missing tenant scope: DELETE /api/templates/:id',
+  +   'Missing tenant scope: GET /api/labels',
+  +   'Missing tenant scope: POST /api/labels',
+  +   'Missing tenant scope: DELETE /api/labels/:id',
+  +   'Missing tenant scope: POST /api/chats/:chatId/labels/:labelId',
+  +   'Missing tenant scope: DELETE /api/chats/:chatId/labels/:labelId',
+  +   'Missing tenant scope: GET /api/users',
+  +   'Missing tenant scope: POST /api/users',
+  +   'Missing tenant scope: DELETE /api/users/:id',
+  +   'Missing tenant scope: USE /media/*',
+  +   'Missing tenant scope: USE /media/*',
+  +   'Missing tenant scope: UPGRADE /ws'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/route-inventory.test.mjs:37:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [
+      'Missing tenant scope: POST /api/logout',                            'Missing tenant scope: GET /api/me',
+      'Missing tenant scope: GET /api/numbers/:id/ai',                     'Missing tenant scope: PATCH /api/numbers/:id/ai',
+      'Missing tenant scope: GET /api/numbers/:id/ai/usage',               'Missing tenant scope: GET /api/numbers/:id/ai/logs',
+      'Missing tenant scope: POST /api/numbers/:id/ai/test',               'Missing tenant scope: POST /api/numbers/:id/ai/resume',
+      'Missing tenant scope: GET /api/ai/alerts',                          'Missing tenant scope: POST /api/numbers/:id/ai/profile-draft',
+      'Missing tenant scope: POST /api/numbers/:id/products/ai-draft',     'Missing tenant scope: GET /api/numbers/:id/products',
+      'Missing tenant scope: POST /api/numbers/:id/products',              'Missing tenant scope: PATCH /api/numbers/:id/products/:productId',
+      'Missing tenant scope: DELETE /api/numbers/:id/products/:productId', 'Missing tenant scope: GET /api/orders',
+      'Missing tenant scope: PATCH /api/orders/:id/status',                'Missing tenant scope: POST /api/chats/:chatId/media-url',
+      'Missing tenant scope: GET /api/monitor',                            'Missing tenant scope: GET /api/activity',
+      'Missing tenant scope: GET /api/search',                             'Missing tenant scope: POST /api/password',
+      'Missing tenant scope: POST /api/logout-all',                        'Missing tenant scope: PATCH /api/me',
+      'Missing tenant scope: GET /api/backups',                            'Missing tenant scope: POST /api/backups',
+      'Missing tenant scope: GET /api/backups/:name',                      'Missing tenant scope: DELETE /api/backups/:name',
+      'Missing tenant scope: GET /api/numbers',                            'Missing tenant scope: POST /api/numbers',
+      'Missing tenant scope: POST /api/numbers/:id/start',                 'Missing tenant scope: POST /api/numbers/:id/pairing',
+      'Missing tenant scope: GET /api/numbers/:id/qr',                     'Missing tenant scope: GET /api/numbers/:id/quota',
+      'Missing tenant scope: POST /api/numbers/:id/reconnect',             'Missing tenant scope: PATCH /api/numbers/:id/name',
+      'Missing tenant scope: DELETE /api/numbers/:id',                     'Missing tenant scope: GET /api/numbers/:id/chats',
+      'Missing tenant scope: PATCH /api/chats/:chatId/pin',                'Missing tenant scope: PATCH /api/chats/:chatId/status',
+      'Missing tenant scope: PUT /api/chats/:chatId/name',                 'Missing tenant scope: GET /api/chats/:chatId/messages',
+      'Missing tenant scope: GET /api/chats/:chatId/export',               'Missing tenant scope: POST /api/chats/:chatId/send',
+      'Missing tenant scope: POST /api/chats/:chatId/react',               'Missing tenant scope: POST /api/chats/:chatId/unread',
+      'Missing tenant scope: POST /api/chats/:chatId/media',               'Missing tenant scope: POST /api/chats/:chatId/read',
+      'Missing tenant scope: PATCH /api/chats/:chatId/assign',             'Missing tenant scope: GET /api/notifications',
+      'Missing tenant scope: GET /api/notifications/count',                'Missing tenant scope: POST /api/notifications/read',
+      'Missing tenant scope: DELETE /api/chats/:chatId',                   'Missing tenant scope: GET /api/numbers/:id/rules',
+      'Missing tenant scope: POST /api/numbers/:id/rules',                 'Missing tenant scope: PATCH /api/rules/:id',
+      'Missing tenant scope: DELETE /api/rules/:id',                       'Missing tenant scope: GET /api/templates',
+      'Missing tenant scope: POST /api/templates',                         'Missing tenant scope: DELETE /api/templates/:id',
+      'Missing tenant scope: GET /api/labels',                             'Missing tenant scope: POST /api/labels',
+      'Missing tenant scope: DELETE /api/labels/:id',                      'Missing tenant scope: POST /api/chats/:chatId/labels/:labelId',
+      'Missing tenant scope: DELETE /api/chats/:chatId/labels/:labelId',   'Missing tenant scope: GET /api/users',
+      'Missing tenant scope: POST /api/users',                             'Missing tenant scope: DELETE /api/users/:id',
+      'Missing tenant scope: USE /media/*',                                'Missing tenant scope: USE /media/*',
+      'Missing tenant scope: UPGRADE /ws'
+    ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

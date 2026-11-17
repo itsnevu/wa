@@ -1,5 +1,7 @@
 # Laporan T01 — fondasi tenant
 
+Catatan lanjutan: kebijakan migrasi/retensi awal di laporan historis ini telah diperbarui melalui [review prasyarat sebelum T02](REVIEW-PREREQUISITES.md). Inventaris rute berikutnya tersedia di [laporan T02](../t02/REPORT.md).
+
 18 November 2026, Asia/Jakarta. Baseline `5c033e42231fa7dff1e81bd2b39ba91c3e17ae06`.
 
 T01 diimplementasikan di working tree: skema tenant/membership, migrasi backup-expand-backfill-contract, resolver scope, dan ADR. Berhenti pada T01. Belum membuat commit/PR, belum menyalakan flag, dan belum memigrasikan database asli `data/app.db`. Verifikasi data lokal dijalankan pada snapshot sementara melalui SQLite backup API.

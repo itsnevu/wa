@@ -4,6 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "test:tenant:routes": "node --test tests/route-inventory.test.mjs",
+    "inventory:routes": "node scripts/inventory-routes.mjs",
     "test:tenant:t01": "node --test tests/tenant-t01.test.mjs",
     "start": "node --regexp-interpret-all src/index.js",
     "dev": "node --regexp-interpret-all --watch src/index.js"

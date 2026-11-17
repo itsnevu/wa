@@ -1,5 +1,11 @@
 # Temuan Fase 0
 
+## T02 — 18 November 2026
+
+- T02-W01 — T01 di-commit sebagai 023da83, enam prasyarat review diselesaikan pada 3d14f14. Laporan terpisah: [review T01](docs/t01/REVIEW-PREREQUISITES.md).
+- T02-W02 — Gate inventaris mencakup 74 surface / 73 key unik: publik 3, pending 71, scoped 0. Pending per PR T03=9, T05=18, T06=34, T07=1, T08=4, T13=5. Scope resolver tidak dipasang; ini utang eksplisit yang harus menurun, bukan klaim isolasi runtime.
+- T02-W03 — Suite gabungan 17/17 hijau. Injeksi GET /__unscoped_injected membuat child suite exit 1; tanpa injeksi exit 0. Workflow CI ditambahkan; run remote dan branch protection belum dikonfigurasi. [Laporan dan bukti T02](docs/t02/REPORT.md), [inventaris otomatis](docs/t01/route-inventory.md).
+
 ## T01 — 18 November 2026
 
 - T01-W01 — Fondasi tenant ditambahkan: 21 tabel resource ber-tenant_id NOT NULL/FK, membership banyak tenant per user, satu owner maksimal, resolver sesi/membership/status. Migrasi pada salinan database lokal mempertahankan 535 pesan dan seluruh jumlah baris; nol tenant_id kosong. Bukti dan matriks: [laporan T01](docs/t01/REPORT.md), keputusan: [ADR 0002](docs/adr/0002-tenant-foundation-sqlite.md).

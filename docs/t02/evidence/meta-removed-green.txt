@@ -1,0 +1,24 @@
+command: INVENTORY_INJECT_UNSCOPED=0 node --test tests/route-inventory.test.mjs
+SHA: 3d14f14eda64744773d15c22d30514efec6da81f
+exit: 0
+[db] admin dibuat: inventory-fixture
+[schema] {"version":1,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\t02-inventory-9V1zgo\\migration-backups\\pre-t01-5044c640-c1c5-4e6f-9f0d-67723bb5fecd.sqlite","backupCount":1,"backupBytes":4096}
+INVENTORY {"total":74,"public":3,"scoped":0,"pending":{"T03":9,"T05":18,"T06":34,"T08":4,"T13":5,"T07":1}}
+✔ all registered HTTP, USE and upgrade surfaces have scope or reviewed exemption (83.368ms)
+✔ entrypoint delegates surface registration to the inspected factory (0.4513ms)
+META_FAIL_PROVEN Missing tenant scope: GET /__unscoped_meta
+META_REMOVED_GREEN
+✔ HTTP construction preserves public static, login, health and auth responses (68.9359ms)
+✔ marker identity, method-specific scope, sibling prefixes and late middleware (0.8004ms)
+✔ conflicting duplicates, invalid PR/reason, stale exemption, pending growth rejected (0.2887ms)
+✔ USE/static/media/upgrade cannot hide outside app.get (0.7653ms)
+✔ nested fake router and route().stack per method are detected (0.3443ms)
+✔ meta: inject unmarked route => fail; remove => green (1.1627ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 612.3553

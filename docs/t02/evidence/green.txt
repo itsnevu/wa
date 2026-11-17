@@ -1,0 +1,41 @@
+﻿command: INVENTORY_BASE_REF=3d14f14 node --test tests/route-inventory.test.mjs tests/tenant-prerequisites.test.mjs tests/tenant-t01.test.mjs
+SHA: 3d14f14eda64744773d15c22d30514efec6da81f
+exit: 0
+[db] admin dibuat: inventory-fixture
+[schema] {"version":1,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\t02-inventory-HRplaU\\migration-backups\\pre-t01-95fbe984-ccfc-4988-a497-fdc8cf21ca38.sqlite","backupCount":1,"backupBytes":4096}
+INVENTORY {"total":74,"public":3,"scoped":0,"pending":{"T03":9,"T05":18,"T06":34,"T08":4,"T13":5,"T07":1}}
+✔ all registered HTTP, USE and upgrade surfaces have scope or reviewed exemption (82.8997ms)
+✔ entrypoint delegates surface registration to the inspected factory (0.3569ms)
+META_FAIL_PROVEN Missing tenant scope: GET /__unscoped_meta
+META_REMOVED_GREEN
+✔ HTTP construction preserves public static, login, health and auth responses (75.4595ms)
+✔ marker identity, method-specific scope, sibling prefixes and late middleware (1.2146ms)
+✔ conflicting duplicates, invalid PR/reason, stale exemption, pending growth rejected (0.3774ms)
+✔ USE/static/media/upgrade cannot hide outside app.get (0.904ms)
+✔ nested fake router and route().stack per method are detected (0.5257ms)
+✔ meta: inject unmarked route => fail; remove => green (1.1867ms)
+[db] admin dibuat: fixture
+[schema] {"version":1,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\t01-review-y6vaNC\\migration-backups\\pre-t01-8c7b87aa-15ab-4887-9bbe-e3922ddeaf2f.sqlite","backupCount":1,"backupBytes":4096}
+BACKUP_RETENTION {"backupCount":2,"backupBytes":737280}
+TRIGGER_MATRIX 44 pairs/immutability checks; numbers.tenant_id and media_records included
+✔ explicit version gate, fixed fingerprint, deterministic owner, retention and size (127.1496ms)
+✔ every parent-child INSERT/UPDATE trigger and every immutable tenant UPDATE (181.1321ms)
+MIGRATION_MATRIX [{"name":"numbers","before":1,"after":1,"unscoped":0},{"name":"chats","before":1,"after":1,"unscoped":0},{"name":"messages","before":1,"after":1,"unscoped":0},{"name":"labels","before":1,"after":1,"unscoped":0}]
+✔ expand/backfill/contract preserves rows, indexes, FKs; backup first; idempotent (23.8611ms)
+✔ backup failure leaves schema unchanged (0.8723ms)
+SCOPE_MATRIX: A/A PASS; B/B PASS; body/URL/query spoof PASS; swapped identity PASS; anonymous PASS; platform-only PASS; revoked PASS; suspended PASS; expired PASS
+✔ resolver matrix: authoritative session, membership, status, spoofing, revocation (14.1554ms)
+✔ failed verification rolls all schema changes back and restores FK enforcement (10.7172ms)
+PRODUCTION_COPY_MATRIX [{"name":"activity","before":4,"after":4,"unscoped":0},{"name":"numbers","before":2,"after":2,"unscoped":0},{"name":"send_count","before":2,"after":2,"unscoped":0},{"name":"chats","before":28,"after":28,"unscoped":0},{"name":"messages","before":565,"after":565,"unscoped":0},{"name":"notifications","before":2,"after":2,"unscoped":0},{"name":"rules","before":0,"after":0,"unscoped":0},{"name":"templates","before":2,"after":2,"unscoped":0},{"name":"labels","before":2,"after":2,"unscoped":0},{"name":"chat_labels","before":2,"after":2,"unscoped":0},{"name":"ai_settings","before":2,"after":2,"unscoped":0},{"name":"ai_usage","before":1,"after":1,"unscoped":0},{"name":"ai_notice","before":0,"after":0,"unscoped":0},{"name":"ai_alerts","before":0,"after":0,"unscoped":0},{"name":"ai_seen","before":0,"after":0,"unscoped":0},{"name":"ai_logs","before":5,"after":5,"unscoped":0},{"name":"products","before":0,"after":0,"unscoped":0},{"name":"orders","before":0,"after":0,"unscoped":0},{"name":"contacts","before":0,"after":0,"unscoped":0},{"name":"contacts_v2","before":0,"after":0,"unscoped":0},{"name":"media_records","before":82,"after":82,"unscoped":0}]
+FULL_FIXTURE_MATRIX: A/B each owner+agent+2 numbers; all 21 resource tables PASS; shared keys PASS; immutable scope PASS; cross-tenant references PASS; multi-membership PASS; P denied PASS
+✔ production database COPY: all resource counts preserved, zero unscoped rows (138.6506ms)
+✔ fresh bootstrap, legacy writes, restart, and activation fail closed before DB creation (281.5639ms)
+✔ complete A/B fixture: every resource scoped; tenant-local keys; cross-tenant relations rejected (169.0684ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 801.5502

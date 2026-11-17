@@ -1,3 +1,4 @@
+import {scoped} from './routeScopeMarker.js';
 let defaults;
 export function configureTenantScope(database, enabled) { defaults = { database, enabled }; }
 
@@ -36,4 +37,4 @@ export function requireTenantScope(req, res, next) {
   catch (error) { if (!error.status) return next(error); res.status(error.status).json({ error: error.message }); }
 }
 // T02 will inspect this marker on registered route middleware.
-Object.defineProperty(requireTenantScope, 'tenantScoped', { value: true });
+scoped(requireTenantScope);

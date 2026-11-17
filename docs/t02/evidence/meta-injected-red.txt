@@ -1,0 +1,73 @@
+command: INVENTORY_INJECT_UNSCOPED=1 node --test tests/route-inventory.test.mjs
+SHA: 3d14f14eda64744773d15c22d30514efec6da81f
+exit: 1
+[db] admin dibuat: inventory-fixture
+[schema] {"version":1,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\t02-inventory-5zgIZG\\migration-backups\\pre-t01-d461383e-be48-4740-a909-51e2362c3680.sqlite","backupCount":1,"backupBytes":4096}
+INVENTORY {"total":75,"public":3,"scoped":0,"pending":{"T03":9,"T05":18,"T06":34,"T08":4,"T13":5,"T07":1}}
+✖ all registered HTTP, USE and upgrade surfaces have scope or reviewed exemption (2.828ms)
+✔ entrypoint delegates surface registration to the inspected factory (0.4201ms)
+✔ HTTP construction preserves public static, login, health and auth responses (67.8331ms)
+✔ marker identity, method-specific scope, sibling prefixes and late middleware (0.7457ms)
+✔ conflicting duplicates, invalid PR/reason, stale exemption, pending growth rejected (0.2879ms)
+✔ USE/static/media/upgrade cannot hide outside app.get (0.6919ms)
+✔ nested fake router and route().stack per method are detected (0.343ms)
+✖ meta: inject unmarked route => fail; remove => green (0.4723ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 6
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 559.6392
+
+✖ failing tests:
+
+test at tests\route-inventory.test.mjs:24:1
+✖ all registered HTTP, USE and upgrade surfaces have scope or reviewed exemption (2.828ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'Missing tenant scope: GET /__unscoped_injected'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/route-inventory.test.mjs:27:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'Missing tenant scope: GET /__unscoped_injected' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\route-inventory.test.mjs:117:1
+✖ meta: inject unmarked route => fail; remove => green (0.4723ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'Missing tenant scope: GET /__unscoped_injected'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/route-inventory.test.mjs:118:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'Missing tenant scope: GET /__unscoped_injected' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
