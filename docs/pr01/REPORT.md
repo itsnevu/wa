@@ -2,6 +2,8 @@
 
 Tanggal: 18 November 2026 WIB. Repo: WA Suite saja. Branch: `fix/media-signed-ownership`. Baseline produk: `d8e48f2410fe2ba1c3359d8f6cb596b8fb91eaf5`. Implementasi lokal selesai untuk review; bukan rilis produksi. PR 02 belum dimulai.
 
+Draft PR: [itsnevu/wa #1](https://github.com/itsnevu/wa/pull/1). Commit fixture red: `9c9c77f`; commit implementasi: `6b2a733`. PR belum di-merge. Kode yang diuji dicatat dalam `evidence/source-manifest.json`; metadata `Base HEAD` pada log green merujuk commit sebelum perubahan working tree, bukan klaim hash implementasi sudah sama pada saat itu.
+
 ## 1. Ringkasan dan alasan
 
 Agen A sebelumnya dapat mengunduh file nomor B bila mengetahui nama file. Static handler diganti dengan UUID dan signed URL HMAC yang mengikat pengguna serta expiry lima menit. Penerbitan dan unduhan sama-sama memerlukan sesi serta join ownership media/pesan/chat/nomor. Perubahan pemilik atau logout berlaku pada URL yang sudah terbit. Admin dapat mengunduh dengan URL terbitan sendiri. URL lama ditolak tanpa fallback.
