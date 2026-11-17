@@ -1,0 +1,204 @@
+Command: node --test --test-reporter=spec scripts/verify-media.mjs
+Base HEAD: d8e48f2410fe2ba1c3359d8f6cb596b8fb91eaf5
+Test SHA256: a0e268b02093902acadecd128afd42cccbaa7a70e949c6ab9fa0c8b5f6fa016b
+Exit code: 1
+✖ legacy path nomor B ditolak untuk A; tidak boleh ada fallback static (1078.3426ms)
+✖ penerbitan URL mengecek sesi dan akses chat, termasuk admin (18.8699ms)
+✖ URL valid terikat pengguna, tetap membutuhkan sesi, dan private/no-store (7.3472ms)
+✖ signature, pengguna, expiry, UUID dan query duplikat tidak dapat diubah (15.526ms)
+✖ ownership dicek ulang setelah URL diterbitkan dan registry mismatch ditolak (15.5123ms)
+✖ HTML aktif dipaksa unduh dan disandbox; URL basename tidak dipublikasikan (15.5242ms)
+✖ path traversal mentah, encoded, backslash dan path Windows ditolak (4.679ms)
+✖ registry backfill stabil dan tidak menimpa ownership; pesan baru ikut terdaftar (0.4203ms)
+✔ file hilang ditolak tanpa membocorkan path filesystem (11.5717ms)
+✖ symlink di media menuju luar direktori tidak bisa diunduh (14.2646ms)
+✖ flag nonaktif menutup akses media, tidak menghidupkan static lama (15.3982ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 1
+ℹ fail 10
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1326.6703
+
+✖ failing tests:
+
+test at scripts\verify-media.mjs:18:1
+✖ legacy path nomor B ditolak untuk A; tidak boleh ada fallback static (1078.3426ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 403
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:19:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts\verify-media.mjs:21:1
+✖ penerbitan URL mengecek sesi dan akses chat, termasuk admin (18.8699ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 403
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:23:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts\verify-media.mjs:27:1
+✖ URL valid terikat pengguna, tetap membutuhkan sesi, dan private/no-store (7.3472ms)
+  AssertionError [ERR_ASSERTION]: URL media harus diterbitkan untuk pemilik sah
+  
+  404 !== 200
+  
+      at signed (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:14:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:28:19)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts\verify-media.mjs:40:1
+✖ signature, pengguna, expiry, UUID dan query duplikat tidak dapat diubah (15.526ms)
+  AssertionError [ERR_ASSERTION]: URL media harus diterbitkan untuk pemilik sah
+  
+  404 !== 200
+  
+      at signed (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:14:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:41:19)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts\verify-media.mjs:58:1
+✖ ownership dicek ulang setelah URL diterbitkan dan registry mismatch ditolak (15.5123ms)
+  AssertionError [ERR_ASSERTION]: URL media harus diterbitkan untuk pemilik sah
+  
+  404 !== 200
+  
+      at signed (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:14:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:59:19)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts\verify-media.mjs:69:1
+✖ HTML aktif dipaksa unduh dan disandbox; URL basename tidak dipublikasikan (15.5242ms)
+  AssertionError [ERR_ASSERTION]: URL media harus diterbitkan untuk pemilik sah
+  
+  404 !== 200
+  
+      at signed (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:14:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:70:19)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts\verify-media.mjs:79:1
+✖ path traversal mentah, encoded, backslash dan path Windows ditolak (4.679ms)
+  AssertionError [ERR_ASSERTION]: ../outside.txt
+  
+  404 !== 403
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:85:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts\verify-media.mjs:89:1
+✖ registry backfill stabil dan tidak menimpa ownership; pesan baru ikut terdaftar (0.4203ms)
+  Error [SqliteError]: no such table: media_records
+      at Database.prepare (C:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:90:20)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'SQLITE_ERROR'
+  }
+
+test at scripts\verify-media.mjs:104:1
+✖ symlink di media menuju luar direktori tidak bisa diunduh (14.2646ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 403
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:109:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts\verify-media.mjs:111:1
+✖ flag nonaktif menutup akses media, tidak menghidupkan static lama (15.3982ms)
+  AssertionError [ERR_ASSERTION]: URL media harus diterbitkan untuk pemilik sah
+  
+  404 !== 200
+  
+      at signed (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:14:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/user/wa-suite/scripts/verify-media.mjs:112:19)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
