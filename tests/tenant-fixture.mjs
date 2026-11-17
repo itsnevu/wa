@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 export function twoTenants() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(),'tenant-ab-'));
   const boot = spawnSync(process.execPath,['--input-type=module','-e',"const {db}=await import('./src/db.js'); db.close()"], {
-    env: { ...process.env, DATA_DIR: dir, MULTITENANT_ENABLED: '0', ADMIN_USER: 'platform-fixture', ADMIN_PASS: 'fixture-password-123' },
+    env: { ...process.env, DATA_DIR: dir, ALLOW_AUTO_MIGRATE:'1', MULTITENANT_ENABLED: '0', ADMIN_USER: 'platform-fixture', ADMIN_PASS: 'fixture-password-123' },
     encoding: 'utf8', windowsHide: true,
   });
   assert.equal(boot.status,0,boot.stderr);

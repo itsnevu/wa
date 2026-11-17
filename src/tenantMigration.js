@@ -15,12 +15,21 @@ export function tenantMigrationDone(db) {
 }
 
 // SQLite backup API includes committed WAL pages. Never copy only the .db file.
-export async function backupBeforeTenantMigration(db, backupDir) {
+export function migrationBackupStats(backupDir) {
+  if(!fs.existsSync(backupDir)) return {backupCount:0,backupBytes:0};
+  const files=fs.readdirSync(backupDir).filter(n=>/^pre-t01-[a-f0-9-]+\.sqlite$/.test(n)).map(n=>fs.lstatSync(path.join(backupDir,n))).filter(s=>s.isFile());
+  return {backupCount:files.length,backupBytes:files.reduce((n,s)=>n+s.size,0)};
+}
+export async function backupBeforeTenantMigration(db, backupDir, keep=5) {
   if (db.inTransaction) throw new Error('T01 backup requires an independent connection outside a transaction');
   fs.mkdirSync(backupDir, { recursive: true });
   const file = path.resolve(backupDir, `pre-t01-${randomUUID()}.sqlite`);
   await db.backup(file);
   fs.chmodSync(file, 0o600);
+  const files=fs.readdirSync(backupDir).filter(n=>/^pre-t01-[a-f0-9-]+\.sqlite$/.test(n)).map(name=>({name,stat:fs.lstatSync(path.join(backupDir,name))})).filter(f=>f.stat.isFile()).sort((a,b)=>b.stat.mtimeMs-a.stat.mtimeMs || b.name.localeCompare(a.name));
+  // Always preserve the snapshot just created, including timestamp ties.
+  const retained=[path.basename(file),...files.map(f=>f.name).filter(n=>n!==path.basename(file))].slice(0,Math.max(1,keep));
+  for(const f of files) if(!retained.includes(f.name)) fs.unlinkSync(path.join(backupDir,f.name));
   return file;
 }
 
@@ -28,11 +37,16 @@ export async function migrateTenantSchema(db, { backupDir }) {
   if (db.inTransaction) throw new Error('T01 requires an independent migration transaction');
   if (tenantMigrationDone(db)) return { skipped: true };
   const backup = await backupBeforeTenantMigration(db, backupDir);
-  const tables = TENANT_TABLES.filter(t => exists(db, t));
   const fk = db.pragma('foreign_keys', { simple: true });
   db.pragma('foreign_keys = OFF');
   try {
-    return db.transaction(() => {
+    return db.transaction(() => migrateTenantSchemaLocked(db,{backup})).immediate();
+  } finally { db.pragma(`foreign_keys = ${fk ? 'ON' : 'OFF'}`); }
+}
+
+export function migrateTenantSchemaLocked(db,{backup}) {
+if(!db.inTransaction) throw Error('T01 requires BEGIN IMMEDIATE');
+const tables = TENANT_TABLES.filter(t => exists(db, t));
       // BEGIN IMMEDIATE prevents another writer between backfill and contraction.
       if (tenantMigrationDone(db)) return { skipped: true };
       const before = Object.fromEntries(tables.map(t => [t, db.prepare(`SELECT count(*) n FROM ${ident(t)}`).get().n]));
@@ -100,13 +114,12 @@ export async function migrateTenantSchema(db, { backupDir }) {
         // Moving resources between tenants must be an explicit future migration.
         db.exec(`CREATE TRIGGER ${ident(`tenant_${table}_immutable`)} BEFORE UPDATE OF tenant_id ON ${ident(table)} WHEN NEW.tenant_id IS NOT OLD.tenant_id BEGIN SELECT RAISE(ABORT,'tenant is immutable'); END`);
       }
-      const report = { backup, tables: tables.map(name => ({ name, before: before[name],
+      const report = { backup, defaultOwnerId:owner?.id ?? null, tables: tables.map(name => ({ name, before: before[name],
         after: db.prepare(`SELECT count(*) n FROM ${ident(name)}`).get().n,
         unscoped: db.prepare(`SELECT count(*) n FROM ${ident(name)} WHERE tenant_id IS NULL`).get().n })) };
       if (report.tables.some(t => t.before !== t.after || t.unscoped)) throw new Error('T01 row verification failed');
       if (db.pragma('foreign_key_check').length) throw new Error('T01 foreign key verification failed');
       db.prepare("INSERT INTO tenant_migrations VALUES('T01',?,?)").run(Date.now(), JSON.stringify(report));
       return report;
-    }).immediate();
-  } finally { db.pragma(`foreign_keys = ${fk ? 'ON' : 'OFF'}`); }
+
 }

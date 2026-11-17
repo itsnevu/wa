@@ -121,7 +121,7 @@ test('production database COPY: all resource counts preserved, zero unscoped row
     copy.close();
     // Match deployment: legacy bootstrap first creates tables absent in older DBs.
     const boot = spawnSync(process.execPath, ['--input-type=module', '-e', "const {db}=await import('./src/db.js'); db.close()"], {
-      env: { ...process.env, DATA_DIR: dir, MULTITENANT_ENABLED: '0' }, encoding: 'utf8',
+      env: { ...process.env, DATA_DIR: dir, ALLOW_AUTO_MIGRATE:'1', MULTITENANT_ENABLED: '0' }, encoding: 'utf8',
     });
     assert.equal(boot.status,0,boot.stderr);
     copy = new Database(file);
@@ -140,7 +140,7 @@ test('production database COPY: all resource counts preserved, zero unscoped row
 
 test('fresh bootstrap, legacy writes, restart, and activation fail closed before DB creation', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tenant-bootstrap-'));
-  const env = { ...process.env, DATA_DIR: dir, MULTITENANT_ENABLED: '0', ADMIN_PASS: 'fixture-password-123' };
+  const env = { ...process.env, DATA_DIR: dir, ALLOW_AUTO_MIGRATE:'1', MULTITENANT_ENABLED: '0', ADMIN_PASS: 'fixture-password-123' };
   const run = code => spawnSync(process.execPath, ['--input-type=module', '-e', code], { env, encoding: 'utf8' });
   try {
     let result = run(`const {db,q}=await import('./src/db.js');

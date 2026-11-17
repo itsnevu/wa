@@ -2,6 +2,8 @@ import 'dotenv/config';
 import path from 'node:path';
 
 export const config = {
+  allowAutoMigrate: process.env.ALLOW_AUTO_MIGRATE === '1',
+  migrationBackupKeep: Math.max(1, Number.parseInt(process.env.MIGRATION_BACKUP_KEEP || '5',10) || 5),
   multitenantEnabled: process.env.MULTITENANT_ENABLED === '1',
   aiProvider: process.env.AI_PROVIDER === 'ollama' ? 'ollama' : 'venice',
   aiModel: process.env.AI_MODEL || 'venice-uncensored',
