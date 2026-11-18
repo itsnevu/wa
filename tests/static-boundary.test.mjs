@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import {spawnSync} from 'node:child_process';
 import {assertStaticBoundary} from '../src/staticBoundary.js';
 test('static cannot contain or be contained by DATA_DIR/media, including symlink parents',()=>{
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'static-boundary-'));
@@ -13,4 +14,11 @@ test('static cannot contain or be contained by DATA_DIR/media, including symlink
     const link=path.join(dir,'alias');fs.symlinkSync(data,link,process.platform==='win32'?'junction':'dir');
     assert.throws(()=>assertStaticBoundary(path.join(link,'future'),data),/STATIC_DATA_OVERLAP/);
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('configuration rejects overlap before database initialization can run',()=>{
+  const target=path.resolve('public','forbidden-runtime-data');
+  const run=spawnSync(process.execPath,['--input-type=module','-e',"await import('./src/config.js')"],{
+    encoding:'utf8',windowsHide:true,env:{...process.env,DATA_DIR:target,MULTITENANT_ENABLED:'0',ALLOW_AUTO_MIGRATE:'1'},
+  });
+  assert.equal(run.status,1);assert.match(run.stderr,/STATIC_DATA_OVERLAP/);assert.equal(fs.existsSync(target),false);
 });

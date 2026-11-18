@@ -1,70 +1,71 @@
 ﻿command: node --test tests/tenant-t03.test.mjs tests/static-boundary.test.mjs tests/tenant-t01.test.mjs tests/tenant-prerequisites.test.mjs tests/route-inventory.test.mjs
-baseline: 9773203946c997018b50b426e841b41a5c66fecf
+baseline: b6b57e13dca52ea12c71eeb06c7c5f7cb8bbef3b
 exit: 0
 [db] admin dibuat: inventory-fixture
-[schema] {"version":2,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\t02-inventory-EGbHTc\\migration-backups\\pre-t01-bfacb28f-569a-47b8-833f-a5dff7208af3.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":2,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\t02-inventory-emYYjb\\migration-backups\\pre-t01-3ec18f8a-da9d-484c-922b-37864e98454a.sqlite","backupCount":1,"backupBytes":4096}
 INVENTORY {"total":78,"public":3,"scoped":13,"pending":{"T05":18,"T06":34,"T08":4,"T13":5,"T07":1}}
-✔ all registered HTTP, USE and upgrade surfaces have scope or reviewed exemption (55.8409ms)
-✔ entrypoint delegates surface registration to the inspected factory (0.4098ms)
+✔ all registered HTTP, USE and upgrade surfaces have scope or reviewed exemption (56.8074ms)
+✔ entrypoint delegates surface registration to the inspected factory (0.376ms)
 META_FAIL_PROVEN Missing tenant scope: GET /__unscoped_meta
 META_REMOVED_GREEN
-✔ HTTP construction preserves public static, login, health and auth responses (67.8567ms)
-✔ marker identity, method-specific scope, sibling prefixes and late middleware (1.2002ms)
-✔ conflicting duplicates, invalid PR/reason, stale exemption, pending growth rejected (0.3045ms)
-✔ USE/static/media/upgrade cannot hide outside app.get (0.883ms)
-✔ nested fake router and route().stack per method are detected (0.4913ms)
-✔ meta: inject unmarked route => fail; remove => green (1.1916ms)
-✔ static cannot contain or be contained by DATA_DIR/media, including symlink parents (4.1027ms)
+✔ HTTP construction preserves public static, login, health and auth responses (86.9124ms)
+✔ marker identity, method-specific scope, sibling prefixes and late middleware (0.9067ms)
+✔ conflicting duplicates, invalid PR/reason, stale exemption, pending growth rejected (0.2831ms)
+✔ USE/static/media/upgrade cannot hide outside app.get (0.8971ms)
+✔ nested fake router and route().stack per method are detected (0.4699ms)
+✔ meta: inject unmarked route => fail; remove => green (1.0591ms)
+✔ static cannot contain or be contained by DATA_DIR/media, including symlink parents (4.2064ms)
+✔ configuration rejects overlap before database initialization can run (53.3008ms)
 [db] admin dibuat: fixture
-[schema] {"version":2,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\t01-review-UkrgvQ\\migration-backups\\pre-t01-46be4d75-92bf-409b-9a01-26874d607be0.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":2,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\t01-review-s1JT4L\\migration-backups\\pre-t01-02efdbb2-0604-4b7b-b1ea-ab27200d770d.sqlite","backupCount":1,"backupBytes":4096}
 BACKUP_RETENTION {"backupCount":2,"backupBytes":753664}
 TRIGGER_MATRIX 44 pairs/immutability checks; numbers.tenant_id and media_records included
-✔ explicit version gate, fixed fingerprint, deterministic owner, retention and size (113.9798ms)
-✔ every parent-child INSERT/UPDATE trigger and every immutable tenant UPDATE (172.8673ms)
+✔ explicit version gate, fixed fingerprint, deterministic owner, retention and size (121.9336ms)
+✔ every parent-child INSERT/UPDATE trigger and every immutable tenant UPDATE (173.6871ms)
 MIGRATION_MATRIX [{"name":"numbers","before":1,"after":1,"unscoped":0},{"name":"chats","before":1,"after":1,"unscoped":0},{"name":"messages","before":1,"after":1,"unscoped":0},{"name":"labels","before":1,"after":1,"unscoped":0}]
-✔ expand/backfill/contract preserves rows, indexes, FKs; backup first; idempotent (19.9443ms)
-✔ backup failure leaves schema unchanged (0.9657ms)
+✔ expand/backfill/contract preserves rows, indexes, FKs; backup first; idempotent (20.167ms)
+✔ backup failure leaves schema unchanged (0.9565ms)
 SCOPE_MATRIX: A/A PASS; B/B PASS; body/URL/query spoof PASS; swapped identity PASS; anonymous PASS; platform-only PASS; revoked PASS; suspended PASS; expired PASS
-✔ resolver matrix: authoritative session, membership, status, spoofing, revocation (18.1073ms)
-✔ failed verification rolls all schema changes back and restores FK enforcement (12.7311ms)
+✔ resolver matrix: authoritative session, membership, status, spoofing, revocation (18.6099ms)
+✔ failed verification rolls all schema changes back and restores FK enforcement (11.0545ms)
 PRODUCTION_COPY_MATRIX [{"name":"activity","before":4,"after":4,"unscoped":0},{"name":"numbers","before":2,"after":2,"unscoped":0},{"name":"send_count","before":2,"after":2,"unscoped":0},{"name":"chats","before":28,"after":28,"unscoped":0},{"name":"messages","before":565,"after":565,"unscoped":0},{"name":"notifications","before":2,"after":2,"unscoped":0},{"name":"rules","before":0,"after":0,"unscoped":0},{"name":"templates","before":2,"after":2,"unscoped":0},{"name":"labels","before":2,"after":2,"unscoped":0},{"name":"chat_labels","before":2,"after":2,"unscoped":0},{"name":"ai_settings","before":2,"after":2,"unscoped":0},{"name":"ai_usage","before":1,"after":1,"unscoped":0},{"name":"ai_notice","before":0,"after":0,"unscoped":0},{"name":"ai_alerts","before":0,"after":0,"unscoped":0},{"name":"ai_seen","before":0,"after":0,"unscoped":0},{"name":"ai_logs","before":5,"after":5,"unscoped":0},{"name":"products","before":0,"after":0,"unscoped":0},{"name":"orders","before":0,"after":0,"unscoped":0},{"name":"contacts","before":0,"after":0,"unscoped":0},{"name":"contacts_v2","before":0,"after":0,"unscoped":0},{"name":"media_records","before":82,"after":82,"unscoped":0}]
 FULL_FIXTURE_MATRIX: A/B each owner+agent+2 numbers; all 21 resource tables PASS; shared keys PASS; immutable scope PASS; cross-tenant references PASS; multi-membership PASS; P denied PASS
-✔ production database COPY: all resource counts preserved, zero unscoped rows (128.9071ms)
-✔ fresh bootstrap, legacy writes, restart, and activation fail closed before DB creation (271.1672ms)
-✔ complete A/B fixture: every resource scoped; tenant-local keys; cross-tenant relations rejected (161.8936ms)
-✔ 01 scoped routes invoke real resolver (spy), including /me and switch (802.9018ms)
-✔ 02 public health/login/static never invoke tenant resolver (45.387ms)
-✔ 03 contract: missing, revoked and expired sessions => 401 SESSION_INVALID (30.5918ms)
-✔ 04 contract: valid null tenant => 409 TENANT_NOT_SELECTED (31.8147ms)
-✔ 05 contract: non-member active tenant => 403 TENANT_FORBIDDEN and reselection (45.9867ms)
-✔ 06 contract: suspended tenant => 403 TENANT_SUSPENDED (63.3894ms)
-✔ 07 contract: other users session resource => 404 (76.2402ms)
-✔ 08 contract: platform admin without tenant can use platform route (78.4855ms)
-✔ 09 fixation: pre-login cookie is never promoted (46.0935ms)
-✔ 10 login rotation atomically kills presented ID; GRACE_MS=0 boundaries (92.5339ms)
-✔ 11 tenant switch rotates, revokes old ID, and selects membership (77.1094ms)
-✔ 12 role change uses atomic rotation and invalidates old IDs (78.9499ms)
-✔ 13 user-agent changes remain valid and ua_hash is observed server-side (45.6467ms)
-✔ 14 logout revokes the row, clears cookie and next request is 401 (45.9199ms)
-✔ 15 list and revoke another device; own/foreign account boundary (110.6012ms)
-✔ 16 switch to non-membership =>403 and session unchanged (61.1965ms)
-✔ 17 array/object tenant_id are forbidden without rotation (62.9866ms)
-✔ 18 /me works with null active tenant and lists memberships/roles (46.156ms)
-✔ 19 /ws rejects absent session (2.3659ms)
-✔ 20 /ws rejects null tenant (38.9717ms)
-✔ 21 /ws accepts a current valid tenant (37.7304ms)
-✔ 22 expired rows are actually deleted (44.5406ms)
-✔ 23 login -> me -> select tenant -> inbox has no unexpected 409 (83.6399ms)
-✔ 24 feature flag off keeps legacy default tenant workflow (57.4426ms)
+✔ production database COPY: all resource counts preserved, zero unscoped rows (129.6707ms)
+✔ fresh bootstrap, legacy writes, restart, and activation fail closed before DB creation (273.3424ms)
+✔ complete A/B fixture: every resource scoped; tenant-local keys; cross-tenant relations rejected (166.0691ms)
+✔ 01 scoped routes invoke real resolver (spy), including /me and switch (784.8356ms)
+✔ 02 public health/login/static never invoke tenant resolver (44.5705ms)
+✔ 03 contract: missing, revoked and expired sessions => 401 SESSION_INVALID (59.8319ms)
+✔ 04 contract: valid null tenant => 409 TENANT_NOT_SELECTED (31.1202ms)
+✔ 05 contract: non-member active tenant => 403 TENANT_FORBIDDEN and reselection (46.4527ms)
+✔ 06 contract: suspended tenant => 403 TENANT_SUSPENDED (62.9429ms)
+✔ 07 contract: other users session resource => 404 (61.351ms)
+✔ 08 contract: platform admin without tenant can use platform route (62.2409ms)
+✔ 09 fixation: pre-login cookie is never promoted (47.2267ms)
+✔ 10 login rotation atomically kills presented ID; GRACE_MS=0 boundaries (92.0358ms)
+✔ 11 tenant switch rotates, revokes old ID, and selects membership (76.9552ms)
+✔ 12 role change uses atomic rotation and invalidates old IDs (76.3085ms)
+✔ 13 user-agent changes remain valid and ua_hash is observed server-side (30.607ms)
+✔ 14 logout revokes the row, clears cookie and next request is 401 (62.7415ms)
+✔ 15 list and revoke another device; own/foreign account boundary (123.1231ms)
+✔ 16 switch to non-membership =>403 and session unchanged (61.4369ms)
+✔ 17 array/object tenant_id are forbidden without rotation (62.7007ms)
+✔ 18 /me works with null active tenant and lists memberships/roles (47.5971ms)
+✔ 19 /ws rejects absent session (2.0972ms)
+✔ 20 /ws rejects null tenant (38.5253ms)
+✔ 21 /ws accepts a current valid tenant (38.2787ms)
+✔ 22 expired rows are actually deleted (43.7905ms)
+✔ 23 login -> me -> select tenant -> inbox has no unexpected 409 (68.5402ms)
+✔ 24 feature flag off keeps legacy default tenant workflow (55.5833ms)
 [db] admin dibuat: migration-fixture
-✔ 25 membership add/remove rotates atomically, and grace boundaries reject old IDs (140.4713ms)
-[schema] {"version":2,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\tenant-ab-zuR3zi\\migration-backups\\pre-t01-e8729f6b-30e0-445b-a2fd-bbd4edbea673.sqlite","backupCount":2,"backupBytes":372736}
-✔ 26 migration v1 -> v2 refuses implicit startup and invalidates every legacy token (64.1443ms)
-ℹ tests 44
+✔ 25 membership add/remove rotates atomically, and grace boundaries reject old IDs (109.2252ms)
+[schema] {"version":2,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\tenant-ab-h0U70q\\migration-backups\\pre-t01-3baaf4d1-56ce-4417-8582-db269e0059eb.sqlite","backupCount":2,"backupBytes":372736}
+✔ 26 migration v1 -> v2 refuses implicit startup and invalidates every legacy token (69.4156ms)
+ℹ tests 45
 ℹ suites 0
-ℹ pass 44
+ℹ pass 45
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 3023.3375
+ℹ duration_ms 2964.7248

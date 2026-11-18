@@ -4,7 +4,7 @@
 
 - T03-W01 — Prasyarat selesai pada 9773203: seluruh verifier dijalankan, static root dipisahkan dari data/media, Actions T02 sukses dan inventory required pada main, ADR konflik baseline diperbarui. [Bukti prasyarat](docs/t03/PREREQUISITES.md).
 - T03-W02 — Model sesi v2 dan resolver nyata pada 13 surface; pending T03=0. Inventaris: total 78, publik 3, scoped 13, pending 62. Query resource, media URL, job dan room socket tetap tahap berikutnya. Guard aktivasi multi-tenant produksi dipertahankan.
-- T03-W03 — 44/44 test gabungan hijau; 26 kasus auth T03 terbukti merah pada baseline. Browser desktop dan 360px lulus. Regresi penuh: 26/28 verifier hijau; dua merah hanya F0-W01 (hardening langkah 7 dan agregator ai-final). [Laporan T03](docs/t03/REPORT.md).
+- T03-W03 — 45/45 test gabungan hijau; 26 kasus auth T03 terbukti merah pada baseline. Browser desktop dan 360px lulus. Regresi penuh: 26/28 verifier hijau; dua merah hanya F0-W01 (hardening langkah 7 dan agregator ai-final). [Laporan T03](docs/t03/REPORT.md).
 - T03-W04 — Migrasi v2 membuang seluruh sesi token lama; pengguna wajib login ulang. Cookie tetap credential sensitif, UA tidak diikat secara kriptografis. 404 bisnis lintas tenant belum diklaim; T03 menguji 404 sesi perangkat akun lain. [Kontrak](docs/t03/STATUS-CONTRACT.md).
 
 ## T02 — 18 November 2026

@@ -45,13 +45,17 @@ File prasyarat, perubahan harness dan bukti regresi sebelumnya dilaporkan terpis
 |---|---|
 | [Red awal](evidence/red.txt) | node --test tests/tenant-t03.test.mjs, SHA 9773203, exit 1; **0/24 pass** sebelum implementasi |
 | [Red suite lengkap pada baseline](evidence/red-complete-baseline.txt) | node scripts/check-t03-baseline.mjs, source SHA penuh 9773203946c997018b50b426e841b41a5c66fecf; inner exit 1, **0/26 pass** |
-| [Green gabungan](evidence/green.txt) | node --test T01 + review + inventory + static + T03; exit 0, **44/44 pass** |
+| [Green gabungan](evidence/green.txt) | node --test T01 + review + inventory + static + T03; exit 0, **45/45 pass** |
 | [Browser](evidence/browser.txt) | node scripts/verify-tenant-sessions-browser.mjs; exit 0 |
 | [Seluruh verifier pasca-T03](evidence/verify-after/summary.json) | **28 skrip**, 26 exit 0; hanya verify-hardening dan verify-ai-final exit 1 karena F0-W01 |
 
 Seluruh kasus yang diminta sudah tercakup dalam 24 test merah awal. Dua test tambahan menguatkan rotasi membership/grace boundary dan migrasi v1→v2; keduanya kemudian juga dijalankan pada source baseline. Output mencatat SHA baseline, command dan exit code; hasil working tree T03 tidak disalahartikan sebagai source commit prasyarat. Assertion tidak dihapus untuk menghijaukan hasil.
 
 F0-W01 tetap merah pada assertion regex bentuk sumber reconnect di langkah 7 hardening, bukan kegagalan baru kontrak sesi. verify-ai-final ikut merah karena menjalankan hardening. Sebelas langkah hardening lainnya lulus, termasuk otorisasi objek dan shutdown. Tidak mengklaim seluruh regresi historis hijau. Run pertama/prasyarat antara juga disimpan, termasuk kegagalan harness yang sudah dibetulkan.
+
+Review akhir menambahkan assertion bahwa konfigurasi yang overlap sudah harus gagal sebelum database dibuka. [Red sebelum perbaikan](evidence/static-before-db-red.txt) membuktikan pemeriksaan di factory saja belum cukup dini; konfigurasi sekarang memanggil assertion sebelum db.js dapat berjalan. Test ini hanya mengimpor config dan tidak pernah menulis database di public.
+
+Commit implementasi T03 `b6b57e1` juga lulus [Actions run 44279863172](https://github.com/itsnevu/wa/actions/runs/44279863172), termasuk gate sesi baru pada job inventory. Bukti API run tersebut disimpan dalam [actions-t03.txt](evidence/actions-t03.txt).
 
 ## Tabel kontrak
 

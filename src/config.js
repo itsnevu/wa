@@ -1,5 +1,7 @@
 import 'dotenv/config';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {assertStaticBoundary} from './staticBoundary.js';
 
 export const config = {
   allowAutoMigrate: process.env.ALLOW_AUTO_MIGRATE === '1',
@@ -43,6 +45,9 @@ export const config = {
   callAutoReject: process.env.CALL_AUTO_REJECT === '1',
   callReply: process.env.CALL_REPLY || '',
 };
+
+// Fail before db.js opens or writes any file, including explicit migration commands.
+assertStaticBoundary(path.join(path.dirname(fileURLToPath(import.meta.url)),'..','public'),config.dataDir);
 
 // Sessions are ready; resource queries/workers/rooms still require later isolation stages.
 if (config.multitenantEnabled) {
