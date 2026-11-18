@@ -1,5 +1,7 @@
 # Kontrak sesi dan tenant T03
 
+Keputusan prasyarat T04: GRACE_MS tetap 0. Tab berbagi cookie browser; setelah switch, request yang sudah membawa ID lama dapat mendapat 401 dan tab lain perlu dimuat ulang. Batasan multi-tab ini diterima; tidak ada grace window tersembunyi. Login memilih tenant otomatis bila tepat satu membership; login biasa tanpa membership menghasilkan 409 dengan reason NO_MEMBERSHIP (sesi tetap dibuat agar /me/pemilihan bekerja). Platform admin tanpa tenant tetap dapat login dan memakai rute platform. Pencabutan membership tenant lain tidak merotasi/mematikan sesi aktif yang berbeda.
+
 18 November 2026. Cookie `sid` hanya berisi referensi acak 256 bit. User, role, tenant aktif dan otorisasi selalu diambil dari database. Possession ID sesi tetap sensitif; T03 tidak mengklaim cookie terikat secara kriptografis ke perangkat atau kebal pencurian cookie. Perubahan User-Agent sengaja diizinkan dan hash pengamatan terakhir dicatat.
 
 | Kondisi | HTTP | code | Tindakan frontend |

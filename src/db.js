@@ -26,6 +26,7 @@ export function backfillMedia() {
   }).immediate();
 }
 export const q = {
+  tenantMemberships:db.prepare('SELECT tenant_id FROM tenant_members WHERE user_id=? ORDER BY tenant_id'),
   aiSettings: db.prepare('SELECT * FROM ai_settings WHERE number_id = ?'),
   pauseAiChat: db.prepare('UPDATE chats SET ai_paused_until = ? WHERE id = ?'),
   aiUsageGet: db.prepare('SELECT * FROM ai_usage WHERE number_id = ? AND day = ?'),

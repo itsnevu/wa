@@ -21,7 +21,7 @@ const request=async(path,{cookie,body,method='GET',ua='fixture-A'}={})=>{
   const r=await fetch(base+'/api'+path,{method,headers:{'Content-Type':'application/json','User-Agent':ua,...(cookie?{cookie}:{})},body:body===undefined?undefined:JSON.stringify(body)});
   return {status:r.status,data:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0],setCookie:r.headers.get('set-cookie')};
 };
-const login=async(name='A-0',cookie)=>{const r=await request('/login',{method:'POST',body:{username:name,password:'fixture-password-123'},cookie});assert.equal(r.status,200);return r;};
+const login=async(name='A-0',cookie)=>{const r=await request('/login',{method:'POST',body:{username:name,password:'fixture-password-123'},cookie});assert.equal(r.status,200);if(config.multitenantEnabled)db.prepare('UPDATE sessions SET active_tenant_id=NULL WHERE id=?').run(r.cookie.slice(4));return r;};
 const select=async(cookie,tenant_id='A')=>{const r=await request('/tenant/switch',{cookie,method:'POST',body:{tenant_id}});assert.equal(r.status,200,JSON.stringify(r));return r;};
 const selected=async()=>select((await login()).cookie);
 const code=(r,status,value)=>{assert.equal(r.status,status,JSON.stringify(r.data));assert.equal(r.data.code,value);};
@@ -142,7 +142,7 @@ test('26 migration v1 -> v2 refuses implicit startup and invalidates every legac
     await ensureSchema(copy,{...settings,allowAutoMigrate:true});
     assert.equal(copy.prepare('SELECT count(*) n FROM sessions').get().n,0);
     assert.equal(copy.prepare('PRAGMA table_info(sessions)').all().some(c=>c.name==='token'),false);
-    assert.equal(copy.prepare('SELECT MAX(version) v FROM schema_migrations').get().v,2);
+    assert.equal(copy.prepare('SELECT MAX(version) v FROM schema_migrations').get().v,3);
     assert.deepEqual(copy.pragma('foreign_key_check'),[]);
   }finally{copy.close();}
 });

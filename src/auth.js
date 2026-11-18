@@ -8,8 +8,10 @@ const COOKIE = 'sid';
 export function login(username, password, req={headers:{}}) {
   const user = q.userByName.get(username);
   if (!user || !verifyPassword(password, user.pass)) return null;
-  const session=createSession(user.id,req,{priorId:cookieId(req)});
-  return { token:session.id,expires:session.expires_at,user:{id:user.id,username:user.username,role:user.role} };
+  const memberships=q.tenantMemberships.all(user.id);
+  const tenantId=config.multitenantEnabled?(memberships.length===1?memberships[0].tenant_id:null):'default';
+  const session=createSession(user.id,req,{priorId:cookieId(req),tenantId});
+  return { token:session.id,expires:session.expires_at,noMembership:config.multitenantEnabled&&!memberships.length&&!user.platform_role,user:{id:user.id,username:user.username,role:user.role} };
 }
 
 export function logout(req) {

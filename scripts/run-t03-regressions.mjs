@@ -4,7 +4,7 @@ import {spawnSync,execFileSync} from 'node:child_process';
 import Database from 'better-sqlite3';
 const phase=process.argv[2]||'before';
 const root=process.cwd();const work=fs.mkdtempSync(path.join(root,'artifacts','t03-regression-'));
-const output=path.join(root,'docs','t03','evidence',`verify-${phase}`);fs.mkdirSync(output,{recursive:true});
+const output=path.join(root,'docs',process.argv[3]||'t03','evidence',`verify-${phase}`);fs.mkdirSync(output,{recursive:true});
 const sha=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 const files=execFileSync('git',['ls-files','-z'],{encoding:'utf8'}).split('\0').filter(Boolean);
 function addSources(dir){for(const entry of fs.readdirSync(path.join(root,dir),{withFileTypes:true})){const relative=path.join(dir,entry.name);if(entry.isDirectory())addSources(relative);else if(/\.(js|mjs|json)$/.test(entry.name)&&!files.includes(relative.replaceAll('\\','/')))files.push(relative);}}

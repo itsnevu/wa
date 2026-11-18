@@ -29,6 +29,7 @@ api.post('/login', (req, res) => {
   }
   guard.reset(username, req.ip);
   setCookie(res, out.token, out.expires);
+  if(out.noMembership)return res.status(409).json({error:'TENANT_NOT_SELECTED',code:'TENANT_NOT_SELECTED',reason:'NO_MEMBERSHIP'});
   res.json({ user: out.user });
 });
 

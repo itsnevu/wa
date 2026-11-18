@@ -45,7 +45,7 @@ export function revokeSession(id,database=db){database.prepare('UPDATE sessions 
 export function writeSessionCookie(res,session){res.setHeader('Set-Cookie',`sid=${session.id}; HttpOnly; Path=/; SameSite=Lax; Expires=${new Date(session.expires_at).toUTCString()}${config.secureCookie?'; Secure':''}`);}
 export function sendSessionError(res,error){
   if(error.replacement)writeSessionCookie(res,error.replacement);
-  return res.status(error.status||500).json({error:error.code||'INTERNAL_ERROR',code:error.code||'INTERNAL_ERROR',...(error.select_tenant?{select_tenant:true}:{})});
+  return res.status(error.status||500).json({error:error.code||'INTERNAL_ERROR',code:error.code||'INTERNAL_ERROR',...(error.reason?{reason:error.reason}:{}),...(error.select_tenant?{select_tenant:true}:{})});
 }
 export function changeMembershipRole({tenantId,userId,role,sessionId}){
   return changeMembership({tenantId,userId,role,sessionId,existingOnly:true});
@@ -58,6 +58,8 @@ export function changeMembership({tenantId,userId,role,sessionId,existingOnly=fa
     if(role===null)db.prepare('DELETE FROM tenant_members WHERE tenant_id=? AND user_id=?').run(tenantId,userId);
     else if(existingOnly){if(!db.prepare('UPDATE tenant_members SET role=? WHERE tenant_id=? AND user_id=?').run(role,tenantId,userId).changes)throw sessionError(403,'TENANT_FORBIDDEN');}
     else db.prepare('INSERT INTO tenant_members(tenant_id,user_id,role,created_at) VALUES(?,?,?,?) ON CONFLICT(tenant_id,user_id) DO UPDATE SET role=excluded.role').run(tenantId,userId,role,Date.now());
+    if(role===null&&session.active_tenant_id!==tenantId)return db.prepare('SELECT * FROM sessions WHERE id=?').get(sessionId);
+    if(role===null)return createSession(userId,{headers:{}},{priorId:sessionId,tenantId:null,uaHashOverride:session.ua_hash});
     db.prepare('UPDATE sessions SET revoked_at=? WHERE user_id=? AND revoked_at IS NULL').run(Date.now(),userId);
     // Role trigger invalidates all devices; only the caller receives a replacement.
     const active=session.active_tenant_id&&db.prepare('SELECT 1 FROM tenant_members WHERE tenant_id=? AND user_id=?').get(session.active_tenant_id,userId)?session.active_tenant_id:null;

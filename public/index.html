@@ -526,7 +526,7 @@ async function call(method, url, body) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     if (res.status === 401 && url !== '/login') showLogin();
-    if (res.status === 409 && data.code === 'TENANT_NOT_SELECTED') showTenantPicker(state.tenants || []);
+    if (res.status === 409 && data.code === 'TENANT_NOT_SELECTED') { if(data.reason==='NO_MEMBERSHIP')state.tenants=[]; showTenantPicker(state.tenants || []); }
     if (res.status === 403 && data.select_tenant) {
       const session = await fetch('/api/me').then(r => r.json()).catch(() => ({}));
       state.tenants = session.tenants || [];
@@ -554,6 +554,7 @@ function showLogin() {
   $('#tenantPicker').classList.add('hidden');
   $('#login').classList.remove('hidden');
   state.me = null;
+  state.tenants = [];
 }
 
 function showTenantPicker(tenants) {
@@ -575,7 +576,7 @@ function showTenantPicker(tenants) {
     };
     choices.append(button);
   }
-  if (!tenants.length) choices.textContent = 'Akun ini belum memiliki keanggotaan workspace.';
+  if (!tenants.length) choices.textContent = 'NO_MEMBERSHIP: Akun ini belum memiliki workspace. Hubungi pemilik workspace untuk mendapatkan undangan.';
 }
 
 $('#tenantLogout').onclick = async () => {

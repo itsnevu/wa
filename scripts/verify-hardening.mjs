@@ -6,6 +6,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
+import {WebSocket as NetworkSocket,WebSocketServer} from 'ws';
+import {once} from 'node:events';
 import { spawnSync } from 'node:child_process';
 import { readSource, setup } from './phase-harness.mjs';
 
@@ -370,7 +372,21 @@ await step(7, 'WebSocket menyambung ulang', async () => {
   for (const m of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) new vm.Script(m[1]);
   const block = html.match(/const WS_DELAYS[\s\S]*?\nfunction openSocket\(\) \{[\s\S]*?\n\}\n/);
   assert.ok(block, 'blok openSocket ditemukan');
-  assert.match(html, /\n {2}setPage\('chats'\);\n {2}openSocket\(\);\n\}/);
+  const network=new WebSocketServer({port:0,host:'127.0.0.1'});await once(network,'listening');
+  let connections=0,refreshes=0,stopped=false;const liveTimers=new Set();
+  network.on('connection',()=>connections++);
+  const live=vm.createContext({state:{},location:{protocol:'http:',host:`127.0.0.1:${network.address().port}`},
+    $:()=>({classList:{add(){},remove(){}}}),WebSocket:NetworkSocket,loadChats:()=>{refreshes++;},
+    clearTimeout,setTimeout:(fn,ms)=>{if(stopped)return;const t=setTimeout(fn,Math.min(ms,20));liveTimers.add(t);return t;},
+  });
+  const until=async predicate=>{for(let i=0;i<200&&!predicate();i++)await new Promise(r=>setTimeout(r,10));assert.ok(predicate(),'real socket reconnect completed');};
+  try{
+    new vm.Script(block[0]).runInContext(live);live.openSocket();
+    await until(()=>connections===1&&live.state.ws.readyState===NetworkSocket.OPEN);
+    network.clients.values().next().value.terminate();
+    await until(()=>connections===2&&refreshes===1&&live.state.ws.readyState===NetworkSocket.OPEN);
+    log(7,'real socket terminated then reconnected; inbox refreshed exactly once');
+  }finally{stopped=true;for(const t of liveTimers)clearTimeout(t);live.state.ws?.terminate();for(const s of network.clients)s.terminate();await new Promise(r=>network.close(r));}
 
   // DOM, WebSocket dan timer palsu: cukup untuk menjalankan logika openSocket apa adanya.
   const sockets = [];

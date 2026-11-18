@@ -32,5 +32,5 @@ export function mountSessionRoutes(api){
     if(target.id===req.tenantScope.session.id)res.setHeader('Set-Cookie',`sid=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${config.secureCookie?'; Secure':''}`);
     res.json({ok:true});
   });
-  api.get('/platform/session',requirePlatformScope,(req,res)=>res.json({user:req.user,platform:true}));
+  api.get('/platform/session',(req,res,next)=>requirePlatformScope(req,res,next),(req,res)=>res.json({user:req.user,platform:true}));
 }

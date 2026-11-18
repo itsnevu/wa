@@ -24,7 +24,7 @@ export function migrateSessionSchema(db){
       UPDATE users SET auth_version=auth_version+1 WHERE id=NEW.id;
       UPDATE sessions SET revoked_at=CAST((julianday('now')-2440587.5)*86400000 AS INTEGER) WHERE user_id=NEW.id AND revoked_at IS NULL;
     END;`);
-  for(const event of ['INSERT','DELETE','UPDATE']){
+  for(const event of ['INSERT','UPDATE']){
     const id=event==='DELETE'?'OLD.user_id':'NEW.user_id';
     const condition=event==='UPDATE'?" WHEN NEW.role IS NOT OLD.role OR NEW.tenant_id IS NOT OLD.tenant_id OR NEW.user_id IS NOT OLD.user_id":'';
     db.exec(`CREATE TRIGGER member_auth_${event} AFTER ${event} ON tenant_members${condition} BEGIN

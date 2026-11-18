@@ -75,7 +75,7 @@ export function inventory(surface,{infrastructure=[]}={}) {
 }
 function covers(scope,target){return scope==='/'||target===scope||target.startsWith(scope+'/');}
 export const key=r=>`${r.method} ${r.path}`;
-const owners=new Set(['T03','T05','T06','T07','T08','T13']);
+const owners=new Set(['T03','T04','T05','T06','T07','T08','T13']);
 export function validate(rows,{publicRoutes,pending},baseline) {
   const errors=[];const all=new Map();const matched=new Set();
   for(const [status,entries] of [['public',publicRoutes],['pending',pending]])for(const entry of entries){

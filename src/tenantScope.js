@@ -12,7 +12,7 @@ export function resolveTenantScope(req,options=defaults){
   if(mode==='platform'&&user.platform_role!=='platform_admin')throw sessionError(403,'PLATFORM_FORBIDDEN');
   if(mode!=='tenant')return Object.freeze({tenantId:session.active_tenant_id,userId:user.id,role:user.role,user,session,mode});
   const tenantId=enabled?session.active_tenant_id:'default';
-  if(!tenantId)throw sessionError(409,'TENANT_NOT_SELECTED');
+  if(!tenantId)throw sessionError(409,'TENANT_NOT_SELECTED',!database.prepare('SELECT 1 FROM tenant_members WHERE user_id=? LIMIT 1').get(user.id)?{reason:'NO_MEMBERSHIP'}:{});
   for(const source of [req.params,req.query,req.body])if(source&&Object.hasOwn(source,'tenant_id')&&source.tenant_id!==tenantId)throw sessionError(403,'TENANT_FORBIDDEN');
   const membership=database.prepare(`SELECT m.role,t.status FROM tenant_members m JOIN tenants t ON t.id=m.tenant_id WHERE m.tenant_id=? AND m.user_id=?`).get(tenantId,user.id);
   if(enabled&&!membership)throw sessionError(403,'TENANT_FORBIDDEN',{select_tenant:true});
