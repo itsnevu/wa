@@ -6,7 +6,8 @@ const headers={Authorization:`Bearer ${fields.password}`,Accept:'application/vnd
 const response=await fetch('https://api.github.com/repos/itsnevu/wa',{headers});
 const data=await response.json();
 console.log(JSON.stringify({authenticated:response.ok,status:response.status,defaultBranch:data.default_branch,permissions:data.permissions}));
-const runs=await fetch('https://api.github.com/repos/itsnevu/wa/actions/runs?branch=feat%2Ftenant-route-inventory&per_page=5',{headers});
+const branch=process.argv.find(s=>s.startsWith('--branch='))?.slice(9)||'feat/tenant-route-inventory';
+const runs=await fetch(`https://api.github.com/repos/itsnevu/wa/actions/runs?branch=${encodeURIComponent(branch)}&per_page=5`,{headers});
 const history=await runs.json();
 for(const r of history.workflow_runs||[])console.log(JSON.stringify({runId:r.id,url:r.html_url,status:r.status,conclusion:r.conclusion,head:r.head_sha}));
 const protection=await fetch(`https://api.github.com/repos/itsnevu/wa/branches/${data.default_branch}/protection`,{headers});

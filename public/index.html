@@ -26,6 +26,11 @@ button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 svg { width:20px; height:20px; stroke:currentColor; stroke-width:1.6; fill:none; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; vertical-align:middle; }
 #login { width:340px; padding:18px; margin:12vh auto; border:1px solid var(--line); background:var(--card); border-radius:var(--r); }
 #login button { width:100%; }
+#tenantPicker { width:min(420px,calc(100% - 32px)); padding:20px; margin:10vh auto; border:1px solid var(--line); background:var(--card); border-radius:var(--r); }
+#tenantChoices { display:grid; gap:10px; margin:18px 0; }
+#tenantChoices button { width:100%; text-align:left; padding:14px; white-space:normal; }
+#tenantPicker p { color:var(--muted); }
+#sessionNotice { position:fixed; top:12px; left:50%; transform:translateX(-50%); max-width:calc(100% - 24px); padding:12px 16px; z-index:10000; background:var(--card); border:1px solid #dc2626; border-radius:var(--r); overflow-wrap:anywhere; }
 #app { display:grid; grid-template-columns:64px 300px 1fr; height:100vh; }
 .rail { background:var(--rail); display:flex; align-items:center; flex-direction:column; gap:8px; padding:16px 10px; }
 .rail button { color:rgba(255,255,255,.55); border:0; background:transparent; padding:10px; }
@@ -300,6 +305,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 <link rel="stylesheet" href="/ai.css" />
 </head>
 <body>
+<div id="sessionNotice" class="hidden" role="alert"></div>
 
 <form id="login" class="hidden">
   <div class="login-brand" aria-label="Raqio"><img src="/icon.png" alt="" width="48" height="48" /><span class="brand-word">raqio</span></div><h3>Selamat datang kembali</h3><p class="login-intro">Satu workspace untuk semua percakapan bisnis Anda.</p>
@@ -309,6 +315,14 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
   <div class="err" id="lerr"></div>
   <button class="primary">Masuk</button>
 </form>
+
+<section id="tenantPicker" class="hidden" aria-labelledby="tenantTitle">
+  <h2 id="tenantTitle">Pilih workspace</h2>
+  <p>Pilih workspace yang ingin Anda buka. Akses mengikuti keanggotaan akun Anda.</p>
+  <div id="tenantChoices"></div>
+  <p id="tenantError" role="alert"></p>
+  <button id="tenantLogout" type="button">Keluar</button>
+</section>
 
 <div id="app" class="hidden">
   <nav class="rail" aria-label="Navigasi">
@@ -511,8 +525,22 @@ async function call(method, url, body) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const err = new Error(data.error || res.status);
+    if (res.status === 401 && url !== '/login') showLogin();
+    if (res.status === 409 && data.code === 'TENANT_NOT_SELECTED') showTenantPicker(state.tenants || []);
+    if (res.status === 403 && data.select_tenant) {
+      const session = await fetch('/api/me').then(r => r.json()).catch(() => ({}));
+      state.tenants = session.tenants || [];
+      showTenantPicker(state.tenants);
+    }
+    const err = new Error(data.code ? `${data.code}: ${data.error || ''}` : data.error || res.status);
     err.status = res.status;
+    err.code = data.code;
+    if (res.status === 403) {
+      $('#sessionNotice').textContent = err.message;
+      $('#sessionNotice').classList.remove('hidden');
+      const target = $('#tenantError');
+      if (target) target.textContent = err.message;
+    }
     throw err;
   }
   return data;
@@ -520,8 +548,59 @@ async function call(method, url, body) {
 
 function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
+function showLogin() {
+  $('#sessionNotice').classList.add('hidden');
+  $('#app').classList.add('hidden');
+  $('#tenantPicker').classList.add('hidden');
+  $('#login').classList.remove('hidden');
+  state.me = null;
+}
+
+function showTenantPicker(tenants) {
+  $('#login').classList.add('hidden');
+  $('#app').classList.add('hidden');
+  $('#tenantPicker').classList.remove('hidden');
+  $('#tenantError').textContent = '';
+  const choices = $('#tenantChoices');
+  choices.replaceChildren();
+  for (const tenant of tenants) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = `${tenant.name} · ${tenant.role}${tenant.status === 'suspended' ? ' · ditangguhkan' : ''}`;
+    button.disabled = tenant.status !== 'active';
+    button.onclick = async () => {
+      button.disabled = true;
+      try { await call('POST', '/tenant/switch', {tenant_id:tenant.id}); location.reload(); }
+      catch (error) { $('#tenantError').textContent = error.message; button.disabled = false; }
+    };
+    choices.append(button);
+  }
+  if (!tenants.length) choices.textContent = 'Akun ini belum memiliki keanggotaan workspace.';
+}
+
+$('#tenantLogout').onclick = async () => {
+  try { await call('POST','/logout'); } finally { showLogin(); }
+};
+
 async function boot() {
-  try { const out = await call('GET', '/me'); state.me = out.user; state.passMin = out.passMin || 12; } catch { $('#login').classList.remove('hidden'); return; }
+  try {
+    const out = await call('GET', '/me');
+    state.me = out.user; state.passMin = out.passMin || 12; state.tenants = out.tenants || [];
+    if (out.tenant_mode) {
+      const active = state.tenants.find(tenant => tenant.id === out.active_tenant_id);
+      if (!active || active.status !== 'active') {
+        showTenantPicker(state.tenants);
+        if (active?.status === 'suspended') { $('#sessionNotice').textContent = 'TENANT_SUSPENDED'; $('#sessionNotice').classList.remove('hidden'); }
+        return;
+      }
+    }
+    if (out.tenant_mode && !$('#btnTenantSwitch')) {
+      const button = document.createElement('button');
+      button.id = 'btnTenantSwitch'; button.type = 'button'; button.textContent = 'Workspace';
+      button.onclick = async () => { const session = await call('GET','/me'); state.tenants = session.tenants; showTenantPicker(state.tenants); };
+      $('#app .rail').append(button);
+    }
+  } catch (error) { if (error.status !== 409 && error.status !== 403) showLogin(); return; }
   $('#app').classList.remove('hidden');
   await loadNumbers(); await loadTemplates(); await loadLabels();
   await loadNotificationCount();

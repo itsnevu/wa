@@ -16,3 +16,5 @@ jobs:
         run: npm run test:tenant:routes
         env:
           INVENTORY_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+      - name: Verify session rotation and tenant status contracts
+        run: npm run test:tenant:t03

@@ -1,4 +1,4 @@
-// Frozen legacy debt; new routes must be marked, never added here.
+// Frozen legacy debt; only retire entries, never add new ones.
 export const publicRoutes=[
   {
     "method": "POST",
@@ -17,18 +17,6 @@ export const publicRoutes=[
   }
 ];
 export const pending=[
-  {
-    "method": "POST",
-    "path": "/api/logout",
-    "pr": "T03",
-    "alasan": "Rute legacy: scope tenant dikerjakan pada T03; perilaku tetap pada T02."
-  },
-  {
-    "method": "GET",
-    "path": "/api/me",
-    "pr": "T03",
-    "alasan": "Rute legacy: scope tenant dikerjakan pada T03; perilaku tetap pada T02."
-  },
   {
     "method": "GET",
     "path": "/api/numbers/:id/ai",
@@ -142,24 +130,6 @@ export const pending=[
     "path": "/api/search",
     "pr": "T05",
     "alasan": "Rute legacy: scope tenant dikerjakan pada T05; perilaku tetap pada T02."
-  },
-  {
-    "method": "POST",
-    "path": "/api/password",
-    "pr": "T03",
-    "alasan": "Rute legacy: scope tenant dikerjakan pada T03; perilaku tetap pada T02."
-  },
-  {
-    "method": "POST",
-    "path": "/api/logout-all",
-    "pr": "T03",
-    "alasan": "Rute legacy: scope tenant dikerjakan pada T03; perilaku tetap pada T02."
-  },
-  {
-    "method": "PATCH",
-    "path": "/api/me",
-    "pr": "T03",
-    "alasan": "Rute legacy: scope tenant dikerjakan pada T03; perilaku tetap pada T02."
   },
   {
     "method": "GET",
@@ -408,33 +378,9 @@ export const pending=[
     "alasan": "Rute legacy: scope tenant dikerjakan pada T06; perilaku tetap pada T02."
   },
   {
-    "method": "GET",
-    "path": "/api/users",
-    "pr": "T03",
-    "alasan": "Rute legacy: scope tenant dikerjakan pada T03; perilaku tetap pada T02."
-  },
-  {
-    "method": "POST",
-    "path": "/api/users",
-    "pr": "T03",
-    "alasan": "Rute legacy: scope tenant dikerjakan pada T03; perilaku tetap pada T02."
-  },
-  {
-    "method": "DELETE",
-    "path": "/api/users/:id",
-    "pr": "T03",
-    "alasan": "Rute legacy: scope tenant dikerjakan pada T03; perilaku tetap pada T02."
-  },
-  {
     "method": "USE",
     "path": "/media/*",
     "pr": "T08",
     "alasan": "Rute legacy: scope tenant dikerjakan pada T08; perilaku tetap pada T02."
-  },
-  {
-    "method": "UPGRADE",
-    "path": "/ws",
-    "pr": "T03",
-    "alasan": "Rute legacy: scope tenant dikerjakan pada T03; perilaku tetap pada T02."
   }
 ];

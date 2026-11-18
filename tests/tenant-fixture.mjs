@@ -48,11 +48,11 @@ export function twoTenants() {
         insert('orders',{...common,number_id:base,chat_id:base,code:'shared-order-code',items_json:'[]',total:0,created_at:0});
         insert('contacts',{...common,jid:'shared-contact',name:'fixture',updated_at:0});
         insert('contacts_v2',{...common,number_id:base,jid:'fixture-0@s.whatsapp.net',name:'fixture',updated_at:0});
-        insert('sessions',{token:`session-${tenantId}`,user_id:base,expires_at:9999999999999,active_tenant_id:tenantId});
+        insert('sessions',{id:`session-${tenantId}`,user_id:base,expires_at:9999999999999,active_tenant_id:tenantId,auth_version:db.prepare('SELECT auth_version FROM users WHERE id=?').get(base).auth_version});
         fs.mkdirSync(path.join(dir,'media',tenantId),{recursive:true});
         fs.writeFileSync(path.join(dir,'media',tenantId,'fixture-0.bin'),tenantId);
       }
-      db.prepare('INSERT INTO sessions(token,user_id,expires_at) VALUES(?,?,?)').run('session-P',1,9999999999999);
+      db.prepare('INSERT INTO sessions(id,user_id,expires_at,auth_version) VALUES(?,?,?,?)').run('session-P',1,9999999999999,db.prepare('SELECT auth_version FROM users WHERE id=1').get().auth_version);
     })();
     return {db,dir,close(){db.close();fs.rmSync(dir,{recursive:true,force:true});}};
   } catch(error) { db.close(); fs.rmSync(dir,{recursive:true,force:true}); throw error; }

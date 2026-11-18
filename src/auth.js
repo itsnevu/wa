@@ -1,36 +1,24 @@
-import { randomBytes } from 'node:crypto';
-import { db, q } from './db.js';
+import { q } from './db.js';
 import { verifyPassword } from './passwords.js';
 import { config } from './config.js';
+import {createSession,readSession,cookieId,revokeSession,sendSessionError} from './sessionStore.js';
 
 const COOKIE = 'sid';
 
-function parseCookies(header = '') {
-  return Object.fromEntries(
-    header.split(';').map((p) => p.trim().split('=')).filter((p) => p[0]).map(([k, ...v]) => [k, decodeURIComponent(v.join('='))])
-  );
-}
-
-export function login(username, password) {
+export function login(username, password, req={headers:{}}) {
   const user = q.userByName.get(username);
   if (!user || !verifyPassword(password, user.pass)) return null;
-  const token = randomBytes(24).toString('hex');
-  const expires = Date.now() + config.sessionTtlDays * 86400000;
-  q.insertSession.run(token, user.id, expires);
-  return { token, expires, user: { id: user.id, username: user.username, role: user.role } };
+  const session=createSession(user.id,req,{priorId:cookieId(req)});
+  return { token:session.id,expires:session.expires_at,user:{id:user.id,username:user.username,role:user.role} };
 }
 
 export function logout(req) {
-  const token = parseCookies(req.headers.cookie)[COOKIE];
-  if (token) q.deleteSession.run(token);
+  const token=cookieId(req);
+  if(token)revokeSession(token);
 }
 
 export function currentUser(req) {
-  const token = parseCookies(req.headers.cookie)[COOKIE];
-  if (!token) return null;
-  const row = q.sessionByToken.get(token);
-  if (!row || row.expires_at < Date.now()) return null;
-  return { id: row.id, username: row.username, role: row.role };
+  try{const row=readSession(req);return {id:row.user_id,username:row.username,role:row.role,platform_role:row.platform_role};}catch{return null;}
 }
 
 export function setCookie(res, token, expires) {
@@ -42,10 +30,8 @@ export function clearCookie(res) {
 }
 
 export function requireAuth(req, res, next) {
-  const user = currentUser(req);
-  if (!user) return res.status(401).json({ error: 'belum login' });
-  req.user = user;
-  next();
+  try{const row=readSession(req);req.user={id:row.user_id,username:row.username,role:row.role,platform_role:row.platform_role};next();}
+  catch(error){sendSessionError(res,error);}
 }
 
 export function requireAdmin(req, res, next) {

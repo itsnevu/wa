@@ -1,6 +1,6 @@
 {
   "pending": {
-    "T03": 9,
+    "T03": 0,
     "T05": 18,
     "T06": 34,
     "T08": 4,
@@ -16,7 +16,6 @@
     "DELETE /api/numbers/:id/products/:productId",
     "DELETE /api/rules/:id",
     "DELETE /api/templates/:id",
-    "DELETE /api/users/:id",
     "GET /api/activity",
     "GET /api/ai/alerts",
     "GET /api/backups",
@@ -24,7 +23,6 @@
     "GET /api/chats/:chatId/export",
     "GET /api/chats/:chatId/messages",
     "GET /api/labels",
-    "GET /api/me",
     "GET /api/monitor",
     "GET /api/notifications",
     "GET /api/notifications/count",
@@ -40,11 +38,9 @@
     "GET /api/orders",
     "GET /api/search",
     "GET /api/templates",
-    "GET /api/users",
     "PATCH /api/chats/:chatId/assign",
     "PATCH /api/chats/:chatId/pin",
     "PATCH /api/chats/:chatId/status",
-    "PATCH /api/me",
     "PATCH /api/numbers/:id/ai",
     "PATCH /api/numbers/:id/name",
     "PATCH /api/numbers/:id/products/:productId",
@@ -59,8 +55,6 @@
     "POST /api/chats/:chatId/send",
     "POST /api/chats/:chatId/unread",
     "POST /api/labels",
-    "POST /api/logout",
-    "POST /api/logout-all",
     "POST /api/notifications/read",
     "POST /api/numbers",
     "POST /api/numbers/:id/ai/profile-draft",
@@ -72,11 +66,8 @@
     "POST /api/numbers/:id/reconnect",
     "POST /api/numbers/:id/rules",
     "POST /api/numbers/:id/start",
-    "POST /api/password",
     "POST /api/templates",
-    "POST /api/users",
     "PUT /api/chats/:chatId/name",
-    "UPGRADE /ws",
     "USE /media/*"
   ]
 }

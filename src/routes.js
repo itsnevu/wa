@@ -11,6 +11,8 @@ import { config } from './config.js';
 import * as backup from './backup.js';
 import { aiApi } from './ai/routes.js';
 import { issueMediaUrl, mediaError } from './media.js';
+import {requireSessionScope,requireTenantScope} from './tenantScope.js';
+import {mountSessionRoutes} from './sessionRoutes.js';
 
 export const api = Router();
 
@@ -20,7 +22,7 @@ api.post('/login', (req, res) => {
   const { username, password } = req.body || {};
   if (typeof username !== 'string' || typeof password !== 'string') return res.status(400).json({ error: 'username dan password wajib' });
   if (guard.blocked(username, req.ip)) return res.status(429).json({ error: 'terlalu banyak percobaan, coba lagi nanti' });
-  const out = login(username, password);
+  const out = login(username, password,req);
   if (!out) {
     guard.fail(username, req.ip);
     return res.status(401).json({ error: 'username atau password salah' });
@@ -30,13 +32,9 @@ api.post('/login', (req, res) => {
   res.json({ user: out.user });
 });
 
-api.post('/logout', (req, res) => { logout(req); clearCookie(res); res.json({ ok: true }); });
+api.post('/logout',requireSessionScope, (req, res) => { logout(req); clearCookie(res); res.json({ ok: true }); });
 
-api.get('/me', (req, res) => {
-  const user = currentUser(req);
-  if (!user) return res.status(401).json({ error: 'belum login' });
-  res.json({ user, passMin: config.passMin });
-});
+mountSessionRoutes(api);
 
 api.use(requireAuth);
 api.use(aiApi);
@@ -66,7 +64,7 @@ api.get('/search', (req, res) => {
   res.json(rows);
 });
 
-api.post('/password', (req, res) => {
+api.post('/password',requireSessionScope, (req, res) => {
   const { old, next } = req.body || {};
   if (typeof next !== 'string' || next.length < config.passMin) return res.status(400).json({ error: `password minimal ${config.passMin} karakter` });
   const row = q.userByName.get(req.user.username);
@@ -75,13 +73,13 @@ api.post('/password', (req, res) => {
   res.json({ ok: true });
 });
 
-api.post('/logout-all', (req, res) => {
+api.post('/logout-all',requireSessionScope, (req, res) => {
   q.deleteAllSessions.run(req.user.id);
   clearCookie(res);
   res.json({ ok: true });
 });
 
-api.patch('/me', (req, res) => {
+api.patch('/me',requireSessionScope, (req, res) => {
   const name = String(req.body?.username || '').trim();
   if (name.length < 3) return res.status(400).json({ error: 'username minimal 3 karakter' });
   try { q.setUsername.run(name, req.user.id); res.json({ ok: true }); }
@@ -435,9 +433,9 @@ api.delete('/chats/:chatId/labels/:labelId', (req, res) => {
   res.json({ ok: true });
 });
 
-api.get('/users', requireAdmin, (_req, res) => res.json(q.allUsers.all()));
+api.get('/users',requireTenantScope, requireAdmin, (_req, res) => res.json(q.allUsers.all()));
 
-api.post('/users', requireAdmin, (req, res) => {
+api.post('/users',requireTenantScope, requireAdmin, (req, res) => {
   const { username, password, role = 'agent' } = req.body || {};
   if (!username || !password) return res.status(400).json({ error: 'username dan password wajib' });
   if (typeof password !== 'string' || password.length < config.passMin) return res.status(400).json({ error: `password minimal ${config.passMin} karakter` });
@@ -447,4 +445,4 @@ api.post('/users', requireAdmin, (req, res) => {
   } catch { res.status(400).json({ error: 'username sudah dipakai' }); }
 });
 
-api.delete('/users/:id', requireAdmin, (req, res) => { q.deleteUser.run(Number(req.params.id)); res.json({ ok: true }); });
+api.delete('/users/:id',requireTenantScope, requireAdmin, (req, res) => { q.deleteUser.run(Number(req.params.id)); res.json({ ok: true }); });

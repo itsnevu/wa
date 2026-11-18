@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "test:tenant:t03": "node --test tests/tenant-t03.test.mjs tests/static-boundary.test.mjs",
     "test:tenant:routes": "node --test tests/route-inventory.test.mjs",
     "inventory:routes": "node scripts/inventory-routes.mjs",
     "test:tenant:t01": "node --test tests/tenant-t01.test.mjs",

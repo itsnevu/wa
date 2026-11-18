@@ -1,0 +1,5 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-tenant-sessions-browser.mjs
+SHA: 9773203946c997018b50b426e841b41a5c66fecf
+exit: 0
+PASS browser: login -> null tenant picker -> switch -> app; 401 login, 409 picker, 403 exact code; desktop + 360px screenshots; flag-enabled fixture only
+

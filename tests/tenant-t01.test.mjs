@@ -10,14 +10,14 @@ import { twoTenants } from './tenant-fixture.mjs';
 function legacy() {
   const db = new Database(':memory:');
   db.pragma('foreign_keys = ON');
-  db.exec(`CREATE TABLE users(id INTEGER PRIMARY KEY, role TEXT);
+  db.exec(`CREATE TABLE users(id INTEGER PRIMARY KEY, role TEXT,username TEXT);
     CREATE TABLE sessions(token TEXT PRIMARY KEY,user_id INTEGER REFERENCES users(id),expires_at INTEGER);
     CREATE TABLE numbers(id INTEGER PRIMARY KEY,phone TEXT UNIQUE);
     CREATE TABLE chats(id INTEGER PRIMARY KEY,number_id INTEGER REFERENCES numbers(id));
     CREATE TABLE messages(id INTEGER PRIMARY KEY,number_id INTEGER REFERENCES numbers(id),chat_id INTEGER REFERENCES chats(id));
     CREATE INDEX message_chat ON messages(chat_id);
     CREATE TABLE labels(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT UNIQUE);
-    INSERT INTO users VALUES(1,'admin'),(2,'agent'),(3,'admin');
+    INSERT INTO users(id,role) VALUES(1,'admin'),(2,'agent'),(3,'admin');
     INSERT INTO numbers VALUES(1,'62001'); INSERT INTO chats VALUES(1,1);
     INSERT INTO messages VALUES(1,1,1); INSERT INTO labels VALUES(1,'new');
     INSERT INTO labels VALUES(100,'deleted'); DELETE FROM labels WHERE id=100;`);
@@ -66,13 +66,16 @@ test('backup failure leaves schema unchanged', async () => {
 test('resolver matrix: authoritative session, membership, status, spoofing, revocation', async () => {
   const { migrateTenantSchema } = await import('../src/tenantMigration.js');
   const { resolveTenantScope } = await import('../src/tenantScope.js');
+  const {migrateSessionSchema}=await import('../src/sessionMigration.js');
   const db = legacy(); const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tenant-scope-'));
   try {
     await migrateTenantSchema(db, { backupDir: dir });
+    db.transaction(()=>migrateSessionSchema(db)).immediate();
     db.exec(`INSERT INTO tenants VALUES('B','B','active',0);
       INSERT INTO tenant_members(tenant_id,user_id,role,created_at) VALUES('B',2,'owner',0);
-      INSERT INTO sessions(token,user_id,expires_at,active_tenant_id) VALUES('a',1,9999999999999,'default'),('b',2,9999999999999,'B'),('p',3,9999999999999,NULL);
-      DELETE FROM tenant_members WHERE user_id=3;`);
+      INSERT INTO sessions(id,user_id,expires_at,active_tenant_id) VALUES('a',1,9999999999999,'default'),('b',2,9999999999999,'B'),('p',3,9999999999999,NULL);
+      DELETE FROM tenant_members WHERE user_id=3;
+      UPDATE sessions SET auth_version=(SELECT auth_version FROM users WHERE users.id=sessions.user_id);`);
     const scope = req => resolveTenantScope(req, { database: db, enabled: true });
     const req = (token, extra = {}) => ({ headers: { cookie: `sid=${token}` }, ...extra });
     const denied = (request, status) => assert.throws(() => scope(request), e => e.status === status);
@@ -83,12 +86,12 @@ test('resolver matrix: authoritative session, membership, status, spoofing, revo
     denied(req('a', { query: { tenant_id: ['default','B'] } }),403);
     denied(req('b', { user: { id: 1 } }),401);
     denied({ headers: {} },401); denied(req('unknown'),401);
-    denied(req('p'),403);
+    denied(req('p'),409);
     db.exec("DELETE FROM tenant_members WHERE tenant_id='default' AND user_id=1");
     denied(req('a'),403);
     db.exec("UPDATE tenants SET status='suspended' WHERE id='B'");
     denied(req('b'),403);
-    db.exec("UPDATE sessions SET expires_at=0 WHERE token='b'"); denied(req('b'),401);
+    db.exec("UPDATE sessions SET expires_at=0 WHERE id='b'"); denied(req('b'),401);
     console.log('SCOPE_MATRIX: A/A PASS; B/B PASS; body/URL/query spoof PASS; swapped identity PASS; anonymous PASS; platform-only PASS; revoked PASS; suspended PASS; expired PASS');
   } finally { db.close(); fs.rmSync(dir, { recursive: true, force: true }); }
 });
@@ -175,11 +178,12 @@ test('complete A/B fixture: every resource scoped; tenant-local keys; cross-tena
     assert.throws(()=>h.db.prepare("INSERT INTO chat_labels(chat_id,label_id,tenant_id) VALUES(10,20,'A')").run(),/tenant relationship/);
     assert.throws(()=>h.db.prepare("INSERT INTO tenant_members(tenant_id,user_id,role,created_at) VALUES('A',20,'owner',0)").run(),/UNIQUE/);
     h.db.prepare("INSERT INTO tenant_members(tenant_id,user_id,role,created_at) VALUES('B',10,'agent',0)").run();
+    h.db.exec('UPDATE sessions SET auth_version=(SELECT auth_version FROM users WHERE users.id=sessions.user_id)');
     const req={headers:{cookie:'sid=session-A'}};
     assert.equal(resolveTenantScope(req,{database:h.db,enabled:true}).tenantId,'A');
-    h.db.prepare("UPDATE sessions SET active_tenant_id='B' WHERE token='session-A'").run();
+    h.db.prepare("UPDATE sessions SET active_tenant_id='B' WHERE id='session-A'").run();
     assert.equal(resolveTenantScope(req,{database:h.db,enabled:true}).tenantId,'B');
-    assert.throws(()=>resolveTenantScope({headers:{cookie:'sid=session-P'}},{database:h.db,enabled:true}),e=>e.status===403);
+    assert.throws(()=>resolveTenantScope({headers:{cookie:'sid=session-P'}},{database:h.db,enabled:true}),e=>e.status===409);
     assert.deepEqual(h.db.pragma('foreign_key_check'),[]);
     console.log('FULL_FIXTURE_MATRIX: A/B each owner+agent+2 numbers; all 21 resource tables PASS; shared keys PASS; immutable scope PASS; cross-tenant references PASS; multi-membership PASS; P denied PASS');
   }finally{h.close();}

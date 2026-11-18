@@ -44,9 +44,9 @@ export const config = {
   callReply: process.env.CALL_REPLY || '',
 };
 
-// T01 only: routes/workers/sockets still require T02–T15 before activation.
+// Sessions are ready; resource queries/workers/rooms still require later isolation stages.
 if (config.multitenantEnabled) {
-  throw new Error('MULTITENANT_ENABLED requires the remaining tenant isolation stages; T01 is foundation only');
+  throw new Error('MULTITENANT_ENABLED requires resource isolation T05/T06 and the remaining stages; T03 session foundation only');
 }
 
 // Validate before db.js can create/migrate a database. Never log the supplied key.

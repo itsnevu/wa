@@ -19,8 +19,8 @@ test('explicit version gate, fixed fingerprint, deterministic owner, retention a
     assert.deepEqual(db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all(),[]);
     await ensureSchema(db,{...config,allowAutoMigrate:true});
     assert.ok(statements.includes('BEGIN IMMEDIATE'));
-    const version=db.prepare('SELECT * FROM schema_migrations').get();
-    assert.equal(version.version,1); assert.equal(version.fingerprint,schemaFingerprint(db));
+    const version=db.prepare('SELECT * FROM schema_migrations ORDER BY version DESC LIMIT 1').get();
+    assert.equal(version.version,2); assert.equal(version.fingerprint,schemaFingerprint(db));
     assert.equal(db.prepare("SELECT user_id FROM tenant_members WHERE role='owner' AND tenant_id='default'").get().user_id,1);
     await ensureSchema(db,config);
     for(let i=0;i<3;i++) await backupBeforeTenantMigration(db,path.join(dir,'migration-backups'),2);
@@ -28,7 +28,7 @@ test('explicit version gate, fixed fingerprint, deterministic owner, retention a
     assert.equal(stats.backupCount,2);assert.ok(stats.backupBytes>0); console.log('BACKUP_RETENTION',JSON.stringify(stats));
     db.exec('ALTER TABLE numbers ADD COLUMN unexpected TEXT');
     await assert.rejects(ensureSchema(db,{...config,allowAutoMigrate:true}),/fingerprint mismatch/);
-    db.exec('UPDATE schema_migrations SET version=999');
+    db.exec('UPDATE schema_migrations SET version=999 WHERE version=2');
     await assert.rejects(ensureSchema(db,{...config,allowAutoMigrate:true}),/version mismatch/);
     const unknown=new Database(':memory:'); unknown.exec('CREATE TABLE surprise(id INTEGER)');
     await assert.rejects(ensureSchema(unknown,{...config,allowAutoMigrate:true}),/fingerprint mismatch before/);unknown.close();

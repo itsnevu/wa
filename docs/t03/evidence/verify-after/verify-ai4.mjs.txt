@@ -1,0 +1,8 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai4.mjs
+SHA: 9773203946c997018b50b426e841b41a5c66fecf
+exit: 0
+[db] admin dibuat: harness-admin
+[schema] {"version":2,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai4-sOdpbs\\migration-backups\\pre-t01-0936ee25-f241-47d5-906a-08e6ebeb6dfb.sqlite","backupCount":1,"backupBytes":4096}
+PASS ai4: real tool loop, fallback, agent pause, paused skip, model error escalation, no error text, independent incoming save/rules; exit 0
+[in] 62@s.whatsapp.net | fromMe= false | conversation
+

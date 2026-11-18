@@ -1,0 +1,8 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-wa1.mjs
+SHA: 9773203946c997018b50b426e841b41a5c66fecf
+exit: 0
+[db] admin dibuat: harness-admin
+[schema] {"version":2,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phasewa1-57ob9k\\migration-backups\\pre-t01-b9162a61-93ba-41f1-8846-a0b52aee6852.sqlite","backupCount":1,"backupBytes":4096}
+PATCH pin 200 {"ok":true}
+Assertions: persistence, order, validation, access; exit 0
+

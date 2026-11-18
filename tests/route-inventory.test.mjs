@@ -28,7 +28,7 @@ test('all registered HTTP, USE and upgrade surfaces have scope or reviewed exemp
   assert.equal(fs.readFileSync('docs/t01/route-inventory.md','utf8').replaceAll('\r\n','\n'),renderInventory(result));
   // Compare budgets/identities with PR base, never just an editable ceiling.
   const supplied=process.env.INVENTORY_BASE_REF;
-  const ref=supplied&&!/^0+$/.test(supplied)?supplied:'HEAD';
+  const ref=supplied&&!/^0+$/.test(supplied)?supplied:supplied?'HEAD^':'HEAD';
   execFileSync('git',['rev-parse','--verify',`${ref}^{commit}`],{stdio:'pipe'});
   let prior;
   try{prior=JSON.parse(execFileSync('git',['show',`${ref}:tests/route-inventory.baseline.json`],{encoding:'utf8',stdio:['ignore','pipe','pipe']}));}

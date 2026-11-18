@@ -1,0 +1,9 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-media-browser.mjs
+SHA: 9773203946c997018b50b426e841b41a5c66fecf
+exit: 0
+Agen B: lampiran nomor B tampil dengan URL UUID bertanda tangan; viewport 1360x900.
+URL diperbarui ketika dibuka setelah expiry; preview tetap tampil.
+Agen A: dokumen HTML miliknya mendapat tautan unduh; browser tidak menjalankan HTML. Header attachment diuji melalui HTTP.
+Agen A: upaya lampiran nomor B menampilkan pesan 403 Bahasa Indonesia, tanpa src gambar; screenshot desktop dan 360x800.
+Tidak ada exception JavaScript yang tidak tertangani; tidak ada pengiriman WhatsApp.
+

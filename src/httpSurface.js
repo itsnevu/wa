@@ -7,6 +7,8 @@ import {config} from './config.js';
 import {api} from './routes.js';
 import {mediaRouter} from './media.js';
 import {assertStaticBoundary} from './staticBoundary.js';
+import {resolveHandshake} from './tenantScope.js';
+import {scoped} from './routeScopeMarker.js';
 
 // Shared construction for production and inventory; does not listen or restore WA.
 export function createHttpSurface() {
@@ -25,6 +27,10 @@ export function createHttpSurface() {
   app.use('/api',api);
   app.use('/media',mediaRouter);
   const server=http.createServer(app);
-  const wss=new WebSocketServer({server,path:'/ws'});
+  const wss=new WebSocketServer({server,path:'/ws',verifyClient:({req},done)=>{
+    if(!config.multitenantEnabled)return done(true);
+    try{req.tenantScope=resolveHandshake(req);done(true);}catch(error){done(false,error.status||401,error.code||'SESSION_INVALID');}
+  }});
+  scoped(server.listeners('upgrade')[0]);
   return {app,server,wss,upgradeHandler:server.listeners('upgrade')[0],infrastructure:[json]};
 }

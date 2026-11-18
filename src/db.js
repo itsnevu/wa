@@ -4,6 +4,7 @@ import Database from 'better-sqlite3';
 import { config } from './config.js';
 import { ensureSchema } from './schemaMigrations.js';
 import { configureTenantScope } from './tenantScope.js';
+import {configureSessionStore} from './sessionStore.js';
 import { randomUUID } from 'node:crypto';
 
 fs.mkdirSync(config.dataDir, { recursive: true });
@@ -11,9 +12,10 @@ export const db = new Database(path.join(config.dataDir, 'app.db'));
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 await ensureSchema(db, config);
+configureSessionStore(db);
 fs.mkdirSync(path.join(config.dataDir, 'media'), { recursive: true });
 fs.mkdirSync(path.join(config.dataDir, 'sessions'), { recursive: true });
-configureTenantScope(db, config.multitenantEnabled);
+configureTenantScope(db, () => config.multitenantEnabled);
 export const DEFAULT_STOP_REPLY = 'Baik, saya sambungkan ke agen kami. Mohon tunggu sebentar ya.';
 export function backfillMedia() {
   return db.transaction(() => {
@@ -54,11 +56,11 @@ export const q = {
   deleteUser: db.prepare('DELETE FROM users WHERE id = ?'),
   setUserPass: db.prepare('UPDATE users SET pass = ? WHERE id = ?'),
   setUsername: db.prepare('UPDATE users SET username = ? WHERE id = ?'),
-  deleteAllSessions: db.prepare('DELETE FROM sessions WHERE user_id = ?'),
+  deleteAllSessions: db.prepare("UPDATE sessions SET revoked_at=CAST((julianday('now')-2440587.5)*86400000 AS INTEGER) WHERE user_id = ? AND revoked_at IS NULL"),
 
-  insertSession: db.prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)'),
-  sessionByToken: db.prepare('SELECT s.token, s.expires_at, u.id, u.username, u.role FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?'),
-  deleteSession: db.prepare('DELETE FROM sessions WHERE token = ?'),
+  insertSession: db.prepare('INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)'),
+  sessionByToken: db.prepare('SELECT s.id AS token, s.expires_at, u.id, u.username, u.role FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ? AND s.revoked_at IS NULL'),
+  deleteSession: db.prepare("UPDATE sessions SET revoked_at=CAST((julianday('now')-2440587.5)*86400000 AS INTEGER) WHERE id = ? AND revoked_at IS NULL"),
 
   allNumbers: db.prepare('SELECT * FROM numbers ORDER BY id'),
   numbersByOwner: db.prepare('SELECT * FROM numbers WHERE owner_id = ? ORDER BY id'),

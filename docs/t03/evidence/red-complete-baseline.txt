@@ -1,0 +1,399 @@
+command: node scripts/check-t03-baseline.mjs
+baseline: 9773203946c997018b50b426e841b41a5c66fecf
+inner exit: 1
+✖ 01 scoped routes invoke real resolver (spy), including /me and switch (1.3779ms)
+✖ 02 public health/login/static never invoke tenant resolver (4.3097ms)
+✖ 03 contract: missing, revoked and expired sessions => 401 SESSION_INVALID (17.8785ms)
+✖ 04 contract: valid null tenant => 409 TENANT_NOT_SELECTED (49.8723ms)
+✖ 05 contract: non-member active tenant => 403 TENANT_FORBIDDEN and reselection (46.2195ms)
+✖ 06 contract: suspended tenant => 403 TENANT_SUSPENDED (44.8807ms)
+✖ 07 contract: other users session resource => 404 (73.1283ms)
+✖ 08 contract: platform admin without tenant can use platform route (0.5276ms)
+✖ 09 fixation: pre-login cookie is never promoted (35.1616ms)
+✖ 10 login rotation atomically kills presented ID; GRACE_MS=0 boundaries (1.199ms)
+✖ 11 tenant switch rotates, revokes old ID, and selects membership (46.7542ms)
+✖ 12 role change uses atomic rotation and invalidates old IDs (0.7453ms)
+✖ 13 user-agent changes remain valid and ua_hash is observed server-side (45.9456ms)
+✖ 14 logout revokes the row, clears cookie and next request is 401 (45.7139ms)
+✖ 15 list and revoke another device; own/foreign account boundary (79.0357ms)
+✖ 16 switch to non-membership =>403 and session unchanged (45.5239ms)
+✖ 17 array/object tenant_id are forbidden without rotation (46.2603ms)
+✖ 18 /me works with null active tenant and lists memberships/roles (47.581ms)
+✖ 19 /ws rejects absent session (3.9038ms)
+✖ 20 /ws rejects null tenant (29.9753ms)
+✖ 21 /ws accepts a current valid tenant (43.3509ms)
+✖ 22 expired rows are actually deleted (39.9477ms)
+✖ 23 login -> me -> select tenant -> inbox has no unexpected 409 (53.7553ms)
+[db] admin dibuat: migration-fixture
+✖ 24 feature flag off keeps legacy default tenant workflow (45.5998ms)
+✖ 25 membership add/remove rotates atomically, and grace boundaries reject old IDs (0.8351ms)
+✖ 26 migration v1 -> v2 refuses implicit startup and invalidates every legacy token (52.2685ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 0
+ℹ fail 26
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1480.5193
+
+✖ failing tests:
+
+test at tests\tenant-t03.test.mjs:35:1
+✖ 01 scoped routes invoke real resolver (spy), including /me and switch (1.3779ms)
+  AssertionError [ERR_ASSERTION]: spyable real resolver
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:36:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t03.test.mjs:49:1
+✖ 02 public health/login/static never invoke tenant resolver (4.3097ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(scope.tenantResolver)
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:50:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t03.test.mjs:53:1
+✖ 03 contract: missing, revoked and expired sessions => 401 SESSION_INVALID (17.8785ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'SESSION_INVALID'
+  
+      at code (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:27:91)
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:54:3)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'SESSION_INVALID',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t03.test.mjs:57:1
+✖ 04 contract: valid null tenant => 409 TENANT_NOT_SELECTED (49.8723ms)
+  AssertionError [ERR_ASSERTION]: [{"id":1,"username":"platform-fixture","role":"admin"},{"id":10,"username":"A-0","role":"admin"},{"id":11,"username":"A-1","role":"agent"},{"id":20,"username":"B-0","role":"admin"},{"id":21,"username":"B-1","role":"agent"}]
+  
+  200 !== 409
+  
+      at code (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:27:38)
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:57:76)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t03.test.mjs:58:1
+✖ 05 contract: non-member active tenant => 403 TENANT_FORBIDDEN and reselection (46.2195ms)
+  SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+      at JSON.parse (<anonymous>)
+      at parseJSONFromBytes (node:internal/deps/undici/undici:4394:19)
+      at successSteps (node:internal/deps/undici/undici:7048:27)
+      at readAllBytes (node:internal/deps/undici/undici:5965:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+test at tests\tenant-t03.test.mjs:62:1
+✖ 06 contract: suspended tenant => 403 TENANT_SUSPENDED (44.8807ms)
+  SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+      at JSON.parse (<anonymous>)
+      at parseJSONFromBytes (node:internal/deps/undici/undici:4394:19)
+      at successSteps (node:internal/deps/undici/undici:7048:27)
+      at readAllBytes (node:internal/deps/undici/undici:5965:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+test at tests\tenant-t03.test.mjs:63:1
+✖ 07 contract: other users session resource => 404 (73.1283ms)
+  SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+      at JSON.parse (<anonymous>)
+      at parseJSONFromBytes (node:internal/deps/undici/undici:4394:19)
+      at successSteps (node:internal/deps/undici/undici:7048:27)
+      at readAllBytes (node:internal/deps/undici/undici:5965:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+test at tests\tenant-t03.test.mjs:64:1
+✖ 08 contract: platform admin without tenant can use platform route (0.5276ms)
+  Error [SqliteError]: no such column: platform_role
+      at Database.prepare (C:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:65:6)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'SQLITE_ERROR'
+  }
+
+test at tests\tenant-t03.test.mjs:68:1
+✖ 09 fixation: pre-login cookie is never promoted (35.1616ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'SESSION_INVALID'
+  
+      at code (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:27:91)
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:69:99)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'SESSION_INVALID',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t03.test.mjs:71:1
+✖ 10 login rotation atomically kills presented ID; GRACE_MS=0 boundaries (1.199ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-baseline-eb2NMT\src\sessionStore.js' imported from C:\Users\user\wa-suite\artifacts\t03-baseline-eb2NMT\tests\tenant-t03.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/src/sessionStore.js'
+  }
+
+test at tests\tenant-t03.test.mjs:78:1
+✖ 11 tenant switch rotates, revokes old ID, and selects membership (46.7542ms)
+  SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+      at JSON.parse (<anonymous>)
+      at parseJSONFromBytes (node:internal/deps/undici/undici:4394:19)
+      at successSteps (node:internal/deps/undici/undici:7048:27)
+      at readAllBytes (node:internal/deps/undici/undici:5965:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+test at tests\tenant-t03.test.mjs:81:1
+✖ 12 role change uses atomic rotation and invalidates old IDs (0.7453ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-baseline-eb2NMT\src\sessionStore.js' imported from C:\Users\user\wa-suite\artifacts\t03-baseline-eb2NMT\tests\tenant-t03.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/src/sessionStore.js'
+  }
+
+test at tests\tenant-t03.test.mjs:86:1
+✖ 13 user-agent changes remain valid and ua_hash is observed server-side (45.9456ms)
+  Error [SqliteError]: no such column: ua_hash
+      at Database.prepare (C:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:88:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'SQLITE_ERROR'
+  }
+
+test at tests\tenant-t03.test.mjs:90:1
+✖ 14 logout revokes the row, clears cookie and next request is 401 (45.7139ms)
+  Error [SqliteError]: no such column: revoked_at
+      at Database.prepare (C:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:91:174)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'SQLITE_ERROR'
+  }
+
+test at tests\tenant-t03.test.mjs:93:1
+✖ 15 list and revoke another device; own/foreign account boundary (79.0357ms)
+  SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+      at JSON.parse (<anonymous>)
+      at parseJSONFromBytes (node:internal/deps/undici/undici:4394:19)
+      at successSteps (node:internal/deps/undici/undici:7048:27)
+      at readAllBytes (node:internal/deps/undici/undici:5965:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+test at tests\tenant-t03.test.mjs:97:1
+✖ 16 switch to non-membership =>403 and session unchanged (45.5239ms)
+  SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+      at JSON.parse (<anonymous>)
+      at parseJSONFromBytes (node:internal/deps/undici/undici:4394:19)
+      at successSteps (node:internal/deps/undici/undici:7048:27)
+      at readAllBytes (node:internal/deps/undici/undici:5965:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+test at tests\tenant-t03.test.mjs:100:1
+✖ 17 array/object tenant_id are forbidden without rotation (46.2603ms)
+  SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+      at JSON.parse (<anonymous>)
+      at parseJSONFromBytes (node:internal/deps/undici/undici:4394:19)
+      at successSteps (node:internal/deps/undici/undici:7048:27)
+      at readAllBytes (node:internal/deps/undici/undici:5965:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+test at tests\tenant-t03.test.mjs:103:1
+✖ 18 /me works with null active tenant and lists memberships/roles (47.581ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - null
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:103:186)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t03.test.mjs:105:1
+✖ 19 /ws rejects absent session (3.9038ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  101 !== 401
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:105:55)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 101,
+    expected: 401,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t03.test.mjs:106:1
+✖ 20 /ws rejects null tenant (29.9753ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  101 !== 409
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:106:52)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 101,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t03.test.mjs:107:1
+✖ 21 /ws accepts a current valid tenant (43.3509ms)
+  SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+      at JSON.parse (<anonymous>)
+      at parseJSONFromBytes (node:internal/deps/undici/undici:4394:19)
+      at successSteps (node:internal/deps/undici/undici:7048:27)
+      at readAllBytes (node:internal/deps/undici/undici:5965:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+test at tests\tenant-t03.test.mjs:108:1
+✖ 22 expired rows are actually deleted (39.9477ms)
+  Error [SqliteError]: no such column: id
+      at Database.prepare (C:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:109:28)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'SQLITE_ERROR'
+  }
+
+test at tests\tenant-t03.test.mjs:111:1
+✖ 23 login -> me -> select tenant -> inbox has no unexpected 409 (53.7553ms)
+  SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+      at JSON.parse (<anonymous>)
+      at parseJSONFromBytes (node:internal/deps/undici/undici:4394:19)
+      at successSteps (node:internal/deps/undici/undici:7048:27)
+      at readAllBytes (node:internal/deps/undici/undici:5965:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+test at tests\tenant-t03.test.mjs:114:1
+✖ 24 feature flag off keeps legacy default tenant workflow (45.5998ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - false
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:116:112)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t03.test.mjs:118:1
+✖ 25 membership add/remove rotates atomically, and grace boundaries reject old IDs (0.8351ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-baseline-eb2NMT\src\sessionStore.js' imported from C:\Users\user\wa-suite\artifacts\t03-baseline-eb2NMT\tests\tenant-t03.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/src/sessionStore.js'
+  }
+
+test at tests\tenant-t03.test.mjs:129:1
+✖ 26 migration v1 -> v2 refuses implicit startup and invalidates every legacy token (52.2685ms)
+  Error [SqliteError]: NOT NULL constraint failed: schema_migrations.fingerprint
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-baseline-eb2NMT/tests/tenant-t03.test.mjs:138:67)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'SQLITE_CONSTRAINT_NOTNULL'
+  }
