@@ -1,0 +1,17 @@
+{
+ "integrity_check": "ok",
+ "foreign_key_check": 0,
+ "versions": "1:T01, 2:T03 sessions, 3:T04 prerequisites, 4:T04 platform, 5:Session sync health, 6:Deal foundation, 7:Deal review, 8:Deal analytics",
+ "fingerprint_is_v8": true,
+ "ddl_hash": "9d60718e578948c47d2153c68d8026dc73c2f7a123234da4e5d81c57756457a2",
+ "ddl_equals_rehearsal": true,
+ "rows": {
+  "numbers": 2,
+  "chats": 40,
+  "messages": 1883,
+  "users": 1,
+  "tenants": 1,
+  "deals": 0,
+  "deal_events": 0
+ }
+}
