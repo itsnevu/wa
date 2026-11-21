@@ -21,6 +21,8 @@ const pending = db.prepare(`SELECT j.notice_key,j.deal_id,j.kind,d.session_id,d.
 const delivered = db.prepare('UPDATE deal_job_notices SET delivered_at=? WHERE tenant_id=? AND notice_key=?');
 const supersede = db.prepare(`UPDATE deal_job_notices SET delivered_at=?
   WHERE tenant_id=? AND notice_key=? AND delivered_at IS NULL`);
+// chat_type arrives with the group schema; until backfill runs the JID suffix is authoritative.
+export const isGroupChat = ({ chat_type, jid }) => chat_type === 'group' || String(jid ?? '').endsWith('@g.us');
 const notify = (tenant,key,deal,kind,now,payload,sent = now) =>
   insertDealNotice.run(tenant,key,deal,kind,now,JSON.stringify(payload),sent).changes;
 
@@ -63,6 +65,14 @@ export async function runDealReviewJobs({ now = Date.now(), sendReminder } = {})
     for (const { id:tenant } of tenants) {
       for (const entry of pending.all(tenant)) {
         if (entry.kind === 'dp_h_minus_1' && now >= entry.due_at) continue;
+        // Hotfix: never announce a balance to a group. Permanent fix (DM to buyer) is task 6.
+        if (isGroupChat(entry)) {
+          db.transaction(() => {
+            delivered.run(now,tenant,entry.notice_key);
+            appendDealEvent(entry.deal_id,'dp_reminder_skipped',{ kind:entry.kind,reason:'group_chat' },null,now);
+          }).immediate();
+          continue;
+        }
         try {
           const balance = entry.amount_due.toLocaleString('id-ID');
           const date = new Intl.DateTimeFormat('id-ID',{ dateStyle:'medium',timeZone:'Asia/Jakarta' }).format(entry.due_at);
