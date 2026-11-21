@@ -1,0 +1,2 @@
+$ grep -rn --include=*.js --include=*.mjs --include=*.html --include=*.sql --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=artifacts --exclude-dir=docs -E 'participant' src public tests scripts
+public/index.html:943:  // Incoming group participants are unavailable in this API; group by side.

@@ -1,0 +1,11 @@
+$ grep -rn --include=*.js --include=*.mjs --include=*.html --include=*.sql --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=artifacts --exclude-dir=docs -E '@lid' src public tests scripts
+public/index.html:530:  const phone = String(c.pn || (String(c.jid).endsWith('@lid') ? '' : c.jid) || '').split('@')[0].split(':')[0].replace(/\D/g, '');
+public/index.html:536:  return c.jid.endsWith('@lid') ? 'LID ' + id.slice(-6) : id;
+public/index.html:1636:  if (raw.endsWith('@lid')) return 'LID ' + id.slice(-6);
+scripts/phase-harness.mjs:67:  return { events, async send({ id, jid = '123456789@lid', name, body = 'Pesan fixture', fromMe = false }) {
+scripts/verify-inbox.mjs:9:  const chat = Number(h.q.insertChat.run(number,'123456789@lid','Pelanggan',Date.now()).lastInsertRowid);
+scripts/verify-phase2.mjs:18:  assert.equal(label({ name: '', pn: '620123', jid: '123456789@lid' }), '620123');
+scripts/verify-phase2.mjs:19:  assert.equal(label({ jid: '123456789@lid' }), 'LID 456789');
+scripts/verify-phase2.mjs:21:  await incoming.send({ id: 'no-name', jid: '987654321@lid' });
+scripts/verify-phase2.mjs:22:  const unnamed = (await h.json(`/numbers/${n}/chats`)).find(c => c.jid === '987654321@lid');
+scripts/verify-phase345.mjs:23:  const chat = Number(h.q.insertChat.run(number, '123456789@lid', 'Fixture', Date.now()).lastInsertRowid);

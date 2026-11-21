@@ -1,0 +1,129 @@
+$ grep -rn --include=*.js --include=*.mjs --include=*.html --include=*.sql --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=artifacts --exclude-dir=docs -E 'chat_id' src public tests scripts
+src/db.js:22:    const rows=db.prepare(`SELECT m.id,m.number_id,m.media_path FROM messages m JOIN chats c ON c.id=m.chat_id JOIN numbers n ON n.id=c.number_id WHERE m.media_path IS NOT NULL AND m.media_path<>'' AND m.number_id=c.number_id AND NOT EXISTS(SELECT 1 FROM media_records r WHERE r.message_id=m.id)`).all();
+src/db.js:37:  countAiLogsLastHour: db.prepare('SELECT COUNT(*) AS n FROM ai_logs WHERE chat_id = ? AND at > ?'),
+src/db.js:38:  lastAiReply: db.prepare('SELECT at FROM ai_logs WHERE chat_id = ? AND reply IS NOT NULL AND error IS NULL ORDER BY at DESC, id DESC LIMIT 1'),
+src/db.js:39:  lastMessages: db.prepare('SELECT * FROM messages WHERE chat_id = ? ORDER BY ts DESC, id DESC LIMIT ?'),
+src/db.js:40:  addNotice: db.prepare('INSERT OR IGNORE INTO ai_notice(number_id, chat_id, day, kind) VALUES (?, ?, ?, ?)'),
+src/db.js:42:  insertAiLog: db.prepare('INSERT INTO ai_logs(number_id, chat_id, prompt, reply, tokens, model, error, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'),
+src/db.js:46:  insertOrder: db.prepare('INSERT INTO orders(number_id, chat_id, code, items_json, total, created_at) VALUES (?, ?, ?, ?, ?, ?)'),
+src/db.js:80:    LEFT JOIN messages m ON m.id = (SELECT id FROM messages WHERE chat_id = c.id ORDER BY ts DESC, id DESC LIMIT 1)
+src/db.js:104:  insertNotification: db.prepare('INSERT INTO notifications (user_id, number_id, chat_id, created_at) VALUES (?, ?, ?, ?)'),
+src/db.js:105:  insertNotificationForTenant: db.prepare('INSERT INTO notifications (user_id, number_id, chat_id, created_at, tenant_id) VALUES (?, ?, ?, ?, ?)'),
+src/db.js:106:  notificationsFor: db.prepare('SELECT f.*, c.name, c.push_name, c.pn, c.jid FROM notifications f JOIN chats c ON c.id = f.chat_id WHERE f.user_id = ? ORDER BY f.id DESC LIMIT ?'),
+src/db.js:110:  insertMessage: db.prepare('INSERT OR IGNORE INTO messages (number_id, chat_id, from_me, body, ts, agent_id, kind, media_path, mime, wa_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'),
+src/db.js:111:  insertMessageForTenant: db.prepare('INSERT OR IGNORE INTO messages (number_id, chat_id, from_me, body, ts, agent_id, kind, media_path, mime, wa_id, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'),
+src/db.js:112:  insertMessageWithSource: db.prepare('INSERT OR IGNORE INTO messages (number_id, chat_id, from_me, body, ts, agent_id, kind, media_path, mime, wa_id, tenant_id, analytics_source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'),
+src/db.js:115:  messagesByChat: db.prepare('SELECT * FROM (SELECT * FROM messages WHERE chat_id = ? AND ts < ? ORDER BY ts DESC LIMIT 500) ORDER BY ts ASC'),
+src/db.js:131:  labelsForChat: db.prepare('SELECT l.* FROM labels l JOIN chat_labels cl ON cl.label_id = l.id WHERE cl.chat_id = ?'),
+src/db.js:132:  addChatLabel: db.prepare('INSERT OR IGNORE INTO chat_labels (chat_id, label_id) VALUES (?, ?)'),
+src/db.js:133:  removeChatLabel: db.prepare('DELETE FROM chat_labels WHERE chat_id = ? AND label_id = ?'),
+src/dealAnalytics.js:22:const dealRow = db.prepare('SELECT id,tenant_id,chat_id,state FROM deals WHERE tenant_id=? AND id=?');
+src/dealAnalytics.js:23:const latestInbound = db.prepare(`SELECT id,ts FROM messages WHERE tenant_id=? AND chat_id=? AND from_me=0
+src/dealAnalytics.js:25:const replied = db.prepare(`SELECT 1 FROM messages WHERE tenant_id=? AND chat_id=? AND from_me=1
+src/dealAnalytics.js:28:const openForReply = db.prepare(`SELECT d.id,d.chat_id FROM deals d WHERE d.tenant_id=?
+src/dealAnalytics.js:76:    const inbound=pendingInbound(tenantId,deal.chat_id,now);
+src/dealAnalytics.js:281:      const inbound=pendingInbound(scope.tenantId,row.chat_id,now);
+src/dealAnalyticsMigration.js:1:const agentId = `COALESCE((SELECT assignee_id FROM chats WHERE id=d.chat_id AND tenant_id=d.tenant_id),
+src/dealAnalyticsMigration.js:2:     (SELECT agent_id FROM messages WHERE chat_id=d.chat_id AND tenant_id=d.tenant_id AND from_me=1 AND agent_id IS NOT NULL ORDER BY id DESC LIMIT 1))`;
+src/dealAnalyticsMigration.js:10:    WHEN EXISTS(SELECT 1 FROM messages m WHERE m.chat_id=d.chat_id AND m.tenant_id=d.tenant_id AND m.from_me=1 AND m.analytics_source='ai')
+src/dealAnalyticsMigration.js:11:    THEN CASE WHEN EXISTS(SELECT 1 FROM messages m WHERE m.chat_id=d.chat_id AND m.tenant_id=d.tenant_id AND m.from_me=1 AND m.agent_id IS NOT NULL) THEN 'mixed' ELSE 'ai' END
+src/dealAnalyticsMigration.js:12:    WHEN EXISTS(SELECT 1 FROM messages m WHERE m.chat_id=d.chat_id AND m.tenant_id=d.tenant_id AND m.from_me=1 AND m.agent_id IS NOT NULL) THEN 'human'
+src/dealAnalyticsMigration.js:24:      WHEN OLD.type NOT IN (${SYSTEM}) OR EXISTS(SELECT 1 FROM deals d JOIN chats c ON c.id=d.chat_id
+src/dealAnalyticsMigration.js:37:    CREATE INDEX deal_analytics_messages ON messages(tenant_id,chat_id,from_me,id);
+src/dealAnalyticsMigration.js:57:      WHERE d.tenant_id=NEW.tenant_id AND d.chat_id=NEW.chat_id AND d.session_id=NEW.number_id
+src/dealDetection.js:14:  WHERE tenant_id=? AND chat_id=? AND version=? ORDER BY id DESC LIMIT 1`);
+src/dealDetection.js:16:  WHERE tenant_id=? AND chat_id=? AND number_id=? AND id>? ORDER BY id LIMIT ?`);
+src/dealDetection.js:17:const insertRun = db.prepare(`INSERT INTO classifier_runs(tenant_id,chat_id,version,message_range,output_json,tokens,status,at)
+src/dealDetection.js:18:  VALUES(?,?,?,?,?,0,?,?) ON CONFLICT(chat_id,message_range,version) DO NOTHING`);
+src/dealDetection.js:19:const findDeal = db.prepare('SELECT 1 FROM deals WHERE tenant_id=? AND session_id=? AND chat_id=? LIMIT 1');
+src/dealDetection.js:20:const findCandidate = db.prepare(`SELECT id FROM deals WHERE tenant_id=? AND session_id=? AND chat_id=?
+src/dealDetection.js:24:  WHERE tenant_id=? AND session_id=? AND chat_id=? AND id=?`);
+src/dealDetection.js:25:const newDeal = db.prepare(`INSERT INTO deals(tenant_id,session_id,chat_id,state,amount,method,qty,confidence,
+src/dealDetection.js:29:  AND m.chat_id=d.chat_id AND m.number_id=d.session_id
+src/dealDetection.js:127:  AND NOT EXISTS(SELECT 1 FROM deals d WHERE d.tenant_id=c.tenant_id AND d.chat_id=c.id)
+src/dealMigration.js:11:      chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+src/dealMigration.js:26:    CREATE INDEX deals_chat_scope ON deals(tenant_id,chat_id);
+src/dealMigration.js:53:      chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE, version TEXT NOT NULL,
+src/dealMigration.js:56:      UNIQUE(chat_id,message_range,version)
+src/dealMigration.js:58:    CREATE INDEX deal_messages_cursor ON messages(tenant_id,chat_id,id);
+src/dealMigration.js:59:    CREATE INDEX classifier_cursor ON classifier_runs(tenant_id,chat_id,version,id DESC);
+src/dealMigration.js:73:  const dealScope = `NOT EXISTS(SELECT 1 FROM chats WHERE id=NEW.chat_id AND number_id=NEW.session_id AND tenant_id=NEW.tenant_id)
+src/dealMigration.js:75:      AND number_id=NEW.session_id AND (chat_id IS NULL OR chat_id=NEW.chat_id) AND tenant_id=NEW.tenant_id))
+src/dealMigration.js:80:    ON m.chat_id=d.chat_id AND m.number_id=d.session_id AND m.tenant_id=d.tenant_id
+src/dealMigration.js:88:    classifier_runs: `NOT EXISTS(SELECT 1 FROM chats WHERE id=NEW.chat_id AND tenant_id=NEW.tenant_id)`,
+src/dealReview.js:16:  JOIN chats c ON c.id=d.chat_id AND c.tenant_id=d.tenant_id AND c.number_id=d.session_id
+src/dealReview.js:42:  FROM messages m WHERE m.tenant_id=@tenant_id AND m.number_id=@session_id AND m.chat_id=@chat_id
+src/dealReview.js:45:      AND chat_id=@chat_id ORDER BY id DESC LIMIT 40))
+src/dealReview.js:50:const reasonFor = db.prepare('SELECT output_json FROM classifier_runs WHERE tenant_id=? AND chat_id=? AND version=? ORDER BY id DESC LIMIT 1');
+src/dealReview.js:54:  ON d.tenant_id=m.tenant_id AND d.session_id=m.number_id AND d.chat_id=m.chat_id
+src/dealReview.js:88:  const output = row.classifier_version ? reasonFor.get(row.tenant_id,row.chat_id,row.classifier_version) : null;
+src/dealReviewJobs.js:5:const work = db.prepare(`SELECT d.*,c.jid FROM deals d JOIN chats c ON c.id=d.chat_id AND c.tenant_id=d.tenant_id
+src/dealReviewJobs.js:18:  JOIN chats c ON c.id=d.chat_id AND c.tenant_id=d.tenant_id
+src/legacySchema.js:59:  chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+src/legacySchema.js:65:CREATE INDEX IF NOT EXISTS idx_messages_chat ON messages(chat_id, ts);
+src/legacySchema.js:71:  chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+src/legacySchema.js:100:  chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+src/legacySchema.js:102:  PRIMARY KEY (chat_id, label_id)
+src/legacySchema.js:125:  chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE, day TEXT NOT NULL, kind TEXT NOT NULL,
+src/legacySchema.js:126:  PRIMARY KEY(number_id, chat_id, day, kind)
+src/legacySchema.js:135:  chat_id INTEGER REFERENCES chats(id) ON DELETE SET NULL, prompt TEXT, reply TEXT,
+src/legacySchema.js:139:CREATE INDEX IF NOT EXISTS idx_ai_logs_chat_at ON ai_logs(chat_id, at);
+src/legacySchema.js:147:  chat_id INTEGER REFERENCES chats(id) ON DELETE SET NULL, code TEXT NOT NULL UNIQUE,
+src/legacySchema.js:188:      JOIN chats c ON c.id=m.chat_id JOIN numbers n ON n.id=c.number_id
+src/media.js:51:  JOIN chats c ON c.id=m.chat_id JOIN numbers n ON n.id=c.number_id WHERE r.uuid=?`);
+src/media.js:73:      FROM messages m JOIN chats c ON c.id=m.chat_id JOIN numbers n ON n.id=c.number_id
+src/platformRoutes.js:118:  return db.prepare('SELECT id,body,ts,from_me FROM messages WHERE tenant_id=? AND chat_id=? ORDER BY id DESC LIMIT ?').all(tenantId,chatId,limit);
+src/platformRoutes.js:122:  const chat=req.query.chat_id?contentChat(grant.tenant_id,req.query.chat_id):null;
+src/platformRoutes.js:129:  const chat=contentChat(grant.tenant_id,req.body?.chat_id??-1);
+src/platformRoutes.js:141:    const before=contentChat(grant.tenant_id,req.body?.chat_id??-1);
+src/routes.js:94:  const rows = db.prepare(`SELECT m.id, m.body, m.ts, m.chat_id, m.number_id, c.name, c.push_name, c.pn, c.jid, n.name AS number
+src/routes.js:95:    FROM messages m JOIN chats c ON c.id = m.chat_id JOIN numbers n ON n.id = m.number_id
+src/routes.js:260:  const rows = db.prepare('SELECT ts, from_me, body FROM messages WHERE chat_id = ? ORDER BY ts, id').all(chat.id);
+src/routes.js:277:      if (!original || original.chat_id !== chat.id) return res.status(400).json({ error: 'pesan kutipan tidak ditemukan' });
+src/routes.js:293:  if (!original || original.chat_id !== chat.id) return res.status(400).json({ error: 'pesan tidak ditemukan' });
+src/wa.js:576:  if (!original || original.chat_id !== chat.id) throw new Error('pesan kutipan tidak ditemukan');
+src/wa.js:607:  if (!original || q.chatById.get(original.chat_id)?.jid !== jid) throw new Error('pesan tidak ditemukan');
+public/index.html:1507:  root.innerHTML = `<div class="card">${rows.map((n) => `<button class="ghost" style="display:block;width:100%;text-align:left" data-notif="${n.id}" data-chat-id="${n.chat_id}" data-number-id="${n.number_id}">${esc(chatLabel(n))} · ${esc(new Date(n.created_at).toLocaleString('id-ID'))}${n.read_at ? '' : ' · baru'}</button>`).join('') || '<p class="empty">belum ada notifikasi</p>'}</div>`;
+public/index.html:1525:      $('#messageSearchResults').innerHTML = `<table><thead><tr><th>Chat</th><th>Pesan</th><th>Tanggal</th></tr></thead><tbody>${rows.map((m) => `<tr><td><button class="ghost" data-search-chat="${m.chat_id}" data-number="${m.number_id}">${esc(chatLabel(m))}</button></td><td>${esc(m.body.slice(0, 160))}</td><td>${esc(new Date(m.ts).toLocaleString('id-ID'))}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">tidak ada hasil</td></tr>'}</tbody></table>`;
+public/phase345.js:32:            await openChat(message.chat_id);
+public/platform.js:141:          const result = await call('GET', `${path}/access?chat_id=${chat.id}`);
+public/platform.js:147:            const data = await call('POST', `${path}/export-access`, {chat_id:chat.id});
+tests/deal-analytics-migration.test.mjs:22:const deal = (key,chatId,state,extra='') => { chat(chatId); ids[key] = Number(v7.prepare(`INSERT INTO deals(tenant_id,session_id,chat_id,state,amount,
+tests/deal-analytics.test.mjs:37:  const id = Number(db.prepare(`INSERT INTO deals(tenant_id,session_id,chat_id,state,amount,product_id,created_at)
+tests/deal-analytics.test.mjs:47:const message = (d,fromMe,ts,extra={}) => db.prepare(`INSERT INTO messages(number_id,chat_id,tenant_id,from_me,body,ts,agent_id,analytics_source)
+tests/deal-foundation.test.mjs:21:  return Number(db.prepare('INSERT INTO messages(chat_id,number_id,tenant_id,body,kind,ts) VALUES(?,?,?,?,?,?)')
+tests/deal-foundation.test.mjs:27:const getDeal = id => db.prepare('SELECT * FROM deals WHERE chat_id=?').get(id);
+tests/deal-foundation.test.mjs:28:const getRuns = id => db.prepare('SELECT * FROM classifier_runs WHERE chat_id=? ORDER BY id').all(id);
+tests/deal-foundation.test.mjs:140:  assert.throws(() => db.prepare("INSERT INTO deals(tenant_id,session_id,chat_id,state,created_at) VALUES('B',10,31,'candidate',0)").run(), /tenant relationship/);
+tests/deal-review.test.mjs:49:  (tenant_id,session_id,chat_id,state,amount,method,created_at,due_sla_at,classifier_version)
+tests/deal-review.test.mjs:53:const proof = Number(db.prepare(`INSERT INTO messages(number_id,chat_id,tenant_id,body,kind,media_path,ts)
+tests/deal-review.test.mjs:62:  for(let i=0;i<8;i++) db.prepare(`INSERT INTO messages(number_id,chat_id,tenant_id,body,ts)
+tests/tenant-fixture.mjs:30:          insert('messages',{id,number_id:id,chat_id:id,body:`secret-${tenantId}`,ts:0,wa_id:'same-wa-id',media_path:`${tenantId}/fixture-${offset}.bin`,tenant_id:tenantId});
+tests/tenant-fixture.mjs:36:        insert('notifications',{...common,user_id:base+1,number_id:base,chat_id:base,created_at:0});
+tests/tenant-fixture.mjs:40:        insert('chat_labels',{...common,chat_id:base,label_id:base});
+tests/tenant-fixture.mjs:43:        insert('ai_notice',{...common,number_id:base,chat_id:base,day:'2026-11-18',kind:'fixture'});
+tests/tenant-fixture.mjs:46:        insert('ai_logs',{...common,number_id:base,chat_id:base,prompt:`secret-${tenantId}`,at:0});
+tests/tenant-fixture.mjs:48:        insert('orders',{...common,number_id:base,chat_id:base,code:'shared-order-code',items_json:'[]',total:0,created_at:0});
+tests/tenant-t01.test.mjs:17:    CREATE TABLE messages(id INTEGER PRIMARY KEY,number_id INTEGER REFERENCES numbers(id),chat_id INTEGER REFERENCES chats(id));
+tests/tenant-t01.test.mjs:18:    CREATE INDEX message_chat ON messages(chat_id);
+tests/tenant-t01.test.mjs:48:    assert.throws(() => db.prepare("INSERT INTO messages(id,number_id,chat_id,tenant_id) VALUES(2,2,1,'B')").run());
+tests/tenant-t01.test.mjs:182:    assert.throws(()=>h.db.prepare("UPDATE messages SET chat_id=20 WHERE id=10").run(),/tenant relationship/);
+tests/tenant-t01.test.mjs:183:    assert.throws(()=>h.db.prepare("INSERT INTO chat_labels(chat_id,label_id,tenant_id) VALUES(10,20,'A')").run(),/tenant relationship/);
+tests/tenant-t04.test.mjs:34:test('05 enter persists session-bound readonly grant and write is READ_ONLY_SCOPE',async()=>{const p=await login();const r=await enter(p);assert.equal(r.status,200);assert.equal(db.prepare('SELECT platform_grant_id FROM sessions WHERE id=?').get(p.slice(4)).platform_grant_id,r.data.grant.id);assert.equal((await op(p,'A','access?chat_id=10',undefined,'GET')).data.messages[0].body,'secret-A');assert.equal((await op(p,'A','access',{chat_id:10,name:'Denied'},'PATCH')).data.code,'READ_ONLY_SCOPE');assert.equal((await request('/numbers',{cookie:p})).status,403);const {can}=await import('../src/capabilities.js');assert.deepEqual(can({platform_role:'admin',id:1},'content.write',{tenantId:'A',grant:r.data.grant}),{ok:false,code:'READ_ONLY_SCOPE'});});
+tests/tenant-t04.test.mjs:35:test('06 elevate permits write; leave revokes and tenant route becomes 409',async()=>{const p=await login();await enter(p);const r=await op(p,'A','elevate',{reason:'Approved correction',ttl_minutes:5});assert.equal(r.status,200);const {can}=await import('../src/capabilities.js');assert.equal(can({id:1,platform_role:'admin'},'content.write',{tenantId:'A',grant:r.data.grant}).ok,true);assert.equal((await op(p,'A','access',{chat_id:10,name:'Corrected'},'PATCH')).data.chat.name,'Corrected');assert.equal((await op(p,'A','leave',{})).status,200);assert.equal((await request('/users',{cookie:p})).status,409);assert.ok(db.prepare('SELECT revoked_at FROM platform_grants').get().revoked_at!==null);});
+tests/tenant-t04.test.mjs:37:test('08 tenant A grant never authorizes tenant B',async()=>{const p=await login();await enter(p);const r=await op(p,'B','access',undefined,'GET');assert.equal(r.status,403);assert.equal(r.data.code,'TENANT_FORBIDDEN');assert.equal((await op(p,'A','access?chat_id=20',undefined,'GET')).status,403);});
+tests/tenant-t04.test.mjs:46:  await enter(p,'A');await op(p,'A','access?chat_id=10',undefined,'GET');assert.equal((await op(p,'A','export-access',{chat_id:10})).data.messages[0].body,'secret-A');db.exec("UPDATE platform_grants SET expires_at=0 WHERE revoked_at IS NULL");await request('/me',{cookie:p});
+scripts/audit-media.mjs:14:  const mismatches = db.prepare(`SELECT m.id FROM messages m LEFT JOIN chats c ON c.id=m.chat_id
+scripts/audit-media.mjs:20:    LEFT JOIN messages m ON m.id=r.message_id LEFT JOIN chats c ON c.id=m.chat_id LEFT JOIN numbers n ON n.id=c.number_id
+scripts/check-deal-analytics-browser.mjs:28:  const id = Number(db.prepare(`INSERT INTO deals(tenant_id,session_id,chat_id,state,amount,product_id,created_at)
+scripts/media-fixture.mjs:67:      'INSERT INTO messages(number_id,chat_id,from_me,body,ts,kind,media_path,mime) VALUES(?,?,0,?,?,?,?,?)')
+scripts/sql/media-ownership-audit.sql:4:       c.id AS chat_id, c.number_id AS chat_number_id
+scripts/sql/media-ownership-audit.sql:5:FROM messages m LEFT JOIN chats c ON c.id=m.chat_id
+scripts/sql/media-ownership-audit.sql:14:LEFT JOIN chats c ON c.id=m.chat_id LEFT JOIN numbers n ON n.id=c.number_id
+scripts/verify-hardening.mjs:121:    db.prepare('INSERT INTO messages(number_id,chat_id,ts,media_path) VALUES(?,?,?,?)').run(n, chat, Date.now(), file);
+scripts/verify-phase345.mjs:32:  assert.equal(na[0].chat_id, chat);
+scripts/verify-phase345.mjs:52:  assert.deepEqual((await h.json('/search?q=xy', a.cookie)).map(m => m.chat_id), [chat]);
+scripts/verify-phase345.mjs:53:  assert.deepEqual((await h.json('/search?q=xy', b.cookie)).map(m => m.chat_id), [otherChat]);
+scripts/verify-phase4.mjs:14:  for (const key of ['chat_id', 'name', 'pn', 'body', 'ts']) assert.ok(key in rows[0]);
+scripts/verify-phase4.mjs:40:  assert.equal(selected, 'chats'); assert.equal(picked, n); assert.equal(opened, rows[0].chat_id);
+scripts/verify-phase4.mjs:43:  for (let i = 0; i < 55; i++) h.q.insertMessage.run(n, rows[0].chat_id, 0, 'limitneedle-' + i, Date.now() + i, null, 'text', null, null, 'limit-' + i);

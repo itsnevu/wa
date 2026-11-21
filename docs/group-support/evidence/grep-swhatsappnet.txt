@@ -1,0 +1,42 @@
+$ grep -rn --include=*.js --include=*.mjs --include=*.html --include=*.sql --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=artifacts --exclude-dir=docs -E 's\.whatsapp\.net' src public tests scripts
+tests/deal-analytics-migration.test.mjs:21:const chat = id => v7.prepare('INSERT INTO chats(id,number_id,tenant_id,jid) VALUES(?,10,\'A\',?)').run(id,id+'@s.whatsapp.net');
+tests/deal-analytics.test.mjs:36:  db.prepare('INSERT INTO chats(id,number_id,tenant_id,jid) VALUES(?,?,?,?)').run(chat,number,tenant,`${chat}@s.whatsapp.net`);
+tests/deal-foundation.test.mjs:25:  db.prepare('INSERT INTO chats(id,number_id,tenant_id,jid) VALUES(?,?,?,?)').run(id, session, tenant, id + '@s.whatsapp.net');
+tests/session-health.test.mjs:45:        key: { id: nextAppend, remoteJid: 'fixture-0@s.whatsapp.net', fromMe: false },
+tests/session-health.test.mjs:205:    await sendText(id, 'fixture-0@s.whatsapp.net', 'first');
+tests/session-health.test.mjs:206:    const queued = sendText(id, 'fixture-0@s.whatsapp.net', 'queued');
+tests/tenant-fixture.mjs:29:          insert('chats',{id,number_id:id,jid:`fixture-${offset}@s.whatsapp.net`,tenant_id:tenantId});
+tests/tenant-fixture.mjs:50:        insert('contacts_v2',{...common,number_id:base,jid:'fixture-0@s.whatsapp.net',name:'fixture',updated_at:0});
+tests/tenant-t01.test.mjs:156:      const c=q.insertChat.run(n,'fixture@s.whatsapp.net','fixture',0).lastInsertRowid;
+scripts/check-deal-analytics-browser.mjs:26:  db.prepare('INSERT INTO chats(id,number_id,tenant_id,jid) VALUES(?,10,\'A\',?)').run(chat,chat+'@s.whatsapp.net');
+scripts/media-fixture.mjs:64:      .run(n, '620000000@s.whatsapp.net', 'Pelanggan fixture', Date.now()).lastInsertRowid);
+scripts/phase-harness.mjs:68:    await handlers.get('messages.upsert')({ type: 'notify', messages: [{ key: { id, remoteJid: jid, remoteJidAlt: '620123456@s.whatsapp.net', fromMe }, pushName: name, message: { conversation: body } }] });
+scripts/verify-ai-rules.mjs:32:  await incoming('c4','64@s.whatsapp.net','halo');
+scripts/verify-ai-rules.mjs:33:  assert.deepEqual(sentTo('64@s.whatsapp.net'),['Jawaban AI']); assert.equal(modelCalls,1);
+scripts/verify-ai-rules.mjs:37:  await incoming('c1','61@s.whatsapp.net','berapa harga?');
+scripts/verify-ai-rules.mjs:38:  assert.deepEqual(sentTo('61@s.whatsapp.net'),['Harga rule']); assert.equal(modelCalls,1);
+scripts/verify-ai-rules.mjs:40:  await incoming('c2','61@s.whatsapp.net','harga lagi?');
+scripts/verify-ai-rules.mjs:41:  assert.deepEqual(sentTo('61@s.whatsapp.net'),['Harga rule']); assert.equal(modelCalls,1);
+scripts/verify-ai-rules.mjs:43:  await incoming('c3','62@s.whatsapp.net','jam buka?');
+scripts/verify-ai-rules.mjs:44:  assert.deepEqual(sentTo('62@s.whatsapp.net'),['Jawaban AI']); assert.equal(modelCalls,2);
+scripts/verify-ai1.mjs:26:      const chat = Number(q.insertChat.run(number,'620002@s.whatsapp.net','Fixture',Date.now()).lastInsertRowid);
+scripts/verify-ai2.mjs:16:  const n = h.number(); const c = Number(h.q.insertChat.run(n,'62@s.whatsapp.net','Test',Date.now()).lastInsertRowid);
+scripts/verify-ai3.mjs:12:  const id = Number(h.q.insertChat.run(n,'62@s.whatsapp.net','Fixture',Date.now()).lastInsertRowid);
+scripts/verify-ai3.mjs:60:  const id2=Number(h.q.insertChat.run(n,'63@s.whatsapp.net','Esk',Date.now()).lastInsertRowid);
+scripts/verify-ai3.mjs:64:  try { await ctx.handleAiMessage({numberId:n,chat:h.q.chatById.get(id2),jid:'63@s.whatsapp.net',body:'mau orang',waId:'esk-1'}); }
+scripts/verify-ai4.mjs:14:  const id = Number(h.q.insertChat.run(n,'62@s.whatsapp.net','AI fixture',Date.now()).lastInsertRowid);
+scripts/verify-ai5.mjs:19:  const chat=Number(h.q.insertChat.run(n,'62@s.whatsapp.net','Test',Date.now()).lastInsertRowid);
+scripts/verify-ai6.mjs:16:  const chat=Number(h.q.insertChat.run(n,'62@s.whatsapp.net','Pelanggan AI',Date.now()).lastInsertRowid);
+scripts/verify-hardening.mjs:120:    chat = Number(db.prepare('INSERT INTO chats(number_id,jid,last_at) VALUES(?,?,?)').run(n, 'fixture@s.whatsapp.net', Date.now()).lastInsertRowid);
+scripts/verify-hardening.mjs:179:  const jid = '628111@s.whatsapp.net';
+scripts/verify-hardening.mjs:344:  const chat = Number(h.q.insertChat.run(num, '6266@s.whatsapp.net', null, Date.now()).lastInsertRowid);
+scripts/verify-hardening.mjs:547:  const msg = (id, body) => ({ key: { id, remoteJid: '62877@s.whatsapp.net', fromMe: false }, pushName: 'Uji', message: { conversation: body } });
+scripts/verify-hardening.mjs:647:    const jid = '62812@s.whatsapp.net';
+scripts/verify-phase345.mjs:50:  const otherChat = Number(h.q.insertChat.run(other, '999@s.whatsapp.net', 'Other', Date.now()).lastInsertRowid);
+scripts/verify-phase5.mjs:11:  const id = Number(h.q.insertChat.run(n, 'csv@s.whatsapp.net', 'CSV fixture', now).lastInsertRowid);
+scripts/verify-wa1.mjs:8:  const a = Number(h.q.insertChat.run(n,'628123456789@s.whatsapp.net','Prioritas',1).lastInsertRowid);
+scripts/verify-wa1.mjs:9:  h.q.insertChat.run(n,'628999999999@s.whatsapp.net','Baru',2);
+
+$ grep -rn --include=*.js --include=*.mjs --include=*.html --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=artifacts --exclude-dir=docs -F 'whatsapp\.net' src public
+src/wa.js:308:      if (msg.key.id && /@(?:s\.whatsapp\.net|lid)$/.test(msg.key.remoteJid) &&
+$ grep -rn --include=*.js --include=*.mjs --include=*.html --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=artifacts --exclude-dir=docs -F 'whatsapp.net' src public
