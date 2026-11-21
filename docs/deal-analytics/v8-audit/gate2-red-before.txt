@@ -1,0 +1,51 @@
+✖ 1. hapus chat dengan deal kandidat ber-event sla_escalated -> berhasil (11.3333ms)
+✖ 2. hapus chat dengan deal rejected -> 409 JSON (7.5974ms)
+✖ 3. hapus chat dengan deal verified_lunas -> 409 JSON (state saja sudah cukup) (4.1379ms)
+✖ 4. hapus nomor dengan deal belum diputuskan -> berhasil, sesi ikut dibersihkan (4.6696ms)
+✖ 5. disconnect gagal -> baris tetap terhapus, kegagalan tercatat (9.4526ms)
+✖ 5b. sesi yatim dibersihkan oleh job, sesi nomor aktif dipertahankan (0.9708ms)
+✖ 6. hapus nomor yang tidak ada -> 404 JSON (4.3051ms)
+✖ 7. setiap tipe event terdaftar di deal_event_types; perilaku hapus per tipe (0.4244ms)
+✖ 8. purge pesan tidak menghapus deal_evidence; message_id jadi NULL, snapshot utuh (2.4106ms)
+✖ 9. hapus user yang pernah memverifikasi -> berhasil, actor_label tetap (0.8431ms)
+✖ 9. hapus user yang pernah memverifikasi -> berhasil, actor_label tetap (0.7262ms)
+✖ 10. tidak ada kode yang membaca open_min/close_min (11.1929ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 0
+ℹ fail 12
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 852.9019
+✖ failing tests:
+✖ 1. hapus chat dengan deal kandidat ber-event sla_escalated -> berhasil (11.3333ms)
+✖ 2. hapus chat dengan deal rejected -> 409 JSON (7.5974ms)
+✖ 3. hapus chat dengan deal verified_lunas -> 409 JSON (state saja sudah cukup) (4.1379ms)
+✖ 4. hapus nomor dengan deal belum diputuskan -> berhasil, sesi ikut dibersihkan (4.6696ms)
+✖ 5. disconnect gagal -> baris tetap terhapus, kegagalan tercatat (9.4526ms)
+✖ 5b. sesi yatim dibersihkan oleh job, sesi nomor aktif dipertahankan (0.9708ms)
+✖ 6. hapus nomor yang tidak ada -> 404 JSON (4.3051ms)
+✖ 7. setiap tipe event terdaftar di deal_event_types; perilaku hapus per tipe (0.4244ms)
+✖ 8. purge pesan tidak menghapus deal_evidence; message_id jadi NULL, snapshot utuh (2.4106ms)
+✖ 9. hapus user yang pernah memverifikasi -> berhasil, actor_label tetap (0.8431ms)
+✖ 9. hapus user yang pernah memverifikasi -> berhasil, actor_label tetap (0.7262ms)
+✖ 10. tidak ada kode yang membaca open_min/close_min (11.1929ms)
+✖ 1. hapus chat dengan deal kandidat ber-event sla_escalated -> berhasil (9.5196ms)
+SqliteError: FOREIGN KEY constraint failed
+--
+✖ 2. hapus chat dengan deal rejected -> 409 JSON (4.8922ms)
+✖ 3. hapus chat dengan deal verified_lunas -> 409 JSON (state saja sudah cukup) (4.3739ms)
+SqliteError: FOREIGN KEY constraint failed
+--
+✖ 1. hapus chat dengan deal kandidat ber-event sla_escalated -> berhasil (9.5196ms)
+  AssertionError [ERR_ASSERTION]: <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="utf-8">
+--
+✖ 2. hapus chat dengan deal rejected -> 409 JSON (4.8922ms)
+  AssertionError [ERR_ASSERTION]: <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="utf-8">

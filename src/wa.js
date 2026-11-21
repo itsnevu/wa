@@ -683,6 +683,26 @@ export function disconnect(numberId, forget = false) {
   if (forget) fs.rmSync(path.join(config.dataDir, 'sessions', String(numberId)), { recursive: true, force: true });
 }
 
+// Removes stored WhatsApp credentials of a number; throws on filesystem errors so callers can log them.
+export function forgetSession(numberId) {
+  fs.rmSync(path.join(config.dataDir, 'sessions', String(numberId)), { recursive: true, force: true });
+}
+
+// Credentials whose number row no longer exists (e.g. a failed cleanup after delete). Run by existing jobs.
+export function cleanOrphanSessions() {
+  const dir = path.join(config.dataDir, 'sessions');
+  let removed = 0;
+  let names = [];
+  try { names = fs.readdirSync(dir); } catch { return 0; }
+  for (const name of names) {
+    const id = Number(name);
+    if (!/^\d+$/.test(name) || live.has(id) || q.numberById.get(id)) continue;
+    try { forgetSession(id); removed++; }
+    catch (err) { console.error('[session.orphan] gagal hapus sesi', name, err.message); }
+  }
+  return removed;
+}
+
 export function attemptsOf(numberId) {
   return reconnects.get(numberId)?.attempt || 0;
 }

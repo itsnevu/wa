@@ -1,0 +1,1 @@
+prepared 49 SQL literals, 0 failed; triggers fired -> analytics_opened,analytics_dimensions,analytics_unanswered,analytics_dimensions,analytics_answered; delete chat with undecided deal after system sweep event -> FAIL (FOREIGN KEY constraint failed)

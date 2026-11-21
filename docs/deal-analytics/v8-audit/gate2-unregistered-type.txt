@@ -1,0 +1,3 @@
+  + actual - expected
+  +   'tipe_baru_palsu'
+    actual: [ 'tipe_baru_palsu' ],

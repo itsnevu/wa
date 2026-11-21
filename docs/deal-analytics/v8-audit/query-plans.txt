@@ -1,0 +1,7 @@
+history          | SEARCH d USING COVERING INDEX deal_analytics_opened (tenant_id=? AND created_at>? AND created_at<?) ; SEARCH e USING INDEX deal_events_history (deal_id=? AND type=?) ; USE TEMP B-TREE FOR ORDER BY
+latestInbound    | SEARCH messages USING INDEX deal_analytics_messages (tenant_id=? AND chat_id=? AND from_me=?)
+replied          | SEARCH messages USING INDEX deal_analytics_messages (tenant_id=? AND chat_id=? AND from_me=? AND id>?)
+openForReply     | SEARCH d USING INDEX deals_review_queue (tenant_id=? AND state=?)
+lastReplyMark    | SEARCH deal_events USING INDEX deal_events_history (deal_id=? AND type=?) ; USE TEMP B-TREE FOR ORDER BY
+answeredTrigger  | SEARCH d USING INDEX deals_review_queue (tenant_id=? AND state=?)
+purgeTrigger     | SEARCH deal_events USING COVERING INDEX deal_events_history (deal_id=?)

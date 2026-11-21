@@ -63,6 +63,7 @@ server.listen(config.port, config.host, async () => {
   if (!v8Flags.includes('--regexp-interpret-all')) console.warn('[regex] PERINGATAN: jalankan dengan "npm start" atau node --regexp-interpret-all; rule regex berat bisa timeout bergantian');
   await checkBackup();
   db.exec("UPDATE numbers SET status = 'offline'");
+  try { wa.cleanOrphanSessions(); } catch (err) { console.error('[sesi]', err.message); }
   await restoreAll();
 });
 

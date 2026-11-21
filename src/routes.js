@@ -20,7 +20,6 @@ import {mountDealReview} from './dealReviewRoutes.js';
 
 import {mountDealAnalytics} from './dealAnalyticsRoutes.js';
 
-
 export const api = Router();
 
 api.get('/health', (_req, res) => res.json({ ok: true }));
@@ -192,10 +191,25 @@ api.patch('/numbers/:id/name', requireAuth, (req, res) => {
   res.json({ ok: true, name });
 });
 
+// Maps database refusals of the delete routes to JSON instead of an HTML 500.
+function deleteFailure(res, err, what) {
+  if (String(err?.message).startsWith('DEAL_DECIDED')) {
+    return res.status(409).json({ error: `${what} tidak dapat dihapus karena memiliki deal yang sudah diputuskan.`, code: 'DEAL_DECIDED' });
+  }
+  if (String(err?.code).startsWith('SQLITE_CONSTRAINT')) {
+    return res.status(409).json({ error: `${what} masih dipakai data lain sehingga tidak dapat dihapus.`, code: 'CONSTRAINT' });
+  }
+  if (String(err?.code).startsWith('SQLITE_')) return res.status(400).json({ error: `${what} tidak dapat dihapus.`, code: 'DATABASE' });
+  throw err;
+}
+
 api.delete('/numbers/:id', requireAdmin, (req, res) => {
   const id = Number(req.params.id);
-  wa.disconnect(id, true);
-  q.deleteNumber.run(id);
+  if (!q.numberById.get(id)) return res.status(404).json({ error: 'nomor tidak ada' });
+  // Database first: a refused delete must not log the WhatsApp session out.
+  try { q.deleteNumber.run(id); } catch (err) { return deleteFailure(res, err, 'Nomor'); }
+  try { wa.disconnect(id); } catch (err) { console.error('[number.delete] disconnect gagal untuk nomor', id, err.message); }
+  try { wa.forgetSession(id); } catch (err) { console.error('[number.delete] hapus sesi gagal untuk nomor', id, err.message); }
   res.json({ ok: true });
 });
 
@@ -354,7 +368,7 @@ api.delete('/chats/:chatId', (req, res) => {
   const chat = q.chatById.get(Number(req.params.chatId));
   if (!chat) return res.status(404).json({ error: 'chat tidak ada' });
   if (!canAccessNumber(req.user, chat.number_id)) return res.status(403).json({ error: 'tidak punya akses' });
-  q.deleteChat.run(chat.id);
+  try { q.deleteChat.run(chat.id); } catch (err) { return deleteFailure(res, err, 'Chat'); }
   res.json({ ok: true });
 });
 
@@ -462,4 +476,7 @@ api.post('/users',requireTenantScope, requireAdmin, (req, res) => {
   } catch { res.status(400).json({ error: 'username sudah dipakai' }); }
 });
 
-api.delete('/users/:id',requireTenantScope, requireAdmin, (req, res) => { q.deleteUser.run(Number(req.params.id)); res.json({ ok: true }); });
+api.delete('/users/:id',requireTenantScope, requireAdmin, (req, res) => {
+  try { q.deleteUser.run(Number(req.params.id)); } catch (err) { return deleteFailure(res, err, 'Pengguna'); }
+  res.json({ ok: true });
+});

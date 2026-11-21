@@ -1,0 +1,19 @@
+✔ 1. hapus chat dengan deal kandidat ber-event sla_escalated -> berhasil (7.0419ms)
+✔ 2. hapus chat dengan deal rejected -> 409 JSON (6.2067ms)
+✔ 3. hapus chat dengan deal verified_lunas -> 409 JSON (state saja sudah cukup) (14.9982ms)
+✔ 4. hapus nomor dengan deal belum diputuskan -> berhasil, sesi ikut dibersihkan (11.1321ms)
+✔ 5. disconnect gagal -> baris tetap terhapus, kegagalan tercatat (327.3878ms)
+✔ 5b. sesi yatim dibersihkan oleh job, sesi nomor aktif dipertahankan (1.7356ms)
+✔ 6. hapus nomor yang tidak ada -> 404 JSON (15.7799ms)
+✔ 7. setiap tipe event terdaftar di deal_event_types; perilaku hapus per tipe (236.3253ms)
+✔ 8. purge pesan tidak menghapus deal_evidence; message_id jadi NULL, snapshot utuh (1.6061ms)
+✔ 9. hapus user yang pernah memverifikasi -> berhasil, actor_label tetap (4.4817ms)
+✔ 10. tidak ada kode yang membaca open_min/close_min (9.126ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1463.0311

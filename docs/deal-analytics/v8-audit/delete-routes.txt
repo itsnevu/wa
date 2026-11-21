@@ -1,0 +1,3 @@
+DELETE chat with decided deal  -> 500 <!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Sqlite
+DELETE number with decided deal -> 500 <!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <title>Error</title> </head> <body> <pre>Sqlite
+  number row still exists: true | session creds still on disk: true

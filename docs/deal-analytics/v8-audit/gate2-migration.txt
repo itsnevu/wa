@@ -1,0 +1,20 @@
+MIGRATION v7->v8 {"ms":34,"before":{"deals":5,"deal_events":3,"deal_evidence":1,"deal_verifications":2,"dp_payments":1,"messages":1,"chats":5,"tenants":2},"after":{"deals":5,"deal_events":18,"deal_evidence":1,"deal_verifications":2,"dp_payments":1,"messages":1,"chats":5,"tenants":2},"delta":{"deals":0,"deal_events":15,"deal_evidence":0,"deal_verifications":0,"dp_payments":0,"messages":0,"chats":0,"tenants":0}}
+✔ 11a. v7 -> v8 pada salinan berisi data: versi, fingerprint, backup, baris terdampak (3.877ms)
+✔ 11b. migrasi dijalankan kedua kali: tidak ada perubahan schema maupun data (3.1937ms)
+✔ 11c. backfill: snapshot bukti, label verifier, dan metrik hanya dari keputusan tercatat (10.3626ms)
+✔ 11d. aturan hapus setelah migrasi: belum diputuskan (dengan sla_escalated) ikut terhapus, sudah diputuskan ditolak (2.1058ms)
+ROLLBACK start without ALLOW_AUTO_MIGRATE: 1 Schema version ${fromVersion} != ${SCHEMA_VERSION}; run ALLOW_AUTO_MIGRATE=1 node scripts/migrate-schema.mjs during maintenance`);
+ROLLBACK start with ALLOW_AUTO_MIGRATE=1: healthy = true
+✔ 12. rollback: backup otomatis dipulihkan sebagai v7 yang valid, server menolak tanpa izin migrasi lalu start setelah diizinkan (1348.7157ms)
+TAMPERED column start: 1 Schema fingerprint mismatch; startup refused');
+✔ 7. fingerprint tidak cocok (kolom berubah) -> server menolak start dengan pesan jelas (535.4695ms)
+DRIFT index+trigger start: healthy = true
+✔ 7b. batas fingerprint: perubahan indeks/trigger TIDAK terdeteksi saat start (785.9296ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3140.704
