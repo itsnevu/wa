@@ -1,0 +1,23 @@
+{
+  "command": "node scripts/audit-media.mjs <app.db> --snapshot-test",
+  "sourceOpenedReadOnly": true,
+  "before": {
+    "mediaMessages": 79,
+    "registryPresent": false,
+    "unregistered": 79,
+    "legacyMismatchMessageIds": [],
+    "registryMismatchMessageIds": [],
+    "ambiguousFileMessageIds": [],
+    "unsafePathMessageIds": []
+  },
+  "snapshotAfterBackfill": {
+    "mediaMessages": 79,
+    "registryPresent": true,
+    "unregistered": 0,
+    "legacyMismatchMessageIds": [],
+    "registryMismatchMessageIds": [],
+    "ambiguousFileMessageIds": [],
+    "unsafePathMessageIds": []
+  },
+  "snapshotMigrationExitCode": 0
+}

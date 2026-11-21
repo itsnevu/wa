@@ -17,6 +17,8 @@ export const config = {
   loginLockMin: Number(process.env.LOGIN_LOCK_MIN || 15),
   passMin: Math.max(12, Number.parseInt(process.env.PASS_MIN || '12', 10) || 12),
   dataDir: process.env.DATA_DIR || path.resolve('data'),
+  mediaSignedUrlsEnabled: process.env.MEDIA_SIGNED_URLS_ENABLED === '1',
+  mediaSigningKey: process.env.MEDIA_SIGNING_KEY || '',
   adminUser: process.env.ADMIN_USER || 'admin',
   adminPass: process.env.ADMIN_PASS || 'admin123',
   delayMin: Number(process.env.SEND_DELAY_MIN || 1200),
@@ -38,3 +40,8 @@ export const config = {
   callAutoReject: process.env.CALL_AUTO_REJECT === '1',
   callReply: process.env.CALL_REPLY || '',
 };
+
+// Validate before db.js can create/migrate a database. Never log the supplied key.
+if (config.mediaSignedUrlsEnabled && config.mediaSigningKey.length < 32) {
+  throw new Error('MEDIA_SIGNING_KEY wajib minimal 32 karakter saat media bertanda tangan diaktifkan');
+}

@@ -3,6 +3,7 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { config } from './config.js';
 import { hashPassword } from './passwords.js';
+import { randomUUID } from 'node:crypto';
 
 fs.mkdirSync(config.dataDir, { recursive: true });
 fs.mkdirSync(path.join(config.dataDir, 'media'), { recursive: true });
@@ -179,6 +180,30 @@ if (!cols('messages').includes('kind')) db.exec("ALTER TABLE messages ADD COLUMN
 if (!cols('messages').includes('media_path')) db.exec('ALTER TABLE messages ADD COLUMN media_path TEXT');
 if (!cols('messages').includes('mime')) db.exec('ALTER TABLE messages ADD COLUMN mime TEXT');
 if (!cols('messages').includes('wa_id')) db.exec('ALTER TABLE messages ADD COLUMN wa_id TEXT');
+// Expand-only registry. Existing paths are retained for compatibility with message payloads.
+// Ownership is checked again against messages/chats/numbers on every issuance and download.
+db.exec(`CREATE TABLE IF NOT EXISTS media_records (
+  uuid TEXT PRIMARY KEY,
+  message_id INTEGER NOT NULL UNIQUE REFERENCES messages(id) ON DELETE CASCADE,
+  number_id INTEGER NOT NULL REFERENCES numbers(id) ON DELETE CASCADE,
+  storage_path TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_media_records_number ON media_records(number_id);`);
+db.exec('CREATE INDEX IF NOT EXISTS idx_messages_media_path ON messages(media_path) WHERE media_path IS NOT NULL');
+const registerMedia = db.prepare(`INSERT OR IGNORE INTO media_records(uuid,message_id,number_id,storage_path,created_at)
+  VALUES (?,?,?,?,?)`);
+export function backfillMedia() {
+  return db.transaction(() => {
+    const rows = db.prepare(`SELECT m.id,m.number_id,m.media_path FROM messages m
+      JOIN chats c ON c.id=m.chat_id JOIN numbers n ON n.id=c.number_id
+      WHERE m.media_path IS NOT NULL AND m.media_path<>'' AND m.number_id=c.number_id
+      AND NOT EXISTS (SELECT 1 FROM media_records r WHERE r.message_id=m.id)`).all();
+    for (const m of rows) registerMedia.run(randomUUID(), m.id, m.number_id, m.media_path, Date.now());
+    return rows.length;
+  }).immediate();
+}
+backfillMedia();
 if (!cols('ai_settings').includes('business_profile')) db.exec("ALTER TABLE ai_settings ADD COLUMN business_profile TEXT NOT NULL DEFAULT '{}'");
 if (!cols('rules').includes('slow')) db.exec('ALTER TABLE rules ADD COLUMN slow INTEGER DEFAULT 0');
 db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_messages_wa ON messages(number_id, wa_id) WHERE wa_id IS NOT NULL');

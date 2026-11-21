@@ -2,6 +2,20 @@
 
 Dashboard multi-nomor WhatsApp Business. Satu nomor = satu sesi linked device.
 
+## Lampiran bertanda tangan (PR 01)
+
+Unduhan media memakai sesi dashboard dan URL HMAC berumur lima menit; `/media/<nama-file>` lama ditutup. Default `MEDIA_SIGNED_URLS_ENABLED=0` menonaktifkan unduhan dengan HTTP 503. Untuk canary sesudah review, pasang `MEDIA_SIGNED_URLS_ENABLED=1` dan `MEDIA_SIGNING_KEY` acak minimal 32 karakter melalui environment atau `.env` lokal. Jangan commit atau mencetak key. Kunci yang kosong/terlalu pendek menghentikan startup sebelum database dibuka bila flag aktif.
+
+Sebelum startup versi baru, buat backup SQLite konsisten menggunakan SQLite backup API dari proses yang tidak mengimpor `src/db.js` (modul itu menjalankan migrasi). Contoh dari root repo:
+
+```powershell
+New-Item -ItemType Directory -Force backups | Out-Null
+node --input-type=module -e "import Database from 'better-sqlite3'; const d=new Database('data/app.db',{readonly:true}); await d.backup('backups/pre-pr01.db'); d.close();"
+node scripts/audit-media.mjs data/app.db --snapshot-test
+```
+
+Gunakan nama backup yang belum ada untuk setiap rilis, simpan backup di lokasi privat, lalu audit lagi sesudah migrasi pada target rilis. Script audit membuka source read-only dan menguji migrasi pada snapshot sementara. Query diagnosis: `scripts/sql/media-ownership-audit.sql`. Mismatch atau filename lintas nomor harus ditinjau sebelum rilis; tidak ada koreksi pemilik otomatis. Prosedur rollback, output test dan screenshot ada di [laporan PR 01](docs/pr01/REPORT.md), keputusan arsitektur di [ADR 0001](docs/adr/0001-signed-media-ownership.md).
+
 ## Backup
 Otomatis harian jam BACKUP_HOUR, disimpan di BACKUP_DIR, disimpan BACKUP_KEEP terakhir.
 Isi zip: app.db dan folder sessions. Set BACKUP_MEDIA=1 untuk ikut menyertakan media.

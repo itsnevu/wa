@@ -1,0 +1,23 @@
+Command: node --test --test-reporter=spec scripts/verify-media.mjs
+Base HEAD: 9c9c77f7621814410707a82cbf5665161b32fb97
+Test SHA256: a0e268b02093902acadecd128afd42cccbaa7a70e949c6ab9fa0c8b5f6fa016b
+Exit code: 0
+✔ legacy path nomor B ditolak untuk A; tidak boleh ada fallback static (1087.0239ms)
+✔ penerbitan URL mengecek sesi dan akses chat, termasuk admin (42.9523ms)
+✔ URL valid terikat pengguna, tetap membutuhkan sesi, dan private/no-store (80.551ms)
+✔ signature, pengguna, expiry, UUID dan query duplikat tidak dapat diubah (95.9963ms)
+✔ ownership dicek ulang setelah URL diterbitkan dan registry mismatch ditolak (32.947ms)
+✔ HTML aktif dipaksa unduh dan disandbox; URL basename tidak dipublikasikan (19.973ms)
+✔ path traversal mentah, encoded, backslash dan path Windows ditolak (66.4192ms)
+✔ registry backfill stabil dan tidak menimpa ownership; pesan baru ikut terdaftar (397.4953ms)
+✔ file hilang ditolak tanpa membocorkan path filesystem (5.1338ms)
+✔ symlink di media menuju luar direktori tidak bisa diunduh (15.655ms)
+✔ flag nonaktif menutup akses media, tidak menghidupkan static lama (802.3608ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2777.3168

@@ -70,11 +70,17 @@ async function startServer(seed) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'wa-hardening-'));
   fs.mkdirSync(path.join(temp, 'media'), { recursive: true });
   if (seed) seed(temp);
-  const port = 40000 + Math.floor(Math.random() * 20000);
+  const { createServer } = await import('node:net');
+  const probe = createServer();
+  probe.listen(0, '127.0.0.1');
+  await new Promise(resolve => probe.once('listening', resolve));
+  const port = probe.address().port;
+  await new Promise(resolve => probe.close(resolve));
   const { spawn } = await import('node:child_process');
   const child = spawn(process.execPath, ['src/index.js'], {
     env: { ...process.env, DATA_DIR: temp, BACKUP_DIR: path.join(temp, 'backups'), BACKUP_HOUR: '-1', PORT: String(port),
-      HOST: '127.0.0.1', ADMIN_USER: 'harness-admin', ADMIN_PASS: 'harness-password-123', SECURE_COOKIE: '0' },
+      HOST: '127.0.0.1', ADMIN_USER: 'harness-admin', ADMIN_PASS: 'harness-password-123', SECURE_COOKIE: '0',
+      MEDIA_SIGNED_URLS_ENABLED: '1', MEDIA_SIGNING_KEY: 'fixture-only-hardening-media-key-32chars' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let out = '';
@@ -101,6 +107,24 @@ async function startServer(seed) {
     } };
 }
 
+// PR01 replaces legacy static URLs with authorized, message-backed signed URLs.
+// Keep all original header/auth assertions; add an actual ownership fixture.
+async function signedFixture(srv, file, cookie) {
+  const { default: Database } = await import('better-sqlite3');
+  const db = new Database(path.join(srv.temp, 'app.db'));
+  let chat;
+  try {
+    const n = Number(db.prepare('INSERT INTO numbers(phone,name,created_at) VALUES(?,?,?)').run(file, 'Media fixture', Date.now()).lastInsertRowid);
+    chat = Number(db.prepare('INSERT INTO chats(number_id,jid,last_at) VALUES(?,?,?)').run(n, 'fixture@s.whatsapp.net', Date.now()).lastInsertRowid);
+    db.prepare('INSERT INTO messages(number_id,chat_id,ts,media_path) VALUES(?,?,?,?)').run(n, chat, Date.now(), file);
+  } finally { db.close(); }
+  const r = await fetch(srv.base + `/api/chats/${chat}/media-url`, {
+    method: 'POST', headers: { cookie, 'content-type': 'application/json' }, body: JSON.stringify({ media_path: file }),
+  });
+  assert.equal(r.status, 200);
+  return (await r.json()).url;
+}
+
 await step(2, 'header aman pada /media', async () => {
   const srv = await startServer((t) => {
     fs.writeFileSync(path.join(t, 'media', 'a.html'), '<script>alert(1)</script>');
@@ -108,13 +132,15 @@ await step(2, 'header aman pada /media', async () => {
   });
   try {
     const cookie = await srv.login();
-    const html = await fetch(srv.base + '/media/a.html', { headers: { cookie } });
-    const img = await fetch(srv.base + '/media/b.jpeg', { headers: { cookie } });
+    const html = await fetch(srv.base + await signedFixture(srv, 'a.html', cookie), { headers: { cookie } });
+    const img = await fetch(srv.base + await signedFixture(srv, 'b.jpeg', cookie), { headers: { cookie } });
     log(2, `a.html status=${html.status} nosniff=${html.headers.get('x-content-type-options')} csp=${html.headers.get('content-security-policy')}`);
     log(2, `b.jpeg status=${img.status} nosniff=${img.headers.get('x-content-type-options')} csp=${img.headers.get('content-security-policy')}`);
     assert.equal(html.status, 200);
     assert.equal(html.headers.get('x-content-type-options'), 'nosniff');
     assert.match(html.headers.get('content-security-policy') || '', /^sandbox;/);
+    assert.match(html.headers.get('content-disposition') || '', /^attachment;/);
+    assert.equal(html.headers.get('cache-control'), 'private, no-store');
     assert.equal(img.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(img.headers.get('content-security-policy'), null);
   } finally { await srv.stop(); }
@@ -123,9 +149,10 @@ await step(2, 'header aman pada /media', async () => {
 await step(3, '/media wajib login', async () => {
   const srv = await startServer((t) => fs.writeFileSync(path.join(t, 'media', 'b.jpeg'), 'x'));
   try {
-    const anon = await fetch(srv.base + '/media/b.jpeg');
     const cookie = await srv.login();
-    const authed = await fetch(srv.base + '/media/b.jpeg', { headers: { cookie } });
+    const url = await signedFixture(srv, 'b.jpeg', cookie);
+    const anon = await fetch(srv.base + url);
+    const authed = await fetch(srv.base + url, { headers: { cookie } });
     const health = await fetch(srv.base + '/api/health');
     log(3, `tanpa cookie=${anon.status} dengan cookie=${authed.status} /api/health tanpa cookie=${health.status}`);
     assert.equal(anon.status, 401);
