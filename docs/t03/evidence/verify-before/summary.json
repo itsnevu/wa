@@ -1,10 +1,10 @@
 {
-  "sha": "ccd67d18de315c62bd45daed1b93172c306d409b",
+  "sha": "eb79821727786e9707102626679ce2fe9c219eca",
   "phase": "before",
   "results": [
     {
       "file": "verify-ai-final.mjs",
-      "exit": 1,
+      "exit": 0,
       "error": null
     },
     {
@@ -54,7 +54,7 @@
     },
     {
       "file": "verify-hardening.mjs",
-      "exit": 1,
+      "exit": 0,
       "error": null
     },
     {
@@ -84,7 +84,7 @@
     },
     {
       "file": "verify-module-guide.mjs",
-      "exit": 1,
+      "exit": 0,
       "error": null
     },
     {
@@ -129,7 +129,12 @@
     },
     {
       "file": "verify-tenant-baseline.mjs",
-      "exit": 1,
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "verify-tenant-sessions-browser.mjs",
+      "exit": 0,
       "error": null
     },
     {

@@ -1,5 +1,5 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-phase345.mjs
-SHA: ccd67d18de315c62bd45daed1b93172c306d409b
+SHA: eb79821727786e9707102626679ce2fe9c219eca
 exit: 0
 $ node --check src/db.js
 exit 0
@@ -19,7 +19,7 @@ $ node --check scripts/verify-phase345.mjs
 exit 0
 Inline UI syntax: OK; phase345.js included once
 [db] admin dibuat: harness-admin
-[schema] {"version":1,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase345-RoxnnZ\\migration-backups\\pre-t01-1821d899-3d52-4e8e-b730-436046cac584.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":8,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase345-Ct9Wv3\\migration-backups\\pre-t01-083c2cbb-8153-4b63-81d5-60e30e8e8473.sqlite","backupCount":1,"backupBytes":4096}
 1. PASS assign + incoming (including duplicate): notifications A=1, B=0; event A=1
 2. PASS mine: A=[assigned chat], B=[] with temporary fixture ownership; B without access=403
 3. PASS search: 2 characters=1 result; 1 character=[]

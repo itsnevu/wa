@@ -17,10 +17,19 @@ try {
   assert.equal((await request('/ai','PATCH',{enabled:1},h.admin)).status,200);
   const settings=await (await request('/ai')).json(); for (const k of ['api_key','provider','base_url','model','has_api_key']) assert.equal(settings[k],undefined,k);
   const chat=Number(h.q.insertChat.run(n,'62@s.whatsapp.net','Test',Date.now()).lastInsertRowid);
-  const {aiDay}=await import('../src/limits.js');
+  const {aiDay,bumpAi}=await import('../src/limits.js');
   h.q.addNotice.run(n,chat,aiDay(),'stop');
+  // Path 1: budget not exhausted yet -> resume refused, nothing changes.
+  const early=await request('/ai/resume','POST',{},h.admin);
+  assert.equal(early.status,409);
+  assert.equal(h.q.aiSettings.get(n).daily_tokens,200000);
+  assert.equal(h.db.prepare('SELECT count(*) n FROM ai_notice').get().n,1);
+  console.log('ASSERT resume-before-exhausted: status 409, daily_tokens 200000, notice kept');
+  // Path 2: budget actually exhausted -> resume succeeds and raises budget by 20%.
+  bumpAi(n,h.q.aiSettings.get(n).daily_tokens);
   assert.equal((await request('/ai/resume','POST',{})).status,403);
   const resumed=await request('/ai/resume','POST',{},h.admin); assert.equal(resumed.status,200);
+  console.log('ASSERT resume-after-exhausted: status 200, daily_tokens',h.q.aiSettings.get(n).daily_tokens);
   assert.equal(h.db.prepare('SELECT count(*) n FROM ai_notice').get().n,0);
   assert.equal(h.q.aiSettings.get(n).daily_tokens,240000);
   const count=h.db.prepare('SELECT count(*) n FROM messages').get().n;

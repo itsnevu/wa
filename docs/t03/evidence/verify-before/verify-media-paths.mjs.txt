@@ -1,9 +1,9 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-media-paths.mjs
-SHA: ccd67d18de315c62bd45daed1b93172c306d409b
+SHA: eb79821727786e9707102626679ce2fe9c219eca
 exit: 0
-✔ Windows containment memakai batas direktori, bukan prefix string yang ambigu (1.2261ms)
-✔ nama Windows berbahaya dan encoding tidak diterima pada semua OS (0.6607ms)
-✔ konfigurasi kunci invalid gagal sebelum database dibuat dan tidak mencetak nilainya (67.6568ms)
+✔ Windows containment memakai batas direktori, bukan prefix string yang ambigu (1.2347ms)
+✔ nama Windows berbahaya dan encoding tidak diterima pada semua OS (0.8158ms)
+✔ konfigurasi kunci invalid gagal sebelum database dibuat dan tidak mencetak nilainya (88.0231ms)
 ℹ tests 3
 ℹ suites 0
 ℹ pass 3
@@ -11,5 +11,5 @@ exit: 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 73.0041
+ℹ duration_ms 93.6071
 

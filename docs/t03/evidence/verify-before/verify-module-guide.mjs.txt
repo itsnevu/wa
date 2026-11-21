@@ -1,6 +1,6 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-module-guide.mjs
-SHA: ccd67d18de315c62bd45daed1b93172c306d409b
-exit: 1
+SHA: eb79821727786e9707102626679ce2fe9c219eca
+exit: 0
 ai: 8 steps, Indonesian copy, visible targets
 dashboard: 6 steps, Indonesian copy, visible targets
 chats: 23 steps, Indonesian copy, visible targets
@@ -14,21 +14,11 @@ search: 4 steps, Indonesian copy, visible targets
 monitor: 4 steps, Indonesian copy, visible targets
 account: 4 steps, Indonesian copy, visible targets
 backups: 5 steps, Indonesian copy, visible targets
-node:fs:484
-    return binding.readFileUtf8(path, stringToFlags(options.flag));
-                   ^
-
-Error: ENOENT: no such file or directory, open 'C:\Users\user\wa-suite\artifacts\t03-regression-F0ZnY4\node_modules\driver.js\package.json'
-    at Object.readFileSync (node:fs:484:20)
-    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-F0ZnY4/scripts/verify-module-guide.mjs:42:35
-    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
-    at async node:internal/modules/esm/loader:643:26
-    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
-  errno: -4058,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: 'C:\\Users\\user\\wa-suite\\artifacts\\t03-regression-F0ZnY4\\node_modules\\driver.js\\package.json'
-}
-
-Node.js v24.19.0
+Driver.js 1.14.0: local assets match installed package
+GET /: 200 text/html; charset=utf-8
+GET /module-guide.js: 200 text/javascript; charset=utf-8
+GET /module-guide.css: 200 text/css; charset=utf-8
+GET /vendor/driver/driver.js.mjs: 200 text/javascript; charset=utf-8
+GET /vendor/driver/driver.css: 200 text/css; charset=utf-8
+PASS: module coverage, hidden target filtering, navigation cleanup, local assets, HTTP serving; exit 0
 
