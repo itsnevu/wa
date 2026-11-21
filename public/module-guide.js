@@ -4,7 +4,7 @@ const moduleGuides = {
     [null, 'Otomasi AI', 'Atur asisten per nomor, uji jawabannya, dan kelola produk serta pesanan.'],
     ['#aiNumberTrigger, #aiNumber', 'Pilih nomor', 'Pengaturan, anggaran, produk, dan log terpisah untuk setiap nomor WhatsApp.'],
     ['#aiSettingsForm', 'Pengaturan asisten', 'Pilih provider dan model, tulis prompt, atur batas dan eskalasi, lalu simpan. AI hanya aktif jika sakelar dinyalakan dan pengaturan disimpan.'],
-    ['#aiUsage', 'Pemakaian token', 'Hijau berarti di bawah ambang, kuning mendekati batas, dan merah mencapai anggaran. Lanjutkan AI menaikkan anggaran 20%.'],
+    ['#aiUsage', 'Pemakaian token', 'Hijau berarti di bawah ambang, kuning mendekati batas, dan merah mencapai anggaran. Lanjutkan AI menaikkan anggaran setelah batas tercapai.'],
     ['#aiTestForm', 'Konsol uji', 'Uji jawaban tanpa mengirim ke WhatsApp atau membuat pesanan. Token uji tetap tercatat.'],
     ['.ai-products', 'Katalog produk', 'Tambah, edit, nonaktifkan, atau hapus produk yang dapat digunakan AI.'],
     ['.ai-orders', 'Pesanan', 'Periksa pesanan yang dibuat AI dan perbarui status penanganannya.'],

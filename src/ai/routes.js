@@ -24,6 +24,9 @@ function publicSettings(s) {
   const {api_key,provider,base_url,model,business_profile,...safe}=s; return {...safe,business_profile:parseProfile(business_profile)};
 }
 function positive(value) { return Number.isSafeInteger(value) && value>0 && value<=1e12; }
+function canResume(s, usage) {
+  return Boolean(s.enabled && s.daily_tokens < 1e12 && usage.tokens >= s.daily_tokens && usage.tokens < 1e12);
+}
 
 aiApi.get('/numbers/:id/ai',ownNumber,(req,res)=>res.json(publicSettings(settings(req.numberId))));
 aiApi.patch('/numbers/:id/ai',requireAdmin,ownNumber,(req,res)=>{
@@ -51,7 +54,8 @@ aiApi.get('/numbers/:id/ai/usage',ownNumber,(req,res)=>{
   const s=settings(req.numberId);
   const alerts=db.prepare('SELECT level FROM ai_alerts WHERE number_id=? AND day=?').all(req.numberId,limits.aiDay()).map(a=>a.level);
   const products=q.searchProducts.all(req.numberId,'%','%').slice(0,8);
-  res.json({...limits.aiUsage(req.numberId),context_tokens:estimateTokens(systemPrompt(s,products)),budget:s.daily_tokens,pct:limits.aiPercent(req.numberId,s.daily_tokens),warn_percent:s.warn_percent,alerts});
+  const usage=limits.aiUsage(req.numberId);
+  res.json({...usage,context_tokens:estimateTokens(systemPrompt(s,products)),budget:s.daily_tokens,pct:limits.aiPercent(req.numberId,s.daily_tokens),warn_percent:s.warn_percent,alerts,can_resume:canResume(s,usage)});
 });
 aiApi.get('/numbers/:id/ai/logs',ownNumber,(req,res)=>{
   res.json(db.prepare('SELECT * FROM ai_logs WHERE number_id=? ORDER BY id DESC LIMIT 50').all(req.numberId));
@@ -71,14 +75,19 @@ aiApi.post('/numbers/:id/ai/test',ownNumber,async(req,res)=>{
   }
 });
 aiApi.post('/numbers/:id/ai/resume',requireAdmin,ownNumber,(req,res)=>{
-  const s=settings(req.numberId);
-  db.transaction(()=>{
+  const dailyTokens=db.transaction(()=>{
+    const s=settings(req.numberId);
+    const usage=limits.aiUsage(req.numberId);
+    if (!canResume(s,usage)) return null;
+    const nextBudget=Math.min(1e12,Math.max(usage.tokens+1,Math.ceil(s.daily_tokens*1.2)));
     db.prepare("DELETE FROM ai_notice WHERE number_id=? AND day=? AND kind='stop'").run(req.numberId,limits.aiDay());
-    db.prepare('UPDATE ai_settings SET daily_tokens=? WHERE number_id=?').run(Math.ceil(s.daily_tokens*1.2),req.numberId);
+    db.prepare('UPDATE ai_settings SET daily_tokens=? WHERE number_id=?').run(nextBudget,req.numberId);
     db.prepare("DELETE FROM ai_alerts WHERE number_id=? AND day=? AND level='stop'").run(req.numberId,limits.aiDay());
     db.prepare("UPDATE chats SET state='active',ai_paused_until=NULL WHERE number_id=? AND state='pending'").run(req.numberId);
-  })();
-  res.json({ok:true,daily_tokens:q.aiSettings.get(req.numberId).daily_tokens});
+    return nextBudget;
+  }).immediate();
+  if (dailyTokens===null) return res.status(409).json({error:'AI hanya bisa dilanjutkan saat aktif, batas token tercapai, dan anggaran masih bisa dinaikkan.'});
+  res.json({ok:true,daily_tokens:dailyTokens});
 });
 aiApi.get('/ai/alerts',(req,res)=>{
   const alerts=db.prepare('SELECT a.*,n.name FROM ai_alerts a JOIN numbers n ON n.id=a.number_id WHERE day=? ORDER BY a.id DESC').all(limits.aiDay());
