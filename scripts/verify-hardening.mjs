@@ -23,7 +23,7 @@ const results = [];
 const log = (n, msg) => { console.log(`[${n}] ${msg}`); };
 
 function waContext(extra = {}) {
-  const context = vm.createContext({
+  const context = vm.createContext({recordHealth() {}, queueDealDetection() {},
     path, fs, console, setTimeout, clearTimeout, config: { dataDir: os.tmpdir() }, q: {},
     P: () => ({}), QRCode: {}, limits: {}, makeWASocket: () => ({ ev: { on() {} } }),
     useMultiFileAuthState: async () => ({ state: {}, saveCreds() {} }),
@@ -370,7 +370,7 @@ await step(6, 'pesan terbaru pada chat panjang', async () => {
 await step(7, 'WebSocket menyambung ulang', async () => {
   const html = readSource('public/index.html');
   for (const m of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) new vm.Script(m[1]);
-  const block = html.match(/const WS_DELAYS[\s\S]*?\nfunction openSocket\(\) \{[\s\S]*?\n\}\n/);
+  const block = html.match(/const WS_DELAYS[\s\S]*?\nfunction openSocket\(\) \{[\s\S]*?\n\}\r?\n/);
   assert.ok(block, 'blok openSocket ditemukan');
   const network=new WebSocketServer({port:0,host:'127.0.0.1'});await once(network,'listening');
   let connections=0,refreshes=0,stopped=false;const liveTimers=new Set();

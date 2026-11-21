@@ -12,6 +12,7 @@ import makeWASocket, {
 import { config } from './config.js';
 import { q } from './db.js';
 import { recordHealth } from './sessionHealth.js';
+import { queueDealDetection } from './dealDetection.js';
 import * as limits from './limits.js';
 import { testPatterns } from './regexRunner.js';
 import * as aiGuard from './ai/guard.js';
@@ -332,6 +333,8 @@ export async function connect(numberId, { timeoutMs } = {}) {
         recordHealth(numberId, 'inbound');
         if (type === 'append') appendObservers.get(numberId)?.();
       } else recordHealth(numberId, 'outbound');
+      try { queueDealDetection(chat.id, chat.tenant_id); }
+      catch (err) { console.error('[deal.schedule]', err.message); }
       const msgId = saved.lastInsertRowid;
       q.touchChat.run(Date.now(), null, chat.id);
         if (!fromMe) {

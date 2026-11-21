@@ -36,3 +36,11 @@ export function resolveHandshake(req){
   if(scope.grant)throw sessionError(403,'CAPABILITY_MISSING');
   return scope;
 }
+
+export function resolveInboundChatScope(database, chatId, tenantId) {
+  const row = database.prepare(`SELECT c.id AS chatId,c.number_id AS sessionId,c.tenant_id AS tenantId
+    FROM chats c JOIN numbers n ON n.id=c.number_id AND n.tenant_id=c.tenant_id
+    JOIN tenants t ON t.id=c.tenant_id AND t.deleted_at IS NULL AND t.status='active'
+    WHERE c.id=? AND c.tenant_id=?`).get(chatId, tenantId);
+  return row && Object.freeze(row);
+}

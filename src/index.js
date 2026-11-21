@@ -7,6 +7,10 @@ import * as backup from './backup.js';
 import { db, q } from './db.js';
 import { shutdown as shutdownRegex } from './regexRunner.js';
 
+import { startDealSweep } from './dealDetection.js';
+
+
+const dealSweepTimer = startDealSweep();
 const {server,wss} = createHttpSurface();
 
 wss.on('connection', (socket, req) => {
@@ -66,6 +70,7 @@ const shutdown = () => {
   closing = true;
   console.log('[shutdown] menutup');
   for (const n of q.allNumbers.all()) wa.disconnect(n.id);
+  clearInterval(dealSweepTimer);
   shutdownRegex();
   // Klien WS menahan server.close(); tutup agar tidak selalu jatuh ke batas 5 detik.
   for (const client of wss.clients) client.terminate();

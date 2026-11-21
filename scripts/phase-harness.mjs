@@ -51,7 +51,7 @@ export async function setup(phase) {
 export async function incomingHarness(h, numberId) {
   const handlers = new Map(), events = [];
   const sock = { ev: { on(name, fn) { handlers.set(name, fn); } } };
-  const context = vm.createContext({
+  const context = vm.createContext({recordHealth() {}, queueDealDetection() {},
     path, fs, config: h.config, q: h.q, console, setTimeout, clearTimeout,
     P: () => ({}), QRCode: {},
     limits: { seen: () => false, withinHours: () => false },

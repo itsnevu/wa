@@ -1,8 +1,13 @@
 import { parentPort } from 'node:worker_threads';
+import { classifyMessages } from './dealClassifier.js';
 
 const cache = new Map();
 
-parentPort.on('message', ({ id, items, text }) => {
+parentPort.on('message', ({ id, items, text, messages }) => {
+  if (messages) {
+    parentPort.postMessage({ id, output: classifyMessages(messages) });
+    return;
+  }
   const hits = [];
   for (const it of items) {
     let re = cache.get(it.pattern);

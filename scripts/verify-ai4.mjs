@@ -27,7 +27,7 @@ try {
   assert.equal(out.reply,'Kopi tersedia.'); assert.equal(out.tokens,8); assert.equal(calls,2);
   const handlers=new Map(), sent=[];
   const sock={ev:{on:(name,fn) => handlers.set(name,fn)},sendPresenceUpdate:async()=>{},sendMessage:async(jid,payload)=>{sent.push({jid,payload});return {key:{id:'mock-'+sent.length}};}};
-  const context=vm.createContext({path,fs,console,q:h.q,config:h.config,limits,aiGuard,notice,runTurn,
+  const context=vm.createContext({recordHealth() {}, queueDealDetection() {},path,fs,console,q:h.q,config:h.config,limits,aiGuard,notice,runTurn,
     setTimeout:(fn)=>setTimeout(fn,0),clearTimeout,P:()=>({}),QRCode:{},
     makeWASocket:()=>sock,useMultiFileAuthState:async()=>({state:{},saveCreds(){}}),
     fetchLatestBaileysVersion:async()=>({version:[1,0,0]}),Browsers:{ubuntu:()=>[]},DisconnectReason:{loggedOut:401},

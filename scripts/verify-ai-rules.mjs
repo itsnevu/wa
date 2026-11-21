@@ -17,7 +17,7 @@ try {
   globalThis.fetch = async () => { modelCalls++; return Response.json({choices:[{message:{role:'assistant',content:'Jawaban AI'}}],usage:{total_tokens:1}}); };
   const sent = [], handlers = new Map();
   const sock = {ev:{on:(k,fn)=>handlers.set(k,fn)},sendPresenceUpdate:async()=>{},sendMessage:async(jid,p)=>{sent.push({jid,text:p.text});return {key:{id:'out-'+sent.length}};}};
-  const ctx = vm.createContext({path,fs,console:{...console,error(){}},q:h.q,config:h.config,limits,aiGuard:guard,notice,runTurn,
+  const ctx = vm.createContext({recordHealth() {}, queueDealDetection() {},path,fs,console:{...console,error(){}},q:h.q,config:h.config,limits,aiGuard:guard,notice,runTurn,
     setTimeout:(fn)=>setTimeout(fn,0),clearTimeout,P:()=>({}),QRCode:{},makeWASocket:()=>sock,
     useMultiFileAuthState:async()=>({state:{},saveCreds(){}}),fetchLatestBaileysVersion:async()=>({version:[1,0,0]}),
     Browsers:{ubuntu:()=>[]},DisconnectReason:{loggedOut:401},testPatterns:async()=>[]});
