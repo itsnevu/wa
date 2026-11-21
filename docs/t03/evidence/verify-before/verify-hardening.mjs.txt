@@ -1,5 +1,5 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-hardening.mjs
-SHA: eb79821727786e9707102626679ce2fe9c219eca
+SHA: 724b0e7457ac1f44d3c354380196034e8083f805
 exit: 0
 [1] "image/svg+xml; charset=x" kind=image -> 1-abc.bin
 [1] "text/html/../../evil" kind=doc -> 1-abc.html
@@ -15,7 +15,7 @@ exit: 0
 [3] tanpa cookie=401 dengan cookie=200 /api/health tanpa cookie=200
 [3] PASS /media wajib login
 [db] admin dibuat: harness-admin
-[schema] {"version":8,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phasehardening-8dOsKd\\migration-backups\\pre-t01-b8b32758-47ef-441f-9699-a788b65fa4de.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":8,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phasehardening-72OK4J\\migration-backups\\pre-t01-305dc5b7-9d6e-4f06-89f8-2bf6773f3156.sqlite","backupCount":1,"backupBytes":4096}
 [4] A PATCH /rules/1 -> 403
 [4] A DELETE /rules/1 -> 403
 [4] A POST /chats/2/labels/1 -> 403
@@ -37,18 +37,18 @@ exit: 0
 [4] admin DELETE /labels/1 -> 200
 [4] migrasi contacts_v2: [{"number_id":1,"jid":"x@s","name":"Lama X"},{"number_id":2,"jid":"x@s","name":"Lama X"}] | setelah impor ulang: {"n":2}
 [4] PASS otorisasi per objek
-[5] 5.1 pola 190 karakter, teks 1500 (tidak bisa cocok): 253.3 ms, hasil=null
-[5] 5.2 '^(a+)+$' pada 1500a+b: 478.5 ms, hasil=null
-[5] 5.3 setelah timeout, '^halo\s+pag?i$' pada 'halo pagi': 25.0 ms, hasil=3
-[5] 5.4 regex jahat (urutan 1) + contains 'promo' (urutan 2): 476.1 ms, hasil=5 (contains)
-[5] 5.4b regex timeout, exact tidak cocok: 466.8 ms, hasil=null
+[5] 5.1 pola 190 karakter, teks 1500 (tidak bisa cocok): 271.9 ms, hasil=null
+[5] 5.2 '^(a+)+$' pada 1500a+b: 463.1 ms, hasil=null
+[5] 5.3 setelah timeout, '^halo\s+pag?i$' pada 'halo pagi': 27.2 ms, hasil=3
+[5] 5.4 regex jahat (urutan 1) + contains 'promo' (urutan 2): 458.3 ms, hasil=5 (contains)
+[5] 5.4b regex timeout, exact tidak cocok: 467.1 ms, hasil=null
 [5] 5.x log error tercatat: ["[regex] tetap timeout","[regex] tetap timeout","[regex] tetap timeout"] | markRuleSlow untuk rule: [1,2,4,6]
-[5] 5.6 median matchRule 20 pesan: 0.034 ms (min 0.016, maks 0.134)
-[5] 5.6b panggilan pertama dengan worker baru (spawn dingin): 24.9 ms
+[5] 5.6 median matchRule 20 pesan: 0.049 ms (min 0.020, maks 0.191)
+[5] 5.6b panggilan pertama dengan worker baru (spawn dingin): 26.3 ms
 [5] 5.5 POST rule regex "(a+)+" -> 400 {"error":"pola punya quantifier bersarang, misal (a+)+"}
 [5] 5.5 POST rule regex "^halo\\s+pag?i$" -> 200 {"ok":true}
 [5] 5.5 POST rule regex "(" -> 400 {"error":"pola regex tidak valid"}
-[5] 5.7 proses anak: exit=0 signal=null dalam 143 ms | timeout: timeout | hits [1] [3]
+[5] 5.7 proses anak: exit=0 signal=null dalam 145 ms | timeout: timeout | hits [1] [3]
 [5] PASS regex di worker
 [6] halaman 1: 500 pesan, pertama="pesan 101", terakhir="pesan 600", hasMore=true
 [6] halaman 2 (before=ts pesan 101): 100 pesan, "pesan 1".."pesan 100", hasMore=false
@@ -67,12 +67,12 @@ exit: 0
 [8] PASS satu socket per nomor
 [9] klien WebSocket terbuka sebelum shutdown
 [9]   [db] admin dibuat: harness-admin
-[9]   [schema] {"version":8,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-shutdown-g56WaU\\data\\migration-backups\\pre-t01-7170d6f2-abd3-420f-bc7e-dc67a86e82f2.sqlite","backupCount":1,"backupBytes":4096}
-[9]   [http] http://localhost:42344
+[9]   [schema] {"version":8,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-shutdown-gnD3m5\\data\\migration-backups\\pre-t01-5118df06-80b4-45cf-8be1-77d48413549d.sqlite","backupCount":1,"backupBytes":4096}
+[9]   [http] http://localhost:46820
 [9]   [regex] PERINGATAN: jalankan dengan "npm start" atau node --regexp-interpret-all; rule regex berat bisa timeout bergantian
 [9]   listener SIGTERM=1 SIGINT=1 unhandledRejection=1 uncaughtException=1
 [9]   [unhandled] Error: uji penolakan tak tertangani
-[9]       at Timeout._onTimeout (file:///C:/Users/user/AppData/Local/Temp/wa-shutdown-g56WaU/preload.mjs:3:18)
+[9]       at Timeout._onTimeout (file:///C:/Users/user/AppData/Local/Temp/wa-shutdown-gnD3m5/preload.mjs:3:18)
 [9]       at listOnTimeout (node:internal/timers:635:17)
 [9]       at process.processTimers (node:internal/timers:571:7)
 [9]   masih hidup setelah penolakan, kirim SIGTERM
@@ -87,20 +87,20 @@ exit: 0
 [11] 11.1 contains p5 + regex p1, keduanya cocok -> menang id=5 (regex, p1)
 [11] 11.2 regex p5 + contains p1, keduanya cocok -> menang id=7 (contains, p1)
 [11] 11.2b exact p3 + regex p2 -> menang id=9 (regex)
-[11] 11.3 pola 190, teks cocok 200 karakter: hasil=10, 268 ms, slow=1
-[11] 11.3b 5 pesan pendek berikutnya (worker hangat): 0.2, 0.1, 0.1, 0.1, 0.1 ms
-[11] 11.3c pola 190, teks cocok 1500 karakter, worker baru: hasil=10, 263 ms (tanpa --regexp-interpret-all: null, karena kompilasi native ~1.5 s)
-[11] 11.4 '^(a+)+$' pada 1500a+b: hasil=null, 462 ms, slow=1
+[11] 11.3 pola 190, teks cocok 200 karakter: hasil=10, 257 ms, slow=1
+[11] 11.3b 5 pesan pendek berikutnya (worker hangat): 0.2, 0.2, 0.1, 0.1, 0.1 ms
+[11] 11.3c pola 190, teks cocok 1500 karakter, worker baru: hasil=10, 247 ms (tanpa --regexp-interpret-all: null, karena kompilasi native ~1.5 s)
+[11] 11.4 '^(a+)+$' pada 1500a+b: hasil=null, 459 ms, slow=1
 [11] 11.x log: ["[regex] tetap timeout"]
 [11] 11.5 setelah PATCH /rules/11: slow=0; rule baru slow=0
 [11] 11.6 badge "berat" di index.html: 2 tempat (panel rules dan halaman Rules); GET rules menyertakan kolom slow
 [11] PASS prioritas rule dan jalur lambat regex
 [12] 12.1 nomor A (ada nama lokal): name="Pak Budi (lokal)" push_name="Budi Baru" | nomor B (tanpa nama lokal): name="Budi Baru" push_name="Budi Baru"
-[12] 12.2 rule slow, pesan 1/2/3: 202.1 / 0.3 / 0.2 ms | log timeout: []
-[12] 12.3 contains + rule slow, 5 pesan: 0.3 / 0.1 / 0.1 / 0.1 / 0.1 ms, menang id=14 (contains)
+[12] 12.2 rule slow, pesan 1/2/3: 196.8 / 0.4 / 0.3 ms | log timeout: []
+[12] 12.3 contains + rule slow, 5 pesan: 0.2 / 0.2 / 0.2 / 0.1 / 0.1 ms, menang id=14 (contains)
 [12] 12.3b pesan 1500 karakter: 0 ms, log [] | pesan pendek berikutnya: 0 ms
-[12] 12.4 pola 190, teks cocok 900 karakter (rule slow=0): hasil=15, 258 ms, slow=1, log []
-[12] 12.4b pola 190, teks cocok 1000 karakter (rule slow=0): hasil=16, 259 ms, slow=1, log []
+[12] 12.4 pola 190, teks cocok 900 karakter (rule slow=0): hasil=15, 256 ms, slow=1, log []
+[12] 12.4b pola 190, teks cocok 1000 karakter (rule slow=0): hasil=16, 261 ms, slow=1, log []
 [12] 12.4c rule yang sama (kini slow=1), teks cocok 2000 karakter: hasil=16, 0.3 ms
 [12] 12.5 contains p5 + regex p1 -> menang id=18 (regex)
 [12] 12.6 flag proses uji: --regexp-interpret-all | package.json start="node --regexp-interpret-all src/index.js" dev="node --regexp-interpret-all --watch src/index.js"

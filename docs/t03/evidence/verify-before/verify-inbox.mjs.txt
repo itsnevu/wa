@@ -1,8 +1,8 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-inbox.mjs
-SHA: eb79821727786e9707102626679ce2fe9c219eca
+SHA: 724b0e7457ac1f44d3c354380196034e8083f805
 exit: 0
 [db] admin dibuat: harness-admin
-[schema] {"version":8,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseinbox-izXdl6\\migration-backups\\pre-t01-ce0cb914-d033-42fd-a5de-10e0b7af70d8.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":8,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseinbox-QXBX7N\\migration-backups\\pre-t01-b6d1f104-8c17-40b3-bd4a-d6b1655d5849.sqlite","backupCount":1,"backupBytes":4096}
 PASS: status persistence, validation, access, queue filters, previews, read removal, incoming reopen, duplicate and own-message behavior
 [in] 123456789@lid | fromMe= false | conversation
 [in] 123456789@lid | fromMe= false | conversation
