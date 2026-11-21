@@ -556,6 +556,19 @@ db.prepare("INSERT INTO numbers (phone, name, status, created_at) VALUES ('6201'
   assert.equal(autoreply, 1);
 });
 
+// Decouple successful matches from the CPU time needed to enter the retry path.
+const longRulePrefix = '(halo|hai|pagi)\\s*x{0,70}';
+const longRuleSuffix = 'z'.repeat(190 - longRulePrefix.length);
+const longRulePattern = longRulePrefix + longRuleSuffix;
+const matchingText = (length) => 'a'.repeat(length - 4 - longRuleSuffix.length) + 'halo' + longRuleSuffix;
+
+function forceFastTimeout(testPatterns, ruleId) {
+  return async (items, text, timeoutMs) => {
+    if (timeoutMs === undefined && items.some(({ id }) => id === ruleId)) throw new Error('timeout');
+    return testPatterns(items, text, timeoutMs);
+  };
+}
+
 await step(11, 'prioritas rule dan jalur lambat regex', async () => {
   const runner = await import('../src/regexRunner.js');
   const h = await harness();
@@ -586,23 +599,23 @@ await step(11, 'prioritas rule dan jalur lambat regex', async () => {
   log(11, `11.2b exact p3 + regex p2 -> menang id=${hitC?.id} (${hitC?.match_type})`);
   assert.equal(hitC?.id, r2.id);
 
-  // 11.3 pola 190 karakter melalui jalur 400 ms, dengan worker baru (cache bersih) tiap kasus.
-  const p190 = ('(halo|hai|pagi)\\s*' + 'x?'.repeat(70)).padEnd(190, 'z').slice(0, 190);
-  const z = p190.length - p190.lastIndexOf('?') - 1;
-  const matching = (len) => 'a'.repeat(len - 4 - z) + 'halo' + 'z'.repeat(z);
-  const heavy = add('regex', p190, 0);
+  // 11.3 Simulate the fast timeout, then match with the real worker on the slow path.
+  const heavy = add('regex', longRulePattern, 0);
   assert.equal(slowOf(heavy.id), 0);
   runner.shutdown();
-  const [hitShort, msShort] = await time(() => ctx.matchRule([heavy], matching(200)));
+  const retry = waContext({ testPatterns: forceFastTimeout(runner.testPatterns, heavy.id), q: h.q });
+  const [hitShort, msShort] = await time(() => retry.matchRule([heavy], matchingText(200)));
   log(11, `11.3 pola 190, teks cocok 200 karakter: hasil=${hitShort?.id ?? null}, ${msShort.toFixed(0)} ms, slow=${slowOf(heavy.id)}`);
   assert.equal(hitShort?.id, heavy.id);
   assert.equal(slowOf(heavy.id), 1);
+  const slowRule = { ...heavy, slow: slowOf(heavy.id) };
   const warm = [];
-  for (let i = 0; i < 5; i += 1) warm.push((await time(() => ctx.matchRule([heavy], matching(200 + i))))[1]);
+  for (let i = 0; i < 5; i += 1) warm.push((await time(() => ctx.matchRule([slowRule], matchingText(200 + i))))[1]);
   log(11, `11.3b 5 pesan pendek berikutnya (worker hangat): ${warm.map((m) => m.toFixed(1)).join(', ')} ms`);
   runner.shutdown();
-  const [hitLong, msLong] = await time(() => ctx.matchRule([heavy], matching(1500)));
-  log(11, `11.3c pola 190, teks cocok 1500 karakter, worker baru: hasil=${hitLong?.id ?? null}, ${msLong.toFixed(0)} ms (tanpa --regexp-interpret-all: null, karena kompilasi native ~1.5 s)`);
+  const [hitLong, msLong] = await time(() => ctx.matchRule([slowRule], matchingText(1500)));
+  log(11, `11.3c pola 190, teks cocok 1500 karakter, worker baru: hasil=${hitLong?.id ?? null}, ${msLong.toFixed(0)} ms`);
+  assert.equal(hitLong?.id, heavy.id);
   assert.ok(msLong < 1000);
 
   // 11.4 backtracking katastrofik: tidak menggantung, tercatat slow.
@@ -671,22 +684,19 @@ await step(12, 'push name terbaru dan jalur cepat rule slow', async () => {
   // Jalur regex memakai worker sungguhan; rules dibaca ulang dari DB tiap pesan seperti produksi.
   const logs = [];
   const ctx = waContext({ testPatterns: runner.testPatterns, q: h.q, console: { ...console, error: (...a) => logs.push(a.join(' ')) } });
-  const p190 = ('(halo|hai|pagi)\\s*' + 'x?'.repeat(70)).padEnd(190, 'z').slice(0, 190);
-  const z = p190.length - p190.lastIndexOf('?') - 1;
-  const matching = (len) => 'a'.repeat(len - 4 - z) + 'halo' + 'z'.repeat(z);
   const run = (num, text) => ctx.matchRule(h.q.rulesByNumber.all(num), text);
   const addRule = (num, type, pattern, priority) => Number(h.q.insertRule.run(num, type, pattern, 'balas', priority).lastInsertRowid);
   const slowOf = (id) => h.db.prepare('SELECT slow FROM rules WHERE id = ?').get(id).slow;
 
   // 12.2 satu rule slow: pesan 1 (mengompilasi), pesan 2 dan 3 harus cepat tanpa timeout.
   const numS = h.number(null, '620001203');
-  const heavy = addRule(numS, 'regex', p190, 0);
+  const heavy = addRule(numS, 'regex', longRulePattern, 0);
   h.q.markRuleSlow.run(heavy);
   runner.shutdown();
   logs.length = 0;
   const times = [];
   for (let i = 0; i < 3; i += 1) {
-    const [hit, ms] = await time(() => run(numS, matching(200 + i)));
+    const [hit, ms] = await time(() => run(numS, matchingText(200 + i)));
     times.push(ms);
     if (hit?.id !== heavy) log(12, `12.2 pesan ${i + 1}: hasil=${hit?.id ?? null}, ${ms.toFixed(0)} ms, log ${JSON.stringify(logs)}`);
   }
@@ -708,30 +718,32 @@ await step(12, 'push name terbaru dan jalur cepat rule slow', async () => {
   if (cHit?.id !== contains) failures.push('12.3 contains tidak menang');
   if (!cTimes.every((m) => m < 20)) failures.push('12.3 contains tidak semua di bawah 20 ms');
 
-  // 12.3b dampak satu pesan panjang: rule slow timeout pada 400 ms dan worker terbunuh.
+  // 12.3b A long matching message leaves the worker able to process the next message.
   logs.length = 0;
-  const [, longMs] = await time(() => run(numS, matching(1500)));
-  const [, afterMs] = await time(() => run(numS, matching(200)));
+  const [longHit, longMs] = await time(() => run(numS, matchingText(1500)));
+  const [afterHit, afterMs] = await time(() => run(numS, matchingText(200)));
   log(12, `12.3b pesan 1500 karakter: ${longMs.toFixed(0)} ms, log ${JSON.stringify(logs)} | pesan pendek berikutnya: ${afterMs.toFixed(0)} ms`);
+  assert.equal(longHit?.id, heavy);
+  assert.equal(afterHit?.id, heavy);
 
-  // 12.4 rule baru (slow=0): 900 karakter cocok; 1000 karakter timeout dan ditandai slow.
+  // 12.4 Real matches at 900, 1000 and 2000 characters, with a forced fast timeout on the second case.
   const num9 = h.number(null, '620001204');
-  const r9 = addRule(num9, 'regex', p190, 0);
+  const r9 = addRule(num9, 'regex', longRulePattern, 0);
   runner.shutdown();
   logs.length = 0;
-  const [hit900, ms900] = await time(() => run(num9, matching(900)));
+  const [hit900, ms900] = await time(() => run(num9, matchingText(900)));
   log(12, `12.4 pola 190, teks cocok 900 karakter (rule slow=0): hasil=${hit900?.id ?? null}, ${ms900.toFixed(0)} ms, slow=${slowOf(r9)}, log ${JSON.stringify(logs)}`);
   assert.equal(hit900?.id, r9);
   const num10 = h.number(null, '620001205');
-  const r10 = addRule(num10, 'regex', p190, 0);
+  const r10 = addRule(num10, 'regex', longRulePattern, 0);
   runner.shutdown();
   logs.length = 0;
-  const [hit1000, ms1000] = await time(() => run(num10, matching(1000)));
+  const retry = waContext({ testPatterns: forceFastTimeout(runner.testPatterns, r10), q: h.q });
+  const [hit1000, ms1000] = await time(() => retry.matchRule(h.q.rulesByNumber.all(num10), matchingText(1000)));
   log(12, `12.4b pola 190, teks cocok 1000 karakter (rule slow=0): hasil=${hit1000?.id ?? null}, ${ms1000.toFixed(0)} ms, slow=${slowOf(r10)}, log ${JSON.stringify(logs)}`);
-  // Dengan --regexp-interpret-all tidak ada kompilasi native: timeout di 50 ms (ditandai slow), lalu cocok di jalur 400 ms.
   assert.equal(hit1000?.id, r10);
   assert.equal(slowOf(r10), 1);
-  const [hit2000, ms2000] = await time(() => run(num10, matching(2000)));
+  const [hit2000, ms2000] = await time(() => run(num10, matchingText(2000)));
   log(12, `12.4c rule yang sama (kini slow=1), teks cocok 2000 karakter: hasil=${hit2000?.id ?? null}, ${ms2000.toFixed(1)} ms`);
   assert.equal(hit2000?.id, r10);
 
