@@ -1,0 +1,26 @@
+.deal-review { display:grid; gap:12px; }
+.deal-tabs, .deal-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.deal-tabs button[aria-pressed="true"] { border-color:#0f766e; background:#ccfbf1; color:#134e4a; }
+.deal-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr)); gap:12px; }
+.deal-card { min-width:0; overflow-wrap:anywhere; display:flex; flex-direction:column; gap:8px; }
+.deal-card header,.deal-dialog header { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:start; gap:8px; }
+.deal-card h3,.deal-dialog h3 { margin:0; }
+.deal-sla { border-radius:16px; padding:3px 8px; background:#dcfce7; color:#14532d; font-size:.8rem; }
+.deal-sla.is-overdue { background:#fee2e2; color:#991b1b; }
+.deal-card dl { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.35fr); margin:0; gap:.3rem .6rem; }
+.deal-card dt,.deal-messages small { color:#475569; }
+.deal-card dd { margin:0; }
+.deal-messages { padding:0; margin:6px 0; list-style:none; }
+.deal-messages li { display:grid; grid-template-columns:2.5rem minmax(0,1fr); gap:6px; padding:4px 0; border-block-start:1px solid #e2e8f0; }
+.deal-messages button { grid-column:2; justify-self:start; }
+.deal-actions { margin-top:auto; }
+.deal-dialog { box-sizing:border-box; width:min(35rem,calc(100vw - 24px)); max-height:calc(100dvh - 24px); overflow:auto; border:1px solid #cbd5e1; border-radius:12px; background:#fff; color:#172b3a; padding:14px; }
+.deal-dialog::backdrop { background:#0f172a90; }
+.deal-dialog fieldset { min-width:0; border:1px solid #cbd5e1; border-radius:8px; padding:8px; margin:8px 0; }
+.deal-dialog label { display:grid; gap:4px; margin:8px 0; }
+.deal-dialog input,.deal-dialog select,.deal-dialog textarea { box-sizing:border-box; min-width:0; width:100%; }
+.deal-reasons { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+.deal-reasons button { white-space:normal; overflow-wrap:anywhere; }
+.deal-dialog img { display:block; max-width:100%; max-height:65vh; margin:auto; object-fit:contain; }
+.deal-dialog [data-error] { color:#991b1b; }
+.deal-dialog [hidden] { display:none !important; }

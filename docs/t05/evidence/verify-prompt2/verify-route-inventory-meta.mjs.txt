@@ -1,0 +1,6 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-route-inventory-meta.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+META injected unmarked route: exit 1 verified
+META removed route: exit 0 verified
+

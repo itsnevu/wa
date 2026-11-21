@@ -9,7 +9,12 @@ import { shutdown as shutdownRegex } from './regexRunner.js';
 
 import { startDealSweep } from './dealDetection.js';
 
+import { startDealReviewJobs } from './dealReviewJobs.js';
 
+const dealReviewTimer = startDealReviewJobs((id,jid,text) => {
+  if (!wa.socketOpen(id)) throw Error('Sesi WhatsApp belum tersambung.');
+  return wa.sendText(id,jid,text,null,true,'deal_reminder');
+});
 const dealSweepTimer = startDealSweep();
 const {server,wss} = createHttpSurface();
 
@@ -71,6 +76,7 @@ const shutdown = () => {
   console.log('[shutdown] menutup');
   for (const n of q.allNumbers.all()) wa.disconnect(n.id);
   clearInterval(dealSweepTimer);
+  clearInterval(dealReviewTimer);
   shutdownRegex();
   // Klien WS menahan server.close(); tutup agar tidak selalu jatuh ke batas 5 detik.
   for (const client of wss.clients) client.terminate();

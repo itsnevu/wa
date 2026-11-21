@@ -1,0 +1,16 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-media-edge.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+✔ file legacy yang direferensikan lintas nomor dikarantina, termasuk untuk admin (1486.9287ms)
+✔ nomor pesan berbeda dengan chat ditolak bahkan untuk admin (14.8129ms)
+✔ logout mencabut URL; HEAD/range juga tetap melakukan otorisasi (46.0171ms)
+✔ file dihapus sesudah issuance menjadi 404 dengan error generik (4.8713ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1584.8731
+

@@ -1,0 +1,7 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai5.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+[db] admin dibuat: harness-admin
+[schema] {"version":7,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai5-D2s9Xf\\migration-backups\\pre-t01-2afe8331-7d56-41b4-89d4-cd412a6d7496.sqlite","backupCount":1,"backupBytes":4096}
+PASS ai5: validation 400, auth 401/403, secret masking, resume +20%/clear notice, test sends no messages, product CRUD, order ownership/status; exit 0
+

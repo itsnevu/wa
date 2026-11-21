@@ -5,6 +5,7 @@ import { Router } from 'express';
 import { db } from './db.js';
 import { config } from './config.js';
 import { requireAuth } from './auth.js';
+import { resolveTenantScope } from './tenantScope.js';
 import { validMediaName, containedPath } from './mediaPaths.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -36,22 +37,32 @@ function mediaPath(name) {
     throw err;
   }
 }
+export function dealProofAvailable(name) {
+  if (!name) return false;
+  try { mediaPath(name); return true; }
+  catch (err) {
+    if (err.status === 403 || err.status === 404 || err.code === 'ENOENT') return false;
+    throw err;
+  }
+}
 const lookup = db.prepare(`SELECT r.uuid,r.number_id AS media_number,r.storage_path,
-  m.number_id AS message_number,m.media_path,c.number_id AS chat_number,n.id AS number_id,n.owner_id
+  m.number_id AS message_number,m.media_path,c.number_id AS chat_number,n.id AS number_id,n.owner_id,n.tenant_id
   FROM media_records r JOIN messages m ON m.id=r.message_id
   JOIN chats c ON c.id=m.chat_id JOIN numbers n ON n.id=c.number_id WHERE r.uuid=?`);
-function authorize(row, user) {
+function authorize(row, user, scope) {
   if (!row || row.media_number !== row.message_number || row.message_number !== row.chat_number
     || row.chat_number !== row.number_id || row.storage_path !== row.media_path
-    || (user.role !== 'admin' && row.owner_id !== user.id)) throw fail(403, 'Anda tidak memiliki akses ke lampiran ini.');
+    || (scope ? scope.grant || scope.tenantId !== row.tenant_id ||
+      (!['owner','tenant_admin'].includes(scope.role) && row.owner_id !== scope.userId)
+      : user.role !== 'admin' && row.owner_id !== user.id)) throw fail(403, 'Anda tidak memiliki akses ke lampiran ini.');
   // A legacy filename referenced by multiple numbers cannot establish a unique owner.
   // Quarantine instead of guessing or allowing an administrator bypass.
   if (db.prepare('SELECT 1 FROM messages WHERE media_path=? AND number_id<>? LIMIT 1')
     .get(row.storage_path, row.number_id)) throw fail(403, 'Kepemilikan lampiran perlu diperiksa pengelola.');
   return row;
 }
-const signature = (uuid, user, exp) => createHmac('sha256', config.mediaSigningKey)
-  .update(JSON.stringify([uuid, user, exp])).digest('hex');
+const signature = (uuid, user, exp, tenant) => createHmac('sha256', config.mediaSigningKey)
+  .update(JSON.stringify(tenant ? [uuid,user,exp,tenant] : [uuid,user,exp])).digest('hex');
 const register = db.prepare('INSERT OR IGNORE INTO media_records(uuid,message_id,number_id,storage_path,created_at) VALUES(?,?,?,?,?)');
 
 export function issueMediaUrl(chatId, name, user) {
@@ -73,6 +84,23 @@ export function issueMediaUrl(chatId, name, user) {
   return { url: `/media/${uuid}?user=${user.id}&exp=${exp}&sig=${signature(uuid, user.id, exp)}`, expiresAt: exp };
 }
 
+const registerScoped = db.prepare(`INSERT OR IGNORE INTO media_records(uuid,message_id,number_id,storage_path,created_at,tenant_id)
+  SELECT ?,m.id,m.number_id,m.media_path,?,m.tenant_id FROM messages m WHERE m.id=? AND m.tenant_id=?`);
+const findScoped = db.prepare('SELECT uuid FROM media_records WHERE message_id=? AND tenant_id=?');
+export function issueDealMediaUrl(messageId, scope) {
+  available();
+  const uuid = db.transaction(() => {
+    registerScoped.run(randomUUID(),Date.now(),messageId,scope.tenantId);
+    const record = findScoped.get(messageId,scope.tenantId);
+    if (!record) throw fail(404,'Lampiran tidak ditemukan.');
+    const row = authorize(lookup.get(record.uuid),scope.user,scope);
+    mediaPath(row.storage_path);
+    return record.uuid;
+  }).immediate();
+  const exp = Date.now() + TTL;
+  return { url: `/media/${uuid}?user=${scope.userId}&exp=${exp}&tenant=${encodeURIComponent(scope.tenantId)}&sig=${signature(uuid,scope.userId,exp,scope.tenantId)}` };
+}
+
 export function mediaError(err, req, res, next) {
   if (res.headersSent) return next(err);
   res.status(err.status || 500).json({ error: err.status ? err.message : 'Lampiran tidak dapat dibuka.' });
@@ -92,15 +120,18 @@ mediaRouter.use((req, res, next) => {
     const uuid = req.path.slice(1);
     const params = new URLSearchParams(req.originalUrl.slice(req.originalUrl.indexOf('?') + 1));
     if (!UUID.test(uuid) || ['user', 'exp', 'sig'].some(k => params.getAll(k).length !== 1)
-      || [...params.keys()].some(k => !['user', 'exp', 'sig'].includes(k))) throw fail(403, 'Tautan lampiran tidak valid.');
-    const user = params.get('user'), exp = params.get('exp'), sig = params.get('sig');
+      || params.getAll('tenant').length > 1 || [...params.keys()].some(k => !['user', 'exp', 'sig', 'tenant'].includes(k))) throw fail(403, 'Tautan lampiran tidak valid.');
+    const user = params.get('user'), exp = params.get('exp'), sig = params.get('sig'), tenant = params.get('tenant');
     if (!/^\d+$/.test(user) || Number(user) !== req.user.id || !/^\d+$/.test(exp)
       || !Number.isSafeInteger(Number(exp)) || Number(exp) <= Date.now() || Number(exp) > Date.now() + TTL
       || !/^[0-9a-f]{64}$/.test(sig)
-      || !timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(signature(uuid, Number(user), Number(exp)), 'hex'))) {
+      || !timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(signature(uuid, Number(user), Number(exp), tenant), 'hex'))) {
       throw fail(403, 'Tautan lampiran tidak valid atau sudah kedaluwarsa.');
     }
-    const row = authorize(lookup.get(uuid), req.user);
+    if (tenant === '') throw fail(403,'Tautan lampiran tidak valid.');
+    const scope = tenant ? resolveTenantScope(req) : undefined;
+    if (scope && scope.tenantId !== tenant) throw fail(403,'Akses lampiran tidak tersedia.');
+    const row = authorize(lookup.get(uuid), req.user, scope);
     const file = mediaPath(row.storage_path);
     const type = INLINE.get(path.extname(file).toLowerCase());
     res.setHeader('Content-Type', type || 'application/octet-stream');
