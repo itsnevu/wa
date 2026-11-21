@@ -1,5 +1,5 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai-final.mjs
-SHA: 20522e9a3dc3e34c07c2bc4119ce2cd04cabe8b5
+SHA: b4694988e9d4c671e7e93f5c4fd93b3a6209ff6b
 exit: 0
 node --check src/db.js: exit 0
 node --check src/config.js: exit 0

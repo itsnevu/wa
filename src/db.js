@@ -6,8 +6,11 @@ import { ensureSchema } from './schemaMigrations.js';
 import { configureTenantScope } from './tenantScope.js';
 import {configureSessionStore} from './sessionStore.js';
 import { randomUUID } from 'node:crypto';
+import { acquireInstanceLock } from './instanceLock.js';
 
 fs.mkdirSync(config.dataDir, { recursive: true });
+// Single instance per data directory, taken before the database is opened or migrated.
+acquireInstanceLock(config.dataDir, process.argv[1]?.endsWith('migrate-schema.mjs') ? 'migrate' : 'server');
 export const db = new Database(path.join(config.dataDir, 'app.db'));
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');

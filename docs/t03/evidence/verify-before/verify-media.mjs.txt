@@ -1,17 +1,17 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-media.mjs
-SHA: 20522e9a3dc3e34c07c2bc4119ce2cd04cabe8b5
+SHA: b4694988e9d4c671e7e93f5c4fd93b3a6209ff6b
 exit: 0
-✔ legacy path nomor B ditolak untuk A; tidak boleh ada fallback static (1411.7638ms)
-✔ penerbitan URL mengecek sesi dan akses chat, termasuk admin (75.9322ms)
-✔ URL valid terikat pengguna, tetap membutuhkan sesi, dan private/no-store (83.5223ms)
-✔ signature, pengguna, expiry, UUID dan query duplikat tidak dapat diubah (80.4465ms)
-✔ ownership dicek ulang setelah URL diterbitkan dan registry mismatch ditolak (49.4999ms)
-✔ HTML aktif dipaksa unduh dan disandbox; URL basename tidak dipublikasikan (18.2569ms)
-✔ path traversal mentah, encoded, backslash dan path Windows ditolak (65.6399ms)
-✔ registry backfill stabil dan tidak menimpa ownership; pesan baru ikut terdaftar (630.7043ms)
-✔ file hilang ditolak tanpa membocorkan path filesystem (3.1001ms)
-✔ symlink di media menuju luar direktori tidak bisa diunduh (3.4401ms)
-✔ flag nonaktif menutup akses media, tidak menghidupkan static lama (1214.5379ms)
+✔ legacy path nomor B ditolak untuk A; tidak boleh ada fallback static (1431.8441ms)
+✔ penerbitan URL mengecek sesi dan akses chat, termasuk admin (61.1342ms)
+✔ URL valid terikat pengguna, tetap membutuhkan sesi, dan private/no-store (54.2627ms)
+✔ signature, pengguna, expiry, UUID dan query duplikat tidak dapat diubah (111.0384ms)
+✔ ownership dicek ulang setelah URL diterbitkan dan registry mismatch ditolak (51.0158ms)
+✔ HTML aktif dipaksa unduh dan disandbox; URL basename tidak dipublikasikan (32.6295ms)
+✔ path traversal mentah, encoded, backslash dan path Windows ditolak (82.4978ms)
+✔ registry backfill stabil dan tidak menimpa ownership; pesan baru ikut terdaftar (551.7953ms)
+✔ file hilang ditolak tanpa membocorkan path filesystem (10.7345ms)
+✔ symlink di media menuju luar direktori tidak bisa diunduh (14.3349ms)
+✔ flag nonaktif menutup akses media, tidak menghidupkan static lama (1142.2298ms)
 ℹ tests 11
 ℹ suites 0
 ℹ pass 11
@@ -19,5 +19,5 @@ exit: 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 3674.7281
+ℹ duration_ms 3578.4541
 

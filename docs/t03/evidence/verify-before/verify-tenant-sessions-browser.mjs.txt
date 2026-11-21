@@ -1,5 +1,5 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-tenant-sessions-browser.mjs
-SHA: 20522e9a3dc3e34c07c2bc4119ce2cd04cabe8b5
+SHA: b4694988e9d4c671e7e93f5c4fd93b3a6209ff6b
 exit: 0
 PASS browser: login -> null tenant picker -> switch -> app; 401 login, 409 picker, 403 exact code; revoked membership on reload forces reselection; desktop + 360px screenshots; flag-enabled fixture only
 
