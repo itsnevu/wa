@@ -51,7 +51,7 @@ test('v5 database upgrades with a v5 backup and existing messages intact', async
     copy.exec(`DROP TRIGGER deal_analytics_insert; DROP TRIGGER deal_analytics_dimensions; DROP TRIGGER deal_analytics_answered;
       DROP INDEX deal_analytics_opened; DROP INDEX deal_verification_by_decision; DROP INDEX deal_analytics_messages;
       ALTER TABLE messages DROP COLUMN analytics_source;
-      ALTER TABLE tenants DROP COLUMN analytics_close_min; ALTER TABLE tenants DROP COLUMN analytics_open_min;
+      DROP TABLE deal_event_types;
       ALTER TABLE tenants DROP COLUMN analytics_timezone; DROP TABLE deal_job_notices; DROP INDEX deals_review_queue; DROP INDEX deal_events_history;
       DROP TABLE deal_verifications; DROP TABLE dp_payments; DROP TABLE deal_events;
       DROP TABLE deal_evidence; DROP TABLE deals; DROP TABLE classifier_runs;
