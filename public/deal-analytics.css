@@ -1,0 +1,70 @@
+.deal-analytics { display:grid; gap:12px; min-width:0; }
+.da-toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:end; }
+.da-toolbar label { display:grid; gap:4px; font-size:.85rem; color:#475569; }
+.da-toolbar select,.da-toolbar input { min-width:0; }
+.da-toolbar a { align-self:end; }
+.da-note { margin:0; color:#475569; font-size:.85rem; overflow-wrap:anywhere; }
+.da-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr)); gap:10px; }
+.da-kpi { min-width:0; display:grid; gap:4px; align-content:start; }
+.da-kpi h3 { margin:0; font-size:.85rem; font-weight:600; color:#475569; }
+.da-kpi strong { font-size:clamp(1.1rem,2.2vw,1.45rem); font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.da-kpi strong .da-empty { font-size:.95rem; font-weight:500; white-space:normal; }
+.da-kpi small { color:#475569; font-variant-numeric:tabular-nums; }
+.da-low { justify-self:start; border-radius:12px; padding:2px 8px; background:#fef3c7; color:#78350f; font-size:.75rem; }
+.da-empty { color:#64748b; font-style:italic; }
+.da-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr)); gap:12px; }
+.da-grid > .card { min-width:0; }
+.da-grid h3,.deal-analytics h3.da-title { margin:0 0 8px; }
+.da-bars { display:grid; gap:6px; margin:0; padding:0; list-style:none; }
+.da-bars li { display:grid; grid-template-columns:minmax(0,8rem) minmax(0,1fr) auto; gap:8px; align-items:center; }
+.da-bars span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.da-bar { height:10px; border-radius:5px; background:#e2e8f0; overflow:hidden; }
+.da-bar i { display:block; height:100%; background:#0f766e; border-radius:5px; }
+.da-bars b { font-variant-numeric:tabular-nums; font-weight:600; }
+.da-scroll { overflow-x:auto; max-width:100%; }
+.da-scroll table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+.da-scroll th,.da-scroll td { text-align:right; padding:6px 6px; border-block-end:1px solid #e2e8f0; white-space:nowrap; }
+.da-scroll th:first-child,.da-scroll td:first-child { text-align:left; }
+.da-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+.da-tabs button[aria-pressed="true"] { border-color:#0f766e; background:#ccfbf1; color:#134e4a; }
+.da-trend { display:flex; align-items:flex-end; gap:4px; height:120px; padding-top:8px; }
+.da-trend div { flex:1 1 0; min-width:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:2px; height:100%; }
+.da-trend i { display:block; width:100%; max-width:28px; background:#0f766e; border-radius:3px 3px 0 0; min-height:2px; }
+.da-trend small { font-size:.65rem; color:#475569; white-space:nowrap; }
+.da-hours { display:flex; flex-wrap:wrap; gap:8px; align-items:end; }
+.da-hours label { display:grid; gap:4px; font-size:.85rem; }
+.da-hours input { box-sizing:border-box; min-width:0; max-width:12rem; }
+.da-feedback:empty { display:none; }
+.da-feedback { margin:0; color:#991b1b; }
+@media (max-width:480px) {
+  .da-bars li { grid-template-columns:minmax(0,6rem) minmax(0,1fr) auto; }
+  .da-kpi strong { font-size:1.25rem; }
+}
+
+/* Categorical slots 1-4 of the validated reference palette (light surface, adjacent CVD ΔE ≥ 9.1).
+   Aqua and yellow are < 3:1 on white, so every segment is backed by a visible legend with name + count. */
+.deal-analytics { --da-s1:#2a78d6; --da-s2:#eb6834; --da-s3:#1baf7a; --da-s4:#eda100; --da-ink-2:#52514e; }
+.deal-analytics [hidden] { display:none !important; }
+.da-story h3 { margin:0 0 6px; }
+.da-story p { margin:4px 0; line-height:1.5; overflow-wrap:anywhere; }
+.da-story .da-low { margin-right:6px; }
+.da-empty-state { border-style:dashed; }
+.da-grid-seg { grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); }
+.da-seg h3 { margin:0 0 10px; }
+.da-segbar { display:flex; gap:2px; height:28px; min-width:0; }
+.da-segbar span { min-width:6px; display:flex; align-items:center; justify-content:center; color:#fff;
+  font-size:.75rem; font-weight:600; font-variant-numeric:tabular-nums; overflow:hidden; white-space:nowrap; }
+.da-segbar span:first-child { border-radius:4px 0 0 4px; }
+.da-segbar span:last-child { border-radius:0 4px 4px 0; }
+.da-segbar span:only-child { border-radius:4px; }
+.da-segbar .da-seg-4 { color:#0b0b0b; }
+.da-seg-1 { background:var(--da-s1); } .da-seg-2 { background:var(--da-s2); }
+.da-seg-3 { background:var(--da-s3); } .da-seg-4 { background:var(--da-s4); }
+.da-legend { list-style:none; margin:10px 0 0; padding:0; display:grid; gap:4px; }
+.da-legend li { display:grid; grid-template-columns:10px minmax(0,1fr) auto 3.2em; gap:8px; align-items:center; }
+.da-legend i { width:10px; height:10px; border-radius:2px; }
+.da-legend span { overflow-wrap:anywhere; }
+.da-legend b { font-variant-numeric:tabular-nums; }
+.da-legend small { color:var(--da-ink-2); text-align:right; font-variant-numeric:tabular-nums; }
+/* Aging table: let the long first column wrap instead of forcing a horizontal scroll. */
+.da-scroll td:first-child { white-space:normal; min-width:7rem; }

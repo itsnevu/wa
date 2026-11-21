@@ -18,6 +18,8 @@ import {platformApi,mountOwnerAudit} from './platformRoutes.js';
 
 import {mountDealReview} from './dealReviewRoutes.js';
 
+import {mountDealAnalytics} from './dealAnalyticsRoutes.js';
+
 
 export const api = Router();
 
@@ -43,6 +45,7 @@ api.post('/logout',requireSessionScope, (req, res) => { logout(req); clearCookie
 mountSessionRoutes(api);
 mountSessionHealthRoutes(api);
 mountDealReview(api);
+mountDealAnalytics(api);
 api.use('/platform',platformApi);
 mountOwnerAudit(api);
 

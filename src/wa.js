@@ -502,7 +502,7 @@ export async function sendText(numberId, jid, text, agentId = null, isAuto = fal
         recordHealth(numberId, 'outbound');
         q.insertActivityForTenant.run(agentId, numberId, 'send', text.slice(0, 80), Date.now(), chat.tenant_id);
         await s.sock.sendPresenceUpdate('paused', jid);
-        q.insertMessageForTenant.run(numberId, chat.id, 1, text, Date.now(), agentId, 'text', null, null, sent?.key?.id || null, chat.tenant_id);
+        q.insertMessageWithSource.run(numberId, chat.id, 1, text, Date.now(), agentId, 'text', null, null, sent?.key?.id || null, chat.tenant_id, source === 'ai' ? 'ai' : agentId ? 'human' : null);
         q.touchChat.run(Date.now(), null, chat.id);
         emit({ type: 'message', numberId, chatId: chat.id, jid, body: text, fromMe: true, kind: 'text', mediaPath: null, waId: sent?.key?.id || null, ts: Date.now() });
         resolve(true);

@@ -6,6 +6,7 @@ import {can} from './capabilities.js';
 import {requireSessionScope,requireTenantScope} from './tenantScope.js';
 import {sessionError,sendSessionError} from './sessionStore.js';
 import {appendAudit,revokeGrant} from './platformAudit.js';
+import {analyticsRange,platformDealAnalytics} from './dealAnalytics.js';
 const secret=process.env.PLATFORM_CONFIRM_KEY||randomBytes(32).toString('hex');
 const sign=data=>{const body=Buffer.from(JSON.stringify(data)).toString('base64url');return body+'.'+createHmac('sha256',secret).update(body).digest('hex');};
 function decode(token){try{const [body,sig,extra]=String(token).split('.');const actual=createHmac('sha256',secret).update(body).digest('hex');if(extra!==undefined||sig?.length!==64||!timingSafeEqual(Buffer.from(sig),Buffer.from(actual)))throw Error();return JSON.parse(Buffer.from(body,'base64url'));}catch{throw sessionError(400,'INVALID_TOKEN');}}
@@ -37,6 +38,10 @@ function auditPage(req,fixedTenant,redact=false){
   return page(req,'platform_audit',where.join(' AND ')||'1',params,filter,redact?'id,at,actor_user_id,actor_platform_role,action,tenant_id,target_type,target_id,reason':'*');
 }
 export const platformApi=Router();platformApi.use(requireSessionScope);platformApi.use(requireCapability('tenant.list'));
+platformApi.get('/deal-analytics',requireCapability('tenant.list'),route((req,res)=>{
+  res.setHeader('Cache-Control','private, no-store');
+  res.json(platformDealAnalytics(analyticsRange(req.query)));
+}));
 platformApi.get('/session',requireCapability('tenant.list'),route((req,res)=>res.json({user:req.user,platform:true})));
 platformApi.get('/tenants',requireCapability('tenant.list'),route((req,res)=>{
   const status=req.query.status;const search=String(req.query.q||'');const filter={status:status||null,search};
