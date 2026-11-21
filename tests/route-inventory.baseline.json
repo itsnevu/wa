@@ -2,7 +2,7 @@
   "pending": {
     "T03": 0,
     "T05": 18,
-    "T06": 34,
+    "T06": 32,
     "T08": 4,
     "T13": 5,
     "T07": 1,
@@ -10,10 +10,8 @@
   },
   "entries": [
     "DELETE /api/backups/:name",
-    "DELETE /api/chats/:chatId",
     "DELETE /api/chats/:chatId/labels/:labelId",
     "DELETE /api/labels/:id",
-    "DELETE /api/numbers/:id",
     "DELETE /api/numbers/:id/products/:productId",
     "DELETE /api/rules/:id",
     "DELETE /api/templates/:id",

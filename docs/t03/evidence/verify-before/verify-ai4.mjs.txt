@@ -1,8 +1,8 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai4.mjs
-SHA: 724b0e7457ac1f44d3c354380196034e8083f805
+SHA: 20522e9a3dc3e34c07c2bc4119ce2cd04cabe8b5
 exit: 0
 [db] admin dibuat: harness-admin
-[schema] {"version":8,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai4-9uWUxf\\migration-backups\\pre-t01-761f9e1a-1576-4504-a7d4-d3079789dbe2.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":8,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai4-Xxs2Ny\\migration-backups\\pre-t01-45edfa86-61b2-4f31-89e3-b0d2bd62030d.sqlite","backupCount":1,"backupBytes":4096}
 PASS ai4: real tool loop, fallback, agent pause, paused skip, model error escalation, no error text, independent incoming save/rules; exit 0
 [in] 62@s.whatsapp.net | fromMe= false | conversation
 

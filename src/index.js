@@ -55,6 +55,13 @@ setInterval(() => {
   } catch (err) { console.error('[retensi]', err.message); }
 }, 6 * 3600000).unref();
 
+// Orphaned WhatsApp session folders; a no-op until restoreAll has finished (see wa.cleanOrphanSessions).
+function cleanOrphanSessionsJob() {
+  try { const n = wa.cleanOrphanSessions(); if (n) console.log('[sesi] sesi yatim dihapus:', n); }
+  catch (err) { console.error('[sesi]', err.message); }
+}
+setInterval(cleanOrphanSessionsJob, 30 * 60 * 1000).unref();
+
 server.listen(config.port, config.host, async () => {
   console.log(`[http] http://localhost:${config.port}`);
   // Tanpa flag ini V8 mengompilasi ulang regex berat ke kode native di eksekusi kedua (>400 ms),
@@ -63,8 +70,8 @@ server.listen(config.port, config.host, async () => {
   if (!v8Flags.includes('--regexp-interpret-all')) console.warn('[regex] PERINGATAN: jalankan dengan "npm start" atau node --regexp-interpret-all; rule regex berat bisa timeout bergantian');
   await checkBackup();
   db.exec("UPDATE numbers SET status = 'offline'");
-  try { wa.cleanOrphanSessions(); } catch (err) { console.error('[sesi]', err.message); }
   await restoreAll();
+  cleanOrphanSessionsJob();
 });
 
 process.on('unhandledRejection', (err) => console.error('[unhandled]', err?.stack || err));

@@ -9,6 +9,7 @@ import {mediaRouter} from './media.js';
 import {assertStaticBoundary} from './staticBoundary.js';
 import {resolveHandshake} from './tenantScope.js';
 import {scoped} from './routeScopeMarker.js';
+import {requestId,apiErrorHandler} from './apiErrors.js';
 
 // Shared construction for production and inventory; does not listen or restore WA.
 export function createHttpSurface() {
@@ -17,6 +18,7 @@ export function createHttpSurface() {
   const app=express();
   if(config.trustProxy)app.set('trust proxy',1);
   const json=express.json({limit:'24mb'});
+  app.use(requestId);
   app.use(json);
   app.use(express.static(staticRoot,{
     setHeaders:(res,filePath)=>{
@@ -26,11 +28,12 @@ export function createHttpSurface() {
   }));
   app.use('/api',api);
   app.use('/media',mediaRouter);
+  app.use(apiErrorHandler);
   const server=http.createServer(app);
   const wss=new WebSocketServer({server,path:'/ws',verifyClient:({req},done)=>{
     if(!config.multitenantEnabled)return done(true);
     try{req.tenantScope=resolveHandshake(req);done(true);}catch(error){done(false,error.status||401,error.code||'SESSION_INVALID');}
   }});
   scoped(server.listeners('upgrade')[0]);
-  return {app,server,wss,upgradeHandler:server.listeners('upgrade')[0],infrastructure:[json]};
+  return {app,server,wss,upgradeHandler:server.listeners('upgrade')[0],infrastructure:[json,requestId,apiErrorHandler]};
 }

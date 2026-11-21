@@ -688,15 +688,21 @@ export function forgetSession(numberId) {
   fs.rmSync(path.join(config.dataDir, 'sessions', String(numberId)), { recursive: true, force: true });
 }
 
-// Credentials whose number row no longer exists (e.g. a failed cleanup after delete). Run by existing jobs.
+// Set once restoreAll has finished; before that a folder may belong to a socket that is about to open.
+let sessionsRestored = false;
+
+// Credentials whose number row no longer exists (e.g. a failed cleanup after delete). Decided by
+// comparing folder names with the numbers table, never by mtime. Folders of numbers that still have a
+// row (any status, including pairing) or an opening/live socket are never touched.
 export function cleanOrphanSessions() {
+  if (!sessionsRestored) return 0;
   const dir = path.join(config.dataDir, 'sessions');
   let removed = 0;
   let names = [];
   try { names = fs.readdirSync(dir); } catch { return 0; }
   for (const name of names) {
     const id = Number(name);
-    if (!/^\d+$/.test(name) || live.has(id) || q.numberById.get(id)) continue;
+    if (!/^\d+$/.test(name) || live.has(id) || connecting.has(id) || q.numberById.get(id)) continue;
     try { forgetSession(id); removed++; }
     catch (err) { console.error('[session.orphan] gagal hapus sesi', name, err.message); }
   }
@@ -714,10 +720,14 @@ export function statusOf(numberId) {
 }
 
 export async function restoreAll() {
-  for (const n of q.allNumbers.all()) {
-    const dir = path.join(config.dataDir, 'sessions', String(n.id));
-    if (!fs.existsSync(path.join(dir, 'creds.json'))) continue;
-    await connect(n.id).catch((e) => console.error('[restore]', n.id, e.message));
+  try {
+    for (const n of q.allNumbers.all()) {
+      const dir = path.join(config.dataDir, 'sessions', String(n.id));
+      if (!fs.existsSync(path.join(dir, 'creds.json'))) continue;
+      await connect(n.id).catch((e) => console.error('[restore]', n.id, e.message));
+    }
+  } finally {
+    sessionsRestored = true;
   }
 }
 

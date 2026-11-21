@@ -1,5 +1,5 @@
 import {createHash} from 'node:crypto';
-export const AUDIT_ACTIONS=Object.freeze(['tenant_created','tenant_suspended','tenant_reactivated','tenant_deleted','quota_changed','member_role_changed','grant_entered','grant_elevated','grant_left','grant_expired','grant_revoked','content_opened','content_exported','content_updated','session_resync_requested','session_resync_completed']);
+export const AUDIT_ACTIONS=Object.freeze(['tenant_created','tenant_suspended','tenant_reactivated','tenant_deleted','quota_changed','member_role_changed','grant_entered','grant_elevated','grant_left','grant_expired','grant_revoked','content_opened','content_exported','content_updated','session_resync_requested','session_resync_completed','chat_deleted','number_deleted','user_deleted']);
 export function appendAudit(db,{actor,action,tenantId,targetType='tenant',targetId=tenantId,before=null,after=null,req,reason=action}){
   if(!AUDIT_ACTIONS.includes(action))throw Error('Unknown audit action');
   db.prepare(`INSERT INTO platform_audit(at,actor_user_id,actor_platform_role,action,tenant_id,target_type,target_id,before_json,after_json,ip,ua_hash,reason) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`)

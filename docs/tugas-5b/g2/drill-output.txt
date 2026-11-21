@@ -1,0 +1,6 @@
+{"step":"backup","source":"C:\\Users\\user\\AppData\\Local\\Temp\\claude\\12f8f930b44f800c\\0dbcc00f-56db-4f5a-9b06-4049a9983fd4\\scratchpad\\g2-drill\\src\\app.db","backup":"C:\\Users\\user\\AppData\\Local\\Temp\\claude\\12f8f930b44f800c\\0dbcc00f-56db-4f5a-9b06-4049a9983fd4\\scratchpad\\g2-drill\\backups\\drill-2026-11-21T21-33-55-351Z.sqlite","bytes":507904,"ms":8}
+{"step":"restore","copy":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-drill-sVFLyb\\app.db"}
+{"step":"integrity_check","result":"ok","schema_version":7}
+{"step":"server_start","port":52135,"healthy":true,"ms":575,"schema_log":"[schema] {\"version\":8,\"backup\":\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\wa-drill-sVFLyb\\\\migration-backups\\\\pre-t01-08030d14-a4ec-46bf-89ab-461e261bca4b.sqlite\",\"backupCount\":1,\"backupBytes\":507904}"}
+{"step":"server_stop","exit_code":null}
+{"result":"OK","backup":"C:\\Users\\user\\AppData\\Local\\Temp\\claude\\12f8f930b44f800c\\0dbcc00f-56db-4f5a-9b06-4049a9983fd4\\scratchpad\\g2-drill\\backups\\drill-2026-11-21T21-33-55-351Z.sqlite","steps":5}

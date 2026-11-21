@@ -91,7 +91,8 @@ test('5. disconnect gagal -> baris tetap terhapus, kegagalan tercatat', async ()
 });
 
 test('5b. sesi yatim dibersihkan oleh job, sesi nomor aktif dipertahankan', async () => {
-  const { cleanOrphanSessions } = await import('../src/wa.js');
+  const { cleanOrphanSessions,restoreAll } = await import('../src/wa.js');
+  await restoreAll(); // the job is a no-op until restore has finished (G2.4)
   const sessions = path.join(fixture.dir,'sessions');
   fs.mkdirSync(path.join(sessions,'9999'),{ recursive:true });
   fs.mkdirSync(path.join(sessions,'10'),{ recursive:true });

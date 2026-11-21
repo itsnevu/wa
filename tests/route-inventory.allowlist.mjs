@@ -203,12 +203,6 @@ export const pending=[
     "alasan": "Rute legacy: scope tenant dikerjakan pada T06; perilaku tetap pada T02."
   },
   {
-    "method": "DELETE",
-    "path": "/api/numbers/:id",
-    "pr": "T06",
-    "alasan": "Rute legacy: scope tenant dikerjakan pada T06; perilaku tetap pada T02."
-  },
-  {
     "method": "GET",
     "path": "/api/numbers/:id/chats",
     "pr": "T05",
@@ -295,12 +289,6 @@ export const pending=[
   {
     "method": "POST",
     "path": "/api/notifications/read",
-    "pr": "T06",
-    "alasan": "Rute legacy: scope tenant dikerjakan pada T06; perilaku tetap pada T02."
-  },
-  {
-    "method": "DELETE",
-    "path": "/api/chats/:chatId",
     "pr": "T06",
     "alasan": "Rute legacy: scope tenant dikerjakan pada T06; perilaku tetap pada T02."
   },

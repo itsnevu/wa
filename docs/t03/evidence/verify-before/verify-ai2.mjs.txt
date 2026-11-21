@@ -1,8 +1,8 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai2.mjs
-SHA: 724b0e7457ac1f44d3c354380196034e8083f805
+SHA: 20522e9a3dc3e34c07c2bc4119ce2cd04cabe8b5
 exit: 0
 [db] admin dibuat: harness-admin
-[schema] {"version":8,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai2-NUO3Ju\\migration-backups\\pre-t01-e83ebf26-bd19-49fd-ab4a-1debbcb9e11e.sqlite","backupCount":1,"backupBytes":4096}
-SQLite order {"id":1,"number_id":1,"chat_id":1,"code":"ORD-e02367e1-1b5a-434b-9248-3064750e52b0","items_json":"[{\"sku\":\"SKU\",\"qty\":2}]","total":200,"status":"new","created_at":1795296396768,"tenant_id":"default"}
+[schema] {"version":8,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai2-FbxKR7\\migration-backups\\pre-t01-e38a5f01-5f61-4d2b-b029-0d180a35a4a6.sqlite","backupCount":1,"backupBytes":4096}
+SQLite order {"id":1,"number_id":1,"chat_id":1,"code":"ORD-40fa2064-0e10-4c49-84a1-69ad71f7bf09","items_json":"[{\"sku\":\"SKU\",\"qty\":2}]","total":200,"status":"new","created_at":1795296918006,"tenant_id":"default"}
 PASS ai2: mock 200, 500, abort, insufficient/invalid/duplicate stock, atomic order, retry idempotency; exit 0
 

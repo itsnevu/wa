@@ -14,6 +14,8 @@ import { issueMediaUrl, mediaError } from './media.js';
 import {requireSessionScope,requireTenantScope} from './tenantScope.js';
 import {mountSessionRoutes} from './sessionRoutes.js';
 import {mountSessionHealthRoutes} from './sessionHealthRoutes.js';
+import {appendAudit} from './platformAudit.js';
+import {describeError,sendError} from './apiErrors.js';
 import {platformApi,mountOwnerAudit} from './platformRoutes.js';
 
 import {mountDealReview} from './dealReviewRoutes.js';
@@ -191,23 +193,49 @@ api.patch('/numbers/:id/name', requireAuth, (req, res) => {
   res.json({ ok: true, name });
 });
 
-// Maps database refusals of the delete routes to JSON instead of an HTML 500.
-function deleteFailure(res, err, what) {
-  if (String(err?.message).startsWith('DEAL_DECIDED')) {
-    return res.status(409).json({ error: `${what} tidak dapat dihapus karena memiliki deal yang sudah diputuskan.`, code: 'DEAL_DECIDED' });
-  }
-  if (String(err?.code).startsWith('SQLITE_CONSTRAINT')) {
-    return res.status(409).json({ error: `${what} masih dipakai data lain sehingga tidak dapat dihapus.`, code: 'CONSTRAINT' });
-  }
-  if (String(err?.code).startsWith('SQLITE_')) return res.status(400).json({ error: `${what} tidak dapat dihapus.`, code: 'DATABASE' });
-  throw err;
+// Database refusals of the delete routes become JSON (with request id) through the central mapping;
+// only the wording names the entity.
+function deleteFailure(req, res, err, what) {
+  const { code } = describeError(err);
+  const wording = {
+    DEAL_DECIDED: `${what} tidak dapat dihapus karena memiliki deal yang sudah diputuskan.`,
+    CONSTRAINT: `${what} masih dipakai data lain sehingga tidak dapat dihapus.`,
+    DATABASE: `${what} tidak dapat dihapus.`,
+  };
+  if (!wording[code]) throw err;
+  return sendError(req, res, err, { error: wording[code] });
 }
+// Optional free-text reason stored in the audit row.
+function deleteReason(req) {
+  const raw = req.body?.reason ?? req.query?.reason;
+  if (raw === undefined || raw === null || raw === '') return null;
+  if (typeof raw !== 'string' || raw.trim().length > 500) throw Object.assign(Error('Alasan maksimal 500 karakter.'), { status: 400 });
+  return raw.trim() || null;
+}
+// Tenant-scoped lookups: an entity of another tenant is indistinguishable from a missing one (404).
+const scopedNumber = db.prepare(`SELECT n.*,(SELECT count(*) FROM chats WHERE number_id=n.id) AS chat_count,
+  (SELECT count(*) FROM messages WHERE number_id=n.id) AS message_count,(SELECT count(*) FROM deals WHERE session_id=n.id) AS deal_count
+  FROM numbers n WHERE n.id=? AND n.tenant_id=?`);
+const scopedChat = db.prepare(`SELECT c.*,(SELECT count(*) FROM messages WHERE chat_id=c.id) AS message_count,
+  (SELECT count(*) FROM deals WHERE chat_id=c.id) AS deal_count FROM chats c WHERE c.id=? AND c.tenant_id=?`);
+const scopedMember = db.prepare(`SELECT u.id,u.username,tm.role,(SELECT count(*) FROM tenant_members o WHERE o.user_id=u.id AND o.tenant_id<>tm.tenant_id) AS other_tenants,
+  (SELECT count(*) FROM deal_verifications v JOIN deals d ON d.id=v.deal_id WHERE v."by"=u.id AND d.tenant_id=tm.tenant_id) AS verifications
+  FROM tenant_members tm JOIN users u ON u.id=tm.user_id WHERE tm.tenant_id=? AND tm.user_id=?`);
 
-api.delete('/numbers/:id', requireAdmin, (req, res) => {
+api.delete('/numbers/:id', requireTenantScope, requireAdmin, (req, res) => {
   const id = Number(req.params.id);
-  if (!q.numberById.get(id)) return res.status(404).json({ error: 'nomor tidak ada' });
+  const tenantId = req.tenantScope.tenantId;
+  const number = scopedNumber.get(id, tenantId);
+  if (!number) return res.status(404).json({ error: 'nomor tidak ada' });
+  const reason = deleteReason(req);
   // Database first: a refused delete must not log the WhatsApp session out.
-  try { q.deleteNumber.run(id); } catch (err) { return deleteFailure(res, err, 'Nomor'); }
+  try {
+    db.transaction(() => {
+      appendAudit(db, { actor: req.user, req, action: 'number_deleted', tenantId, targetType: 'number', targetId: String(id), reason: reason || 'number_deleted',
+        before: { name: number.name, phone: number.phone, chats: number.chat_count, messages: number.message_count, deals: number.deal_count } });
+      q.deleteNumber.run(id);
+    })();
+  } catch (err) { return deleteFailure(req, res, err, 'Nomor'); }
   try { wa.disconnect(id); } catch (err) { console.error('[number.delete] disconnect gagal untuk nomor', id, err.message); }
   try { wa.forgetSession(id); } catch (err) { console.error('[number.delete] hapus sesi gagal untuk nomor', id, err.message); }
   res.json({ ok: true });
@@ -364,11 +392,19 @@ api.post('/notifications/read', (req, res) => {
   res.json({ ok: true });
 });
 
-api.delete('/chats/:chatId', (req, res) => {
-  const chat = q.chatById.get(Number(req.params.chatId));
+api.delete('/chats/:chatId', requireTenantScope, (req, res) => {
+  const tenantId = req.tenantScope.tenantId;
+  const chat = scopedChat.get(Number(req.params.chatId), tenantId);
   if (!chat) return res.status(404).json({ error: 'chat tidak ada' });
   if (!canAccessNumber(req.user, chat.number_id)) return res.status(403).json({ error: 'tidak punya akses' });
-  try { q.deleteChat.run(chat.id); } catch (err) { return deleteFailure(res, err, 'Chat'); }
+  const reason = deleteReason(req);
+  try {
+    db.transaction(() => {
+      appendAudit(db, { actor: req.user, req, action: 'chat_deleted', tenantId, targetType: 'chat', targetId: String(chat.id), reason: reason || 'chat_deleted',
+        before: { number_id: chat.number_id, messages: chat.message_count, deals: chat.deal_count } });
+      q.deleteChat.run(chat.id);
+    })();
+  } catch (err) { return deleteFailure(req, res, err, 'Chat'); }
   res.json({ ok: true });
 });
 
@@ -477,6 +513,18 @@ api.post('/users',requireTenantScope, requireAdmin, (req, res) => {
 });
 
 api.delete('/users/:id',requireTenantScope, requireAdmin, (req, res) => {
-  try { q.deleteUser.run(Number(req.params.id)); } catch (err) { return deleteFailure(res, err, 'Pengguna'); }
+  const tenantId = req.tenantScope.tenantId;
+  const member = scopedMember.get(tenantId, Number(req.params.id));
+  if (!member) return res.status(404).json({ error: 'pengguna tidak ada' });
+  // Accounts are global: deleting one that also belongs to another workspace would remove it there too.
+  if (member.other_tenants) return res.status(409).json({ error: 'Pengguna juga anggota workspace lain dan tidak dapat dihapus dari sini.', code: 'USER_IN_OTHER_TENANT', request_id: req.requestId });
+  const reason = deleteReason(req);
+  try {
+    db.transaction(() => {
+      appendAudit(db, { actor: req.user, req, action: 'user_deleted', tenantId, targetType: 'user', targetId: String(member.id), reason: reason || 'user_deleted',
+        before: { username: member.username, role: member.role, verifications: member.verifications } });
+      q.deleteUser.run(member.id);
+    })();
+  } catch (err) { return deleteFailure(req, res, err, 'Pengguna'); }
   res.json({ ok: true });
 });

@@ -1,17 +1,17 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-tenant-baseline.mjs
-SHA: 724b0e7457ac1f44d3c354380196034e8083f805
+SHA: 20522e9a3dc3e34c07c2bc4119ce2cd04cabe8b5
 exit: 0
 command: node scripts/verify-tenant-baseline.mjs
 baseline: 5c033e42231fa7dff1e81bd2b39ba91c3e17ae06
 inner command: node --test tests/tenant-t01.test.mjs
 exit: 1
-✖ expand/backfill/contract preserves rows, indexes, FKs; backup first; idempotent (0.8561ms)
-✖ backup failure leaves schema unchanged (0.2868ms)
-✖ resolver matrix: authoritative session, membership, status, spoofing, revocation (0.9493ms)
-✖ failed verification rolls all schema changes back and restores FK enforcement (0.5442ms)
-✖ production database COPY: all resource counts preserved, zero unscoped rows (0.4587ms)
-✖ fresh bootstrap, legacy writes, restart, and activation fail closed before DB creation (106.084ms)
-✖ complete A/B fixture: every resource scoped; tenant-local keys; cross-tenant relations rejected (0.4788ms)
+✖ expand/backfill/contract preserves rows, indexes, FKs; backup first; idempotent (0.9516ms)
+✖ backup failure leaves schema unchanged (0.3572ms)
+✖ resolver matrix: authoritative session, membership, status, spoofing, revocation (1.0066ms)
+✖ failed verification rolls all schema changes back and restores FK enforcement (0.4ms)
+✖ production database COPY: all resource counts preserved, zero unscoped rows (0.3764ms)
+✖ fresh bootstrap, legacy writes, restart, and activation fail closed before DB creation (112.9817ms)
+✖ complete A/B fixture: every resource scoped; tenant-local keys; cross-tenant relations rejected (0.4792ms)
 ℹ tests 7
 ℹ suites 0
 ℹ pass 0
@@ -19,13 +19,13 @@ exit: 1
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 181.5875
+ℹ duration_ms 190.5263
 
 ✖ failing tests:
 
 test at tests\tenant-t01.test.mjs:27:1
-✖ expand/backfill/contract preserves rows, indexes, FKs; backup first; idempotent (0.8561ms)
-  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'c:\Users\user\wa-suite\artifacts\t03-regression-ZKlPYg\artifacts\t01-baseline-hvJ58T\src\tenantMigration.js' imported from c:\Users\user\wa-suite\artifacts\t03-regression-ZKlPYg\artifacts\t01-baseline-hvJ58T\tests\tenant-t01.test.mjs
+✖ expand/backfill/contract preserves rows, indexes, FKs; backup first; idempotent (0.9516ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'c:\Users\user\wa-suite\artifacts\t03-regression-CquuCL\artifacts\t01-baseline-hNdaGz\src\tenantMigration.js' imported from c:\Users\user\wa-suite\artifacts\t03-regression-CquuCL\artifacts\t01-baseline-hNdaGz\tests\tenant-t01.test.mjs
       at finalizeResolution (node:internal/modules/esm/resolve:271:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
       at defaultResolve (node:internal/modules/esm/resolve:992:11)
@@ -37,12 +37,12 @@ test at tests\tenant-t01.test.mjs:27:1
       at node:internal/modules/esm/loader:632:32
       at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
     code: 'ERR_MODULE_NOT_FOUND',
-    url: 'file:///c:/Users/user/wa-suite/artifacts/t03-regression-ZKlPYg/artifacts/t01-baseline-hvJ58T/src/tenantMigration.js'
+    url: 'file:///c:/Users/user/wa-suite/artifacts/t03-regression-CquuCL/artifacts/t01-baseline-hNdaGz/src/tenantMigration.js'
   }
 
 test at tests\tenant-t01.test.mjs:54:1
-✖ backup failure leaves schema unchanged (0.2868ms)
-  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'c:\Users\user\wa-suite\artifacts\t03-regression-ZKlPYg\artifacts\t01-baseline-hvJ58T\src\tenantMigration.js' imported from c:\Users\user\wa-suite\artifacts\t03-regression-ZKlPYg\artifacts\t01-baseline-hvJ58T\tests\tenant-t01.test.mjs
+✖ backup failure leaves schema unchanged (0.3572ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'c:\Users\user\wa-suite\artifacts\t03-regression-CquuCL\artifacts\t01-baseline-hNdaGz\src\tenantMigration.js' imported from c:\Users\user\wa-suite\artifacts\t03-regression-CquuCL\artifacts\t01-baseline-hNdaGz\tests\tenant-t01.test.mjs
       at finalizeResolution (node:internal/modules/esm/resolve:271:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
       at defaultResolve (node:internal/modules/esm/resolve:992:11)
@@ -54,12 +54,12 @@ test at tests\tenant-t01.test.mjs:54:1
       at node:internal/modules/esm/loader:632:32
       at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
     code: 'ERR_MODULE_NOT_FOUND',
-    url: 'file:///c:/Users/user/wa-suite/artifacts/t03-regression-ZKlPYg/artifacts/t01-baseline-hvJ58T/src/tenantMigration.js'
+    url: 'file:///c:/Users/user/wa-suite/artifacts/t03-regression-CquuCL/artifacts/t01-baseline-hNdaGz/src/tenantMigration.js'
   }
 
 test at tests\tenant-t01.test.mjs:66:1
-✖ resolver matrix: authoritative session, membership, status, spoofing, revocation (0.9493ms)
-  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'c:\Users\user\wa-suite\artifacts\t03-regression-ZKlPYg\artifacts\t01-baseline-hvJ58T\src\tenantMigration.js' imported from c:\Users\user\wa-suite\artifacts\t03-regression-ZKlPYg\artifacts\t01-baseline-hvJ58T\tests\tenant-t01.test.mjs
+✖ resolver matrix: authoritative session, membership, status, spoofing, revocation (1.0066ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'c:\Users\user\wa-suite\artifacts\t03-regression-CquuCL\artifacts\t01-baseline-hNdaGz\src\tenantMigration.js' imported from c:\Users\user\wa-suite\artifacts\t03-regression-CquuCL\artifacts\t01-baseline-hNdaGz\tests\tenant-t01.test.mjs
       at finalizeResolution (node:internal/modules/esm/resolve:271:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
       at defaultResolve (node:internal/modules/esm/resolve:992:11)
@@ -71,12 +71,12 @@ test at tests\tenant-t01.test.mjs:66:1
       at node:internal/modules/esm/loader:632:32
       at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
     code: 'ERR_MODULE_NOT_FOUND',
-    url: 'file:///c:/Users/user/wa-suite/artifacts/t03-regression-ZKlPYg/artifacts/t01-baseline-hvJ58T/src/tenantMigration.js'
+    url: 'file:///c:/Users/user/wa-suite/artifacts/t03-regression-CquuCL/artifacts/t01-baseline-hNdaGz/src/tenantMigration.js'
   }
 
 test at tests\tenant-t01.test.mjs:99:1
-✖ failed verification rolls all schema changes back and restores FK enforcement (0.5442ms)
-  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'c:\Users\user\wa-suite\artifacts\t03-regression-ZKlPYg\artifacts\t01-baseline-hvJ58T\src\tenantMigration.js' imported from c:\Users\user\wa-suite\artifacts\t03-regression-ZKlPYg\artifacts\t01-baseline-hvJ58T\tests\tenant-t01.test.mjs
+✖ failed verification rolls all schema changes back and restores FK enforcement (0.4ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'c:\Users\user\wa-suite\artifacts\t03-regression-CquuCL\artifacts\t01-baseline-hNdaGz\src\tenantMigration.js' imported from c:\Users\user\wa-suite\artifacts\t03-regression-CquuCL\artifacts\t01-baseline-hNdaGz\tests\tenant-t01.test.mjs
       at finalizeResolution (node:internal/modules/esm/resolve:271:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
       at defaultResolve (node:internal/modules/esm/resolve:992:11)
@@ -88,12 +88,12 @@ test at tests\tenant-t01.test.mjs:99:1
       at node:internal/modules/esm/loader:632:32
       at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
     code: 'ERR_MODULE_NOT_FOUND',
-    url: 'file:///c:/Users/user/wa-suite/artifacts/t03-regression-ZKlPYg/artifacts/t01-baseline-hvJ58T/src/tenantMigration.js'
+    url: 'file:///c:/Users/user/wa-suite/artifacts/t03-regression-CquuCL/artifacts/t01-baseline-hNdaGz/src/tenantMigration.js'
   }
 
 test at tests\tenant-t01.test.mjs:113:1
-✖ production database COPY: all resource counts preserved, zero unscoped rows (0.4587ms)
-  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'c:\Users\user\wa-suite\artifacts\t03-regression-ZKlPYg\artifacts\t01-baseline-hvJ58T\src\tenantMigration.js' imported from c:\Users\user\wa-suite\artifacts\t03-regression-ZKlPYg\artifacts\t01-baseline-hvJ58T\tests\tenant-t01.test.mjs
+✖ production database COPY: all resource counts preserved, zero unscoped rows (0.3764ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'c:\Users\user\wa-suite\artifacts\t03-regression-CquuCL\artifacts\t01-baseline-hNdaGz\src\tenantMigration.js' imported from c:\Users\user\wa-suite\artifacts\t03-regression-CquuCL\artifacts\t01-baseline-hNdaGz\tests\tenant-t01.test.mjs
       at finalizeResolution (node:internal/modules/esm/resolve:271:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
       at defaultResolve (node:internal/modules/esm/resolve:992:11)
@@ -105,18 +105,18 @@ test at tests\tenant-t01.test.mjs:113:1
       at node:internal/modules/esm/loader:632:32
       at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
     code: 'ERR_MODULE_NOT_FOUND',
-    url: 'file:///c:/Users/user/wa-suite/artifacts/t03-regression-ZKlPYg/artifacts/t01-baseline-hvJ58T/src/tenantMigration.js'
+    url: 'file:///c:/Users/user/wa-suite/artifacts/t03-regression-CquuCL/artifacts/t01-baseline-hNdaGz/src/tenantMigration.js'
   }
 
 test at tests\tenant-t01.test.mjs:149:1
-✖ fresh bootstrap, legacy writes, restart, and activation fail closed before DB creation (106.084ms)
+✖ fresh bootstrap, legacy writes, restart, and activation fail closed before DB creation (112.9817ms)
   AssertionError [ERR_ASSERTION]: c:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:5
   	return this[cppdb].prepare(sql, this, false, false);
   	                   ^
   
   SqliteError: no such column: tenant_id
       at Database.prepare (c:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
-      at file:///c:/Users/user/wa-suite/artifacts/t03-regression-ZKlPYg/artifacts/t01-baseline-hvJ58T/[eval1]:6:13 {
+      at file:///c:/Users/user/wa-suite/artifacts/t03-regression-CquuCL/artifacts/t01-baseline-hNdaGz/[eval1]:6:13 {
     code: 'SQLITE_ERROR'
   }
   
@@ -125,7 +125,7 @@ test at tests\tenant-t01.test.mjs:149:1
   
   1 !== 0
   
-      at TestContext.<anonymous> (file:///c:/Users/user/wa-suite/artifacts/t03-regression-ZKlPYg/artifacts/t01-baseline-hvJ58T/tests/tenant-t01.test.mjs:161:12)
+      at TestContext.<anonymous> (file:///c:/Users/user/wa-suite/artifacts/t03-regression-CquuCL/artifacts/t01-baseline-hNdaGz/tests/tenant-t01.test.mjs:161:12)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1382:25)
       at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
@@ -141,8 +141,8 @@ test at tests\tenant-t01.test.mjs:149:1
   }
 
 test at tests\tenant-t01.test.mjs:173:1
-✖ complete A/B fixture: every resource scoped; tenant-local keys; cross-tenant relations rejected (0.4788ms)
-  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'c:\Users\user\wa-suite\artifacts\t03-regression-ZKlPYg\artifacts\t01-baseline-hvJ58T\src\tenantMigration.js' imported from c:\Users\user\wa-suite\artifacts\t03-regression-ZKlPYg\artifacts\t01-baseline-hvJ58T\tests\tenant-t01.test.mjs
+✖ complete A/B fixture: every resource scoped; tenant-local keys; cross-tenant relations rejected (0.4792ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'c:\Users\user\wa-suite\artifacts\t03-regression-CquuCL\artifacts\t01-baseline-hNdaGz\src\tenantMigration.js' imported from c:\Users\user\wa-suite\artifacts\t03-regression-CquuCL\artifacts\t01-baseline-hNdaGz\tests\tenant-t01.test.mjs
       at finalizeResolution (node:internal/modules/esm/resolve:271:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
       at defaultResolve (node:internal/modules/esm/resolve:992:11)
@@ -154,6 +154,6 @@ test at tests\tenant-t01.test.mjs:173:1
       at node:internal/modules/esm/loader:632:32
       at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
     code: 'ERR_MODULE_NOT_FOUND',
-    url: 'file:///c:/Users/user/wa-suite/artifacts/t03-regression-ZKlPYg/artifacts/t01-baseline-hvJ58T/src/tenantMigration.js'
+    url: 'file:///c:/Users/user/wa-suite/artifacts/t03-regression-CquuCL/artifacts/t01-baseline-hNdaGz/src/tenantMigration.js'
   }
 
