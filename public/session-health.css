@@ -1,0 +1,25 @@
+#sessionHealthDialog {
+  width: min(34rem, calc(100% - 24px));
+  max-height: calc(100% - 24px);
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid #8d9bab;
+  border-radius: 12px;
+  background: #fff;
+  color: #172b3a;
+  overflow-wrap: anywhere;
+}
+#sessionHealthDialog::backdrop { background: #10233180; }
+#sessionHealthDialog header { display: flex; align-items: start; justify-content: space-between; gap: .75rem; }
+#sessionHealthDialog h2 { font-size: 1.1rem; margin: .25rem 0; }
+#sessionHealthDialog dl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .5rem; }
+#sessionHealthDialog dd { margin: 0; }
+#sessionHealthDialog input { width: 100%; margin: .35rem 0; }
+#sessionHealthDialog [hidden] { display: none !important; }
+#sessionHealthDialog [data-health-error], .session-health-warning { color: #8a3508; }
+[data-health-state] { display: inline-block; padding: .2rem .5rem; border-radius: .5rem; color: #334155; background: #e2e8f0; }
+[data-health-state="healthy"] { color: #115e39; background: #dcfce7; }
+[data-health-state="idle"] { color: #075985; background: #e0f2fe; }
+[data-health-state="degraded"] { color: #854d0e; background: #fef3c7; }
+[data-health-state="stale"] { color: #991b1b; background: #fee2e2; }
+[data-health-state="syncing"] { color: #5b21b6; background: #ede9fe; }

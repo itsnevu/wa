@@ -11,6 +11,7 @@ import makeWASocket, {
 } from '@whiskeysockets/baileys';
 import { config } from './config.js';
 import { q } from './db.js';
+import { recordHealth } from './sessionHealth.js';
 import * as limits from './limits.js';
 import { testPatterns } from './regexRunner.js';
 import * as aiGuard from './ai/guard.js';
@@ -21,14 +22,17 @@ const logger = P({ level: 'silent' });
 const live = new Map();
 const reconnects = new Map();
 const connecting = new Set();
+const resyncQueues = new Map();
+const appendObservers = new Map();
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function withTimeout(promise, ms, message) {
+  let timer;
   return Promise.race([
     promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
-  ]);
+    new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(message)), ms); }),
+  ]).finally(() => clearTimeout(timer));
 }
 
 export function emit(event) {
@@ -75,7 +79,8 @@ function getChat(numberId, jid, name) {
   let chat = q.chatByJid.get(numberId, jid);
   if (!chat) {
     const local = q.contactByJid.get(numberId, jid);
-    const info = q.insertChat.run(numberId, jid, local?.name || name || null, Date.now());
+    const tenantId = q.numberById.get(numberId).tenant_id;
+    const info = q.insertChatForTenant.run(numberId, jid, local?.name || name || null, Date.now(), tenantId);
     chat = q.chatById.get(info.lastInsertRowid);
   }
   return chat;
@@ -133,27 +138,38 @@ async function matchRule(rules, text) {
   return best;
 }
 
-function enqueue(numberId, task) {
+function enqueue(numberId, task, reject) {
   const s = live.get(numberId);
   if (!s) throw new Error('nomor tidak aktif');
-  s.queue.push(task);
-  if (!s.busy) drain(numberId);
+  s.queue.push({ task, reject });
+  recordHealth(numberId, 'queue', s.queue.length);
+  if (!resyncQueues.has(numberId) || s.open) drain(numberId);
 }
 
-async function drain(numberId) {
+export function drain(numberId) {
   const s = live.get(numberId);
-  if (!s) return;
-  s.busy = true;
-  while (s.queue.length) {
-    const task = s.queue.shift();
-    try {
-      await task();
-    } catch (err) {
-      console.error('[queue]', numberId, err.message);
+  if (!s) return Promise.resolve(null);
+  if (s.draining) return s.draining;
+  if (!s.queue.length) return Promise.resolve({ attempted: 0, failed: 0 });
+  s.draining = (async () => {
+    const result = { attempted: 0, failed: 0 };
+    while (live.get(numberId) === s && s.queue.length) {
+      const { task } = s.queue.shift();
+      recordHealth(numberId, 'queue', s.queue.length);
+      try {
+        if (await task(s) === false) result.failed++;
+      } catch (err) {
+        result.failed++;
+        console.error('[queue]', numberId, err.message);
+      }
+      result.attempted++;
+      await sleep(config.delayMin + Math.random() * (config.delayMax - config.delayMin));
     }
-    await sleep(config.delayMin + Math.random() * (config.delayMax - config.delayMin));
-  }
-  s.busy = false;
+    return result;
+  })().finally(() => {
+    s.draining = null;
+  });
+  return s.draining;
 }
 
 const EXT = {
@@ -172,7 +188,7 @@ function extFor(mime, kind) {
   return /^[a-z0-9]{1,8}$/.test(guess) ? guess : 'bin';
 }
 
-export async function connect(numberId) {
+export async function connect(numberId, { timeoutMs } = {}) {
   const number = q.numberById.get(numberId);
   if (!number) throw new Error('nomor tidak ada');
   if (live.has(numberId) || connecting.has(numberId)) return { status: 'sedang-menyambung' };
@@ -189,9 +205,15 @@ export async function connect(numberId) {
   try {
     const dir = path.join(config.dataDir, 'sessions', String(numberId));
     fs.mkdirSync(dir, { recursive: true });
-    const auth = await useMultiFileAuthState(dir);
+    const load = async () => {
+      const auth = await useMultiFileAuthState(dir);
+      const { version } = await fetchLatestBaileysVersion();
+      return { auth, version };
+    };
+    const { auth, version } = timeoutMs
+      ? await withTimeout(load(), timeoutMs, 'Persiapan socket melebihi batas waktu.')
+      : await load();
     saveCreds = auth.saveCreds;
-    const { version } = await fetchLatestBaileysVersion();
 
     sock = makeWASocket({
       version,
@@ -209,8 +231,9 @@ export async function connect(numberId) {
     const ready = new Promise((res, rej) => { resolveReady = res; rejectReady = rej; });
     ready.catch(() => {});
 
-    entry = { sock, queue: [], busy: false, pairingCode: null, qr: null, ready, isReady: false, resolveReady, rejectReady };
+    entry = { sock, queue: resyncQueues.get(numberId) || [], pairingCode: null, qr: null, ready, isReady: false, resolveReady, rejectReady };
     live.set(numberId, entry);
+    recordHealth(numberId, 'queue', entry.queue.length);
   } finally {
     connecting.delete(numberId);
   }
@@ -224,14 +247,17 @@ export async function connect(numberId) {
   sock.ev.on('creds.update', saveCreds);
 
   sock.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
-  if (qr) {
-    entry.qr = qr;
-    markReady();
-    emit({ type: 'number.qr', numberId, qr: await QRCode.toDataURL(qr, { margin: 1, width: 320 }) });
-  }
-    if (qr) markReady();
+    if (live.get(numberId) !== entry) return;
+    recordHealth(numberId, 'event');
+    if (qr) {
+      entry.qr = qr;
+      markReady();
+      emit({ type: 'number.qr', numberId, qr: await QRCode.toDataURL(qr, { margin: 1, width: 320 }) });
+    }
 
     if (connection === 'open') {
+      entry.open = true;
+      recordHealth(numberId, 'connect');
       entry.attempt = 0;
       retry.attempt = 0;
       entry.qr = null;
@@ -242,9 +268,10 @@ export async function connect(numberId) {
     }
 
     if (connection === 'close') {
-      if (live.get(numberId) !== entry) return;
       const code = lastDisconnect?.error?.output?.statusCode;
       live.delete(numberId);
+      recordHealth(numberId, 'disconnect');
+      if (!resyncQueues.has(numberId)) recordHealth(numberId, 'queue', 0);
       entry.rejectReady(new Error('koneksi tertutup sebelum siap'));
 
       if (code === DisconnectReason.loggedOut) {
@@ -267,12 +294,20 @@ export async function connect(numberId) {
     }
   });
 
-  sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    if (type !== 'notify' && type !== 'append') { console.error('[upsert] type=', type); return; }
+  async function upsert({ messages, type }) {
+    if (live.get(numberId) !== entry) return;
+    recordHealth(numberId, 'event');
+    if (type !== 'notify' && type !== 'append') { recordHealth(numberId, 'drop', 'unsupported_upsert'); return; }
     for (const msg of messages) {
       const rawKeys = Object.keys(unwrap(msg.message) || {}).join(',');
       console.error('[in]', msg.key?.remoteJid, '| fromMe=', msg.key?.fromMe, '|', rawKeys);
-      if (!msg.message || msg.key.remoteJid === 'status@broadcast') continue;
+      if (msg.key?.remoteJid === 'status@broadcast') continue;
+      if (!msg.message || !msg.key?.remoteJid) { recordHealth(numberId, 'drop', 'missing_message'); continue; }
+      const timestamp = Number(msg.messageTimestamp);
+      if (msg.key.id && /@(?:s\.whatsapp\.net|lid)$/.test(msg.key.remoteJid) &&
+        Number.isSafeInteger(timestamp) && timestamp > 0) {
+        entry.historyAnchor = { key: msg.key, timestamp };
+      }
       if (msg.key.id && (q.messageByWaId.get(numberId, msg.key.id) || limits.seen(numberId + ':' + msg.key.id))) continue;
       const jid = msg.key.remoteJid;
       const pn = msg.key.remoteJidAlt || null;
@@ -280,7 +315,7 @@ export async function connect(numberId) {
       const body = textOf(unwrap(msg.message));
       const { kind, mime } = kindOf({ message: unwrap(msg.message) });
       if (kind === 'text' && !body && !fromMe) {
-        console.error('[skip] tipe tak dikenal:', rawKeys);
+        recordHealth(numberId, 'drop', 'unsupported_message');
         continue;
       }
 
@@ -291,8 +326,12 @@ export async function connect(numberId) {
         if (!local) q.setChatName.run(msg.pushName, chat.id);
       }
       if (pn) q.setChatPn.run(pn, chat.id);
-      const saved = q.insertMessage.run(numberId, chat.id, fromMe ? 1 : 0, body, Date.now(), null, kind, null, mime, msg.key.id || null);
+      const saved = q.insertMessageForTenant.run(numberId, chat.id, fromMe ? 1 : 0, body, Date.now(), null, kind, null, mime, msg.key.id || null, chat.tenant_id);
       if (!saved.changes) continue;
+      if (!fromMe) {
+        recordHealth(numberId, 'inbound');
+        if (type === 'append') appendObservers.get(numberId)?.();
+      } else recordHealth(numberId, 'outbound');
       const msgId = saved.lastInsertRowid;
       q.touchChat.run(Date.now(), null, chat.id);
         if (!fromMe) {
@@ -300,7 +339,7 @@ export async function connect(numberId) {
           q.reopenChat.run(chat.id);
         }
       if (!fromMe && chat.assignee_id) {
-        q.insertNotification.run(chat.assignee_id, numberId, chat.id, Date.now());
+        q.insertNotificationForTenant.run(chat.assignee_id, numberId, chat.id, Date.now(), chat.tenant_id);
         emit({ type: 'notification', userId: chat.assignee_id, numberId, chatId: chat.id, body });
       }
       let mediaPath = null;
@@ -319,6 +358,7 @@ export async function connect(numberId) {
           mediaPath = file;
           q.setMessageMedia.run(file, msgId);
         } catch (err) {
+          recordHealth(numberId, 'drop', 'media_download_failed');
           console.error('[media]', numberId, kind, err.message);
         } finally {
           clearTimeout(mediaTimer);
@@ -347,7 +387,23 @@ export async function connect(numberId) {
         catch (err) { console.error('[ai]', numberId, err.message); }
       }
     }
+  }
+  sock.ev.on('messages.upsert', async update => {
+    try { await upsert(update); }
+    catch (err) {
+      recordHealth(numberId, 'drop', 'message_processing_failed');
+      console.error('[upsert]', numberId, err.message);
+    }
   });
+  sock.ev.on('messaging-history.set', ({ peerDataRequestSessionId, messages }) => {
+    const requests = entry.historyResponses;
+    if (!requests || !peerDataRequestSessionId || !Array.isArray(messages)) return;
+    if (requests.size < 8) {
+      const batch = requests.get(peerDataRequestSessionId) || [];
+      requests.set(peerDataRequestSessionId, batch.concat(messages));
+    }
+  });
+  entry.ingestHistory = messages => upsert({ messages, type: 'append' });
 
   sock.ev.on('call', async (calls) => {
     for (const call of calls) {
@@ -357,13 +413,13 @@ export async function connect(numberId) {
       const label = call.isVideo ? 'Panggilan video masuk' : 'Panggilan suara masuk';
       const body = config.callAutoReject ? `${label} - ditolak otomatis` : `${label} - tidak terjawab`;
 
-      q.insertMessage.run(numberId, chat.id, 0, body, Date.now(), null, 'call', null, null, null);
+      q.insertMessageForTenant.run(numberId, chat.id, 0, body, Date.now(), null, 'call', null, null, null, chat.tenant_id);
       q.touchChat.run(Date.now(), null, chat.id);
       q.bumpUnread.run(chat.id);
       emit({ type: 'message', numberId, chatId: chat.id, jid, body, fromMe: false, kind: 'call', mediaPath: null, ts: Date.now() });
 
       if (chat.assignee_id) {
-        q.insertNotification.run(chat.assignee_id, numberId, chat.id, Date.now());
+        q.insertNotificationForTenant.run(chat.assignee_id, numberId, chat.id, Date.now(), chat.tenant_id);
         emit({ type: 'notification', userId: chat.assignee_id, numberId, chatId: chat.id, body });
       }
 
@@ -430,7 +486,7 @@ export async function sendText(numberId, jid, text, agentId = null, isAuto = fal
   const chat = getChat(numberId, jid, null);
   if (source !== 'ai' && agentId) pauseAiForAgent(numberId, chat.id);
   return new Promise((resolve, reject) => {
-    enqueue(numberId, async () => {
+    enqueue(numberId, async (s) => {
       try {
         await limits.acquire(numberId);
         if (live.get(numberId) !== s) throw new Error('nomor tidak aktif');
@@ -440,16 +496,18 @@ export async function sendText(numberId, jid, text, agentId = null, isAuto = fal
         await s.sock.sendPresenceUpdate('composing', jid);
         await sleep(Math.min(4000, 600 + text.length * 30));
         const sent = await s.sock.sendMessage(jid, { text });
-        q.insertActivity.run(agentId, numberId, 'send', text.slice(0, 80), Date.now());
+        recordHealth(numberId, 'outbound');
+        q.insertActivityForTenant.run(agentId, numberId, 'send', text.slice(0, 80), Date.now(), chat.tenant_id);
         await s.sock.sendPresenceUpdate('paused', jid);
-        q.insertMessage.run(numberId, chat.id, 1, text, Date.now(), agentId, 'text', null, null, sent?.key?.id || null);
+        q.insertMessageForTenant.run(numberId, chat.id, 1, text, Date.now(), agentId, 'text', null, null, sent?.key?.id || null, chat.tenant_id);
         q.touchChat.run(Date.now(), null, chat.id);
         emit({ type: 'message', numberId, chatId: chat.id, jid, body: text, fromMe: true, kind: 'text', mediaPath: null, waId: sent?.key?.id || null, ts: Date.now() });
         resolve(true);
       } catch (err) {
         reject(err);
+        return false;
       }
-    });
+    }, reject);
   });
 }
 
@@ -514,7 +572,7 @@ export async function sendQuote(numberId, jid, text, waId, agentId = null) {
   const original = q.messageByWaId.get(numberId, waId);
   if (!original || original.chat_id !== chat.id) throw new Error('pesan kutipan tidak ditemukan');
   return new Promise((resolve, reject) => {
-    enqueue(numberId, async () => {
+    enqueue(numberId, async (s) => {
       try {
         await limits.acquire(numberId);
         if (live.get(numberId) !== s) throw new Error('nomor tidak aktif');
@@ -525,14 +583,15 @@ export async function sendQuote(numberId, jid, text, waId, agentId = null) {
           key: { remoteJid: jid, id: waId, fromMe: Boolean(original.from_me) },
           message: { conversation: original.body || '' },
         } });
-        q.insertActivity.run(agentId, numberId, 'send', text.slice(0, 80), Date.now());
+        recordHealth(numberId, 'outbound');
+        q.insertActivityForTenant.run(agentId, numberId, 'send', text.slice(0, 80), Date.now(), chat.tenant_id);
         await s.sock.sendPresenceUpdate('paused', jid);
-        q.insertMessage.run(numberId, chat.id, 1, text, Date.now(), agentId, 'text', null, null, sent?.key?.id || null);
+        q.insertMessageForTenant.run(numberId, chat.id, 1, text, Date.now(), agentId, 'text', null, null, sent?.key?.id || null, chat.tenant_id);
         q.touchChat.run(Date.now(), null, chat.id);
         emit({ type: 'message', numberId, chatId: chat.id, jid, body: text, fromMe: true, kind: 'text', mediaPath: null, waId: sent?.key?.id || null, ts: Date.now() });
         resolve(true);
-      } catch (err) { reject(err); }
-    });
+      } catch (err) { reject(err); return false; }
+    }, reject);
   });
 }
 
@@ -544,16 +603,17 @@ export async function sendReaction(numberId, jid, waId, emoji) {
   const original = q.messageByWaId.get(numberId, waId);
   if (!original || q.chatById.get(original.chat_id)?.jid !== jid) throw new Error('pesan tidak ditemukan');
   return new Promise((resolve, reject) => {
-    enqueue(numberId, async () => {
+    enqueue(numberId, async (s) => {
       try {
         await limits.acquire(numberId);
         if (live.get(numberId) !== s) throw new Error('nomor tidak aktif');
         if (number) limits.assertQuota(number);
         limits.bumpDaily(numberId);
         await s.sock.sendMessage(jid, { react: { text: emoji, key: { remoteJid: jid, id: waId, fromMe: Boolean(original.from_me) } } });
+        recordHealth(numberId, 'outbound');
         resolve(true);
-      } catch (err) { reject(err); }
-    });
+      } catch (err) { reject(err); return false; }
+    }, reject);
   });
 }
 
@@ -570,7 +630,7 @@ export async function sendMedia(numberId, jid, buffer, mime, caption = '', agent
   fs.writeFileSync(path.join(config.dataDir, 'media', file), buffer);
 
   return new Promise((resolve, reject) => {
-    enqueue(numberId, async () => {
+    enqueue(numberId, async (s) => {
       try {
         await limits.acquire(numberId);
         if (live.get(numberId) !== s) throw new Error('nomor tidak aktif');
@@ -592,16 +652,18 @@ export async function sendMedia(numberId, jid, buffer, mime, caption = '', agent
                 : { document: buffer, mimetype: mime, fileName: caption || file };
         const kind = isSticker ? 'sticker' : isImage ? 'image' : isVideo ? 'video' : isAudio ? 'audio' : 'doc';
         const sent = await s.sock.sendMessage(jid, payload);
-        q.insertActivity.run(agentId, numberId, 'send', String(caption).slice(0, 80), Date.now());
+        recordHealth(numberId, 'outbound');
+        q.insertActivityForTenant.run(agentId, numberId, 'send', String(caption).slice(0, 80), Date.now(), chat.tenant_id);
         await s.sock.sendPresenceUpdate('paused', jid);
-        q.insertMessage.run(numberId, chat.id, 1, caption, Date.now(), agentId, kind, file, mime, sent?.key?.id || null);
+        q.insertMessageForTenant.run(numberId, chat.id, 1, caption, Date.now(), agentId, kind, file, mime, sent?.key?.id || null, chat.tenant_id);
         q.touchChat.run(Date.now(), null, chat.id);
         emit({ type: 'message', numberId, chatId: chat.id, jid, body: caption, fromMe: true, kind, mediaPath: file, waId: sent?.key?.id || null, ts: Date.now() });
         resolve(true);
       } catch (err) {
         reject(err);
+        return false;
       }
-    });
+    }, reject);
   });
 }
 
@@ -610,8 +672,11 @@ export function disconnect(numberId, forget = false) {
   reconnects.delete(numberId);
   const s = live.get(numberId);
   if (!s) return;
-  try { s.sock.end(undefined); } catch { /* sudah mati */ }
   live.delete(numberId);
+  recordHealth(numberId, 'disconnect');
+  if (!resyncQueues.has(numberId)) recordHealth(numberId, 'queue', 0);
+  s.rejectReady(new Error('koneksi ditutup'));
+  try { s.sock.end(undefined); } catch { /* sudah mati */ }
   if (forget) fs.rmSync(path.join(config.dataDir, 'sessions', String(numberId)), { recursive: true, force: true });
 }
 
@@ -630,5 +695,98 @@ export async function restoreAll() {
     const dir = path.join(config.dataDir, 'sessions', String(n.id));
     if (!fs.existsSync(path.join(dir, 'creds.json'))) continue;
     await connect(n.id).catch((e) => console.error('[restore]', n.id, e.message));
+  }
+}
+
+export function socketOpen(numberId) {
+  const entry = live.get(numberId);
+  return Boolean(entry?.open && entry.sock.ws?.isOpen);
+}
+
+export async function resync(numberId, step) {
+  let newMessages = 0;
+  let lastAppendAt = Date.now();
+  let entry;
+  let previousAnchor;
+  appendObservers.set(numberId, () => { newMessages++; lastAppendAt = Date.now(); });
+  try {
+    const closed = await step('close', () => {
+      if (connecting.has(numberId)) throw Error('Sesi sedang membuka socket.');
+      const current = live.get(numberId);
+      previousAnchor = current?.historyAnchor;
+      resyncQueues.set(numberId, current?.queue || []);
+      if (current) current.queue = [];
+      disconnect(numberId);
+      return current ? { status: 'ok' } : { status: 'skipped', detail: 'Socket sudah tertutup.' };
+    });
+    const startedAt = Date.now();
+    const reconnect = await step('reconnect', async () => {
+      if (closed.status === 'failed') return { status: 'skipped' };
+      const credentials = path.join(config.dataDir, 'sessions', String(numberId), 'creds.json');
+      if (!fs.existsSync(credentials)) throw Error('Kredensial tersimpan tidak tersedia.');
+      await connect(numberId, { timeoutMs: 30000 });
+      entry = live.get(numberId);
+      if (!entry) throw Error('Socket baru tidak tersedia.');
+      return { status: 'ok' };
+    });
+    const opened = await step('open', async () => {
+      if (reconnect.status !== 'ok') return { status: 'skipped' };
+      while (live.get(numberId) === entry && !socketOpen(numberId)) {
+        if (Date.now() - startedAt >= 30000) {
+          disconnect(numberId);
+          throw Error('WhatsApp belum tersambung dalam 30 detik.');
+        }
+        await sleep(100);
+      }
+      if (live.get(numberId) !== entry) throw Error('Socket tertutup sebelum tersambung.');
+      return { status: 'ok' };
+    });
+    await step('drain', async () => {
+      if (opened.status !== 'ok') return { status: 'skipped' };
+      const result = await withTimeout(drain(numberId), 30000, 'Antrean masih berjalan setelah 30 detik.');
+      if (!result) throw Error('Socket tidak tersedia untuk mengirim antrean.');
+      if (entry.queue.length) throw Error('Koneksi terputus sebelum antrean selesai dikirim.');
+      return { ...result, status: result.failed ? 'failed' : 'ok' };
+    });
+    await step('history', async () => {
+      if (opened.status !== 'ok') return { status: 'skipped' };
+      const observedAt = Date.now();
+      while (live.get(numberId) === entry && socketOpen(numberId) && Date.now() - observedAt < 8000 &&
+        Date.now() - Math.max(observedAt, lastAppendAt) < 3000) await sleep(100);
+      if (live.get(numberId) !== entry || !socketOpen(numberId)) throw Error('Koneksi terputus saat memeriksa riwayat.');
+      const anchor = entry.historyAnchor || previousAnchor;
+      if (!anchor || typeof entry.sock.fetchMessageHistory !== 'function') {
+        return {
+          status: 'unsupported',
+          detail: 'Riwayat tambahan memerlukan referensi pesan asli dan dukungan perangkat tertaut.',
+          observation_completed: true,
+        };
+      }
+
+      // The peer request is for one chat. Only an attributed response can confirm receipt.
+      entry.historyResponses = new Map();
+      const requestId = await withTimeout(
+        entry.sock.fetchMessageHistory(20, anchor.key, anchor.timestamp),
+        5000,
+        'Perangkat tertaut belum menerima permintaan riwayat.',
+      );
+      const deadline = Date.now() + 5000;
+      while (live.get(numberId) === entry && socketOpen(numberId) &&
+        !entry.historyResponses.has(requestId) && Date.now() < deadline) await sleep(100);
+      const batch = entry.historyResponses.get(requestId);
+      if (!batch) return { status: 'unconfirmed', detail: 'Belum ada respons riwayat dalam waktu pemeriksaan.' };
+      await withTimeout(entry.ingestHistory(batch), 5000, 'Pemrosesan riwayat masih berjalan.');
+      return { status: 'ok', received: batch.length, observation_completed: true };
+    });
+    return newMessages;
+  } finally {
+    appendObservers.delete(numberId);
+    if (entry) entry.historyResponses = null;
+    const pending = resyncQueues.get(numberId);
+    resyncQueues.delete(numberId);
+    if (pending?.length && !socketOpen(numberId)) {
+      for (const { reject } of pending.splice(0)) reject(Error('Antrean terhenti karena socket terputus.'));
+      recordHealth(numberId, 'queue', 0);
+    }
   }
 }

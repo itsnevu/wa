@@ -1,0 +1,45 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai-final.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+node --check src/db.js: exit 0
+node --check src/config.js: exit 0
+node --check src/ai/client.js: exit 0
+node --check src/ai/tools.js: exit 0
+node --check src/ai/guard.js: exit 0
+node --check src/ai/notice.js: exit 0
+node --check src/ai/agent.js: exit 0
+node --check src/ai/routes.js: exit 0
+node --check src/limits.js: exit 0
+node --check src/routes.js: exit 0
+node --check src/wa.js: exit 0
+node --check public/ai.js: exit 0
+node --check public/sw.js: exit 0
+node --check public/module-guide.js: exit 0
+node --check scripts/verify-ai1.mjs: exit 0
+node --check scripts/verify-ai2.mjs: exit 0
+node --check scripts/verify-ai3.mjs: exit 0
+node --check scripts/verify-ai4.mjs: exit 0
+node --check scripts/verify-ai5.mjs: exit 0
+node --check scripts/verify-ai6.mjs: exit 0
+node --check scripts/verify-module-guide.mjs: exit 0
+node --check scripts/verify-ai-final.mjs: exit 0
+HTML inline script syntax: exit 0
+node  scripts/verify-ai1.mjs: exit 0
+PASS ai1: idempotent migration, defaults, statements, usage, deduplication; exit 0
+node  scripts/verify-ai2.mjs: exit 0
+PASS ai2: mock 200, 500, abort, insufficient/invalid/duplicate stock, atomic order, retry idempotency; exit 0
+node  scripts/verify-ai3.mjs: exit 0
+PASS ai3: 11 ordered guard reasons, stop x3 returns one reply, warn x2 emits one alert; exit 0
+node  scripts/verify-ai4.mjs: exit 0
+PASS ai4: real tool loop, fallback, agent pause, paused skip, model error escalation, no error text, independent incoming save/rules; exit 0
+node  scripts/verify-ai5.mjs: exit 0
+PASS ai5: validation 400, auth 401/403, secret masking, resume +20%/clear notice, test sends no messages, product CRUD, order ownership/status; exit 0
+node  scripts/verify-ai6.mjs: exit 0
+PASS ai6: Chrome screenshots for settings/usage thresholds/event alert/number badge/console/products/orders/logs/mobile; save, product create, order status, test no send, resume endpoint; exit 0
+node --regexp-interpret-all scripts/verify-hardening.mjs: exit 0
+PASS 12. push name terbaru dan jalur cepat rule slow
+node  scripts/verify-module-guide.mjs: exit 0
+PASS: module coverage, hidden target filtering, navigation cleanup, local assets, HTTP serving; exit 0
+npm start: health HTTP 200 {"ok":true}; startup assertion exit 0
+PASS final: ai1–6, hardening, module guide, clean npm start; exit 0
+

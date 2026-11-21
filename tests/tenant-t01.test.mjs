@@ -121,6 +121,8 @@ test('production database COPY: all resource counts preserved, zero unscoped row
     copy = new Database(file);
     const before = Object.fromEntries(TENANT_TABLES.filter(name => copy.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name))
       .map(name => [name,copy.prepare(`SELECT count(*) n FROM "${name}"`).get().n]));
+    const alreadyMigrated = Boolean(copy.prepare("SELECT 1 FROM sqlite_master WHERE name='tenant_migrations'").get() &&
+      copy.prepare("SELECT 1 FROM tenant_migrations WHERE id='T01'").get());
     copy.close();
     // Match deployment: legacy bootstrap first creates tables absent in older DBs.
     const boot = spawnSync(process.execPath, ['--input-type=module', '-e', "const {db}=await import('./src/db.js'); db.close()"], {
@@ -132,7 +134,10 @@ test('production database COPY: all resource counts preserved, zero unscoped row
     assert.equal(report.tables.length, TENANT_TABLES.length);
     for (const t of report.tables) {
       assert.equal(t.before,t.after); assert.equal(t.unscoped,0);
-      if (Object.hasOwn(before,t.name)) assert.equal(t.after,before[t.name],`original row count: ${t.name}`);
+      if (Object.hasOwn(before,t.name)) {
+        assert.equal(copy.prepare(`SELECT count(*) AS n FROM "${t.name}"`).get().n,before[t.name],`original row count: ${t.name}`);
+        if (!alreadyMigrated) assert.equal(t.after,before[t.name],`migration report row count: ${t.name}`);
+      }
       assert.equal(copy.prepare(`PRAGMA table_info("${t.name}")`).all().find(c => c.name === 'tenant_id').notnull,1);
     }
     assert.deepEqual(copy.pragma('foreign_key_check'), []);

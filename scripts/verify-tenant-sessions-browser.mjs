@@ -37,7 +37,7 @@ try{
   await send('Runtime.enable');await send('Page.enable');await send('Network.enable');
   await send('Emulation.setDeviceMetricsOverride',{width:1366,height:900,deviceScaleFactor:1,mobile:false});
   await send('Page.navigate',{url:origin});await wait("!document.querySelector('#login').classList.contains('hidden')");
-  const login=async()=>{await evaluate("document.querySelector('#u').value='A-0';document.querySelector('#p').value='fixture-password-123';document.querySelector('#login').requestSubmit()");await wait("!document.querySelector('#tenantPicker').classList.contains('hidden') && document.querySelectorAll('#tenantChoices button').length===2");};
+  const login=async()=>{await evaluate("document.querySelector('#u').value='A-0';document.querySelector('#p').value='fixture-password-123';document.querySelector('#login').requestSubmit()");await wait("document.querySelector('#tenantPicker') && !document.querySelector('#tenantPicker').classList.contains('hidden') && document.querySelectorAll('#tenantChoices button').length===2");};
   await login();
   for(const [name,width,height]of [['desktop',1366,900],['360px',360,780]]){
     await send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width===360});
@@ -53,11 +53,11 @@ try{
   assert.equal(await evaluate("call('GET','/me').catch(e=>e.code)"),'SESSION_INVALID');
   assert.ok(await evaluate("!document.querySelector('#login').classList.contains('hidden')"));
   await login();await evaluate("document.querySelector('#tenantChoices button').click()");
-  await wait("!!state.me && !document.querySelector('#app').classList.contains('hidden')");
+  await wait("typeof state !== 'undefined' && !!state.me && !document.querySelector('#app').classList.contains('hidden')");
   assert.equal(await evaluate("call('GET','/me').then(r=>r.active_tenant_id)"),'A');
   db.prepare("DELETE FROM tenant_members WHERE tenant_id='A' AND user_id=10").run();
   await send('Page.reload');
-  await wait("!document.querySelector('#tenantPicker').classList.contains('hidden') && document.querySelectorAll('#tenantChoices button').length===1");
+  await wait("document.querySelector('#tenantPicker') && !document.querySelector('#tenantPicker').classList.contains('hidden') && document.querySelectorAll('#tenantChoices button').length===1");
   assert.ok(await evaluate("document.querySelector('#sessionNotice').textContent.includes('TENANT_FORBIDDEN')"));
   console.log('PASS browser: login -> null tenant picker -> switch -> app; 401 login, 409 picker, 403 exact code; revoked membership on reload forces reselection; desktop + 360px screenshots; flag-enabled fixture only');
 }finally{

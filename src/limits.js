@@ -84,8 +84,9 @@ export function assertQuota(number) {
 }
 
 export function bumpDaily(numberId) {
-  db.prepare(`INSERT INTO send_count (number_id, day, count) VALUES (?, ?, 1)
-    ON CONFLICT(number_id, day) DO UPDATE SET count = count + 1`).run(numberId, today());
+  db.prepare(`INSERT INTO send_count (number_id, day, count, tenant_id)
+    SELECT id, ?, 1, tenant_id FROM numbers WHERE id = ?
+    ON CONFLICT(number_id, day) DO UPDATE SET count = count + 1`).run(today(), numberId);
 }
 
 export function withinHours() {

@@ -1,0 +1,123 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-hardening.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+[1] "image/svg+xml; charset=x" kind=image -> 1-abc.bin
+[1] "text/html/../../evil" kind=doc -> 1-abc.html
+[1] "application/x\\..\\..\\..\\src\\evil" kind=doc -> 1-abc.bin
+[1] "audio/ogg; codecs=opus" kind=audio -> 1-abc.ogg
+[1] "image/jpeg" kind=image -> 1-abc.jpeg
+[1] undefined kind=doc -> 1-abc.bin
+[1] "apa saja" kind=sticker -> 1-abc.webp
+[1] PASS nama file media aman
+[2] a.html status=200 nosniff=nosniff csp=sandbox; default-src 'none'
+[2] b.jpeg status=200 nosniff=nosniff csp=null
+[2] PASS header aman pada /media
+[3] tanpa cookie=401 dengan cookie=200 /api/health tanpa cookie=200
+[3] PASS /media wajib login
+[db] admin dibuat: harness-admin
+[schema] {"version":5,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phasehardening-T2zarh\\migration-backups\\pre-t01-3f1f4be7-3cca-43fe-8b93-4b1626b0d778.sqlite","backupCount":1,"backupBytes":4096}
+[4] A PATCH /rules/1 -> 403
+[4] A DELETE /rules/1 -> 403
+[4] A POST /chats/2/labels/1 -> 403
+[4] A DELETE /chats/2/labels/1 -> 403
+[4] A PUT /chats/2/name -> 403
+[4] A DELETE /templates/2 -> 403
+[4] A DELETE /templates/1 -> 403
+[4] A POST /templates -> 403
+[4] A DELETE /labels/1 -> 403
+[4] A PUT /chats/1/name -> 200
+[4] chat A name=Nama versi A | chat B (jid sama) name=null
+[4] B POST /chats/2/labels/1 -> 200
+[4] B POST /chats/2/labels/99999 -> 404
+[4] admin PATCH /rules/1 -> 200
+[4] admin PUT /chats/2/name -> 200
+[4] admin DELETE /chats/2/labels/1 -> 200
+[4] admin DELETE /templates/1 -> 200
+[4] admin DELETE /rules/1 -> 200
+[4] admin DELETE /labels/1 -> 200
+[4] migrasi contacts_v2: [{"number_id":1,"jid":"x@s","name":"Lama X"},{"number_id":2,"jid":"x@s","name":"Lama X"}] | setelah impor ulang: {"n":2}
+[4] PASS otorisasi per objek
+[5] 5.1 pola 190 karakter, teks 1500 (tidak bisa cocok): 313.0 ms, hasil=null
+[5] 5.2 '^(a+)+$' pada 1500a+b: 471.4 ms, hasil=null
+[5] 5.3 setelah timeout, '^halo\s+pag?i$' pada 'halo pagi': 24.5 ms, hasil=3
+[5] 5.4 regex jahat (urutan 1) + contains 'promo' (urutan 2): 465.2 ms, hasil=5 (contains)
+[5] 5.4b regex timeout, exact tidak cocok: 474.7 ms, hasil=null
+[5] 5.x log error tercatat: ["[regex] tetap timeout","[regex] tetap timeout","[regex] tetap timeout"] | markRuleSlow untuk rule: [1,2,4,6]
+[5] 5.6 median matchRule 20 pesan: 0.063 ms (min 0.019, maks 0.198)
+[5] 5.6b panggilan pertama dengan worker baru (spawn dingin): 26.6 ms
+[5] 5.5 POST rule regex "(a+)+" -> 400 {"error":"pola punya quantifier bersarang, misal (a+)+"}
+[5] 5.5 POST rule regex "^halo\\s+pag?i$" -> 200 {"ok":true}
+[5] 5.5 POST rule regex "(" -> 400 {"error":"pola regex tidak valid"}
+[5] 5.7 proses anak: exit=0 signal=null dalam 143 ms | timeout: timeout | hits [1] [3]
+[5] PASS regex di worker
+[6] halaman 1: 500 pesan, pertama="pesan 101", terakhir="pesan 600", hasMore=true
+[6] halaman 2 (before=ts pesan 101): 100 pesan, "pesan 1".."pesan 100", hasMore=false
+[6] skrip inline index.html ter-parse; renderLoadOlder dan loadOlder ada (perilaku DOM belum diuji di browser)
+[6] PASS pesan terbaru pada chat panjang
+[7] real socket terminated then reconnected; inbox refreshed exactly once
+[7] buka pertama: indikator hidden=true, loadChats=0
+[7] jeda percobaan ulang: 2000, 4000, 8000, 15000, 15000 ms; indikator "terputus" tampil selama putus
+[7] tersambung ulang: indikator hidden=true, loadChats=1
+[7] setelah tersambung, putus berikutnya mulai lagi dari 2000 ms
+[7] onclose dari socket lama diabaikan (tidak membuat sambungan ganda)
+[7] PASS WebSocket menyambung ulang
+[8] dua connect bersamaan: socket=1, hasil=[{"status":"pairing"},{"status":"sedang-menyambung"}]
+[8] connect berurutan saat sudah hidup: socket=1, hasil={"status":"sedang-menyambung"}
+[8] nomor 2: gagal pertama="auth gagal", percobaan berikut={"status":"pairing"}, socket total=2
+[8] PASS satu socket per nomor
+[9] klien WebSocket terbuka sebelum shutdown
+[9]   [db] admin dibuat: harness-admin
+[9]   [schema] {"version":5,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-shutdown-engmNE\\data\\migration-backups\\pre-t01-2a38e882-6b21-4b09-9d61-080217b4cbb2.sqlite","backupCount":1,"backupBytes":4096}
+[9]   [http] http://localhost:52266
+[9]   [regex] PERINGATAN: jalankan dengan "npm start" atau node --regexp-interpret-all; rule regex berat bisa timeout bergantian
+[9]   listener SIGTERM=1 SIGINT=1 unhandledRejection=1 uncaughtException=1
+[9]   [unhandled] Error: uji penolakan tak tertangani
+[9]       at Timeout._onTimeout (file:///C:/Users/user/AppData/Local/Temp/wa-shutdown-engmNE/preload.mjs:3:18)
+[9]       at listOnTimeout (node:internal/timers:635:17)
+[9]       at process.processTimers (node:internal/timers:571:7)
+[9]   masih hidup setelah penolakan, kirim SIGTERM
+[9]   [shutdown] menutup
+[9]   exit code=0 setelah 1 ms
+[9] PASS ketahanan proses dan shutdown
+[10] urutan di src/index.js: reset offline @2270, restoreAll @2313
+[10] status setelah start (sebelumnya online/reconnecting/error): offline, offline, offline
+[10] tersimpan: [{"wa_id":"APP1","body":"halo dari append"},{"wa_id":"NOT1","body":"halo dari notify"}]
+[10] auto-reply dipicu: 1 kali (hanya notify) | log: []
+[10] PASS status basi direset dan append diproses
+[11] 11.1 contains p5 + regex p1, keduanya cocok -> menang id=5 (regex, p1)
+[11] 11.2 regex p5 + contains p1, keduanya cocok -> menang id=7 (contains, p1)
+[11] 11.2b exact p3 + regex p2 -> menang id=9 (regex)
+[11] 11.3 pola 190, teks cocok 200 karakter: hasil=10, 254 ms, slow=1
+[11] 11.3b 5 pesan pendek berikutnya (worker hangat): 0.4, 0.4, 0.5, 0.4, 0.5 ms
+[11] 11.3c pola 190, teks cocok 1500 karakter, worker baru: hasil=10, 254 ms (tanpa --regexp-interpret-all: null, karena kompilasi native ~1.5 s)
+[11] 11.4 '^(a+)+$' pada 1500a+b: hasil=null, 461 ms, slow=1
+[11] 11.x log: ["[regex] tetap timeout"]
+[11] 11.5 setelah PATCH /rules/11: slow=0; rule baru slow=0
+[11] 11.6 badge "berat" di index.html: 2 tempat (panel rules dan halaman Rules); GET rules menyertakan kolom slow
+[11] PASS prioritas rule dan jalur lambat regex
+[12] 12.1 nomor A (ada nama lokal): name="Pak Budi (lokal)" push_name="Budi Baru" | nomor B (tanpa nama lokal): name="Budi Baru" push_name="Budi Baru"
+[12] 12.2 rule slow, pesan 1/2/3: 198.0 / 0.3 / 0.2 ms | log timeout: []
+[12] 12.3 contains + rule slow, 5 pesan: 0.2 / 0.2 / 0.1 / 0.1 / 0.1 ms, menang id=14 (contains)
+[12] 12.3b pesan 1500 karakter: 0 ms, log [] | pesan pendek berikutnya: 0 ms
+[12] 12.4 pola 190, teks cocok 900 karakter (rule slow=0): hasil=15, 262 ms, slow=1, log []
+[12] 12.4b pola 190, teks cocok 1000 karakter (rule slow=0): hasil=16, 271 ms, slow=1, log []
+[12] 12.4c rule yang sama (kini slow=1), teks cocok 2000 karakter: hasil=16, 0.3 ms
+[12] 12.5 contains p5 + regex p1 -> menang id=18 (regex)
+[12] 12.6 flag proses uji: --regexp-interpret-all | package.json start="node --regexp-interpret-all src/index.js" dev="node --regexp-interpret-all --watch src/index.js"
+[12] kegagalan terkumpul: []
+[12] PASS push name terbaru dan jalur cepat rule slow
+
+RINGKASAN
+PASS 1. nama file media aman
+PASS 2. header aman pada /media
+PASS 3. /media wajib login
+PASS 4. otorisasi per objek
+PASS 5. regex di worker
+PASS 6. pesan terbaru pada chat panjang
+PASS 7. WebSocket menyambung ulang
+PASS 8. satu socket per nomor
+PASS 9. ketahanan proses dan shutdown
+PASS 10. status basi direset dan append diproses
+PASS 11. prioritas rule dan jalur lambat regex
+PASS 12. push name terbaru dan jalur cepat rule slow
+

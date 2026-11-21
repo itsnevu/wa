@@ -1,0 +1,8 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai2.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+[db] admin dibuat: harness-admin
+[schema] {"version":5,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai2-Aj53DC\\migration-backups\\pre-t01-3e58e0fe-803e-41bb-ae59-229cec74eac8.sqlite","backupCount":1,"backupBytes":4096}
+SQLite order {"id":1,"number_id":1,"chat_id":1,"code":"ORD-72a82503-a04b-4f7e-8508-1aab8fe26462","items_json":"[{\"sku\":\"SKU\",\"qty\":2}]","total":200,"status":"new","created_at":1795282098325,"tenant_id":"default"}
+PASS ai2: mock 200, 500, abort, insufficient/invalid/duplicate stock, atomic order, retry idempotency; exit 0
+

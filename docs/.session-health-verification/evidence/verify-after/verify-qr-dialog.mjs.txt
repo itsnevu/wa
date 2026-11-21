@@ -1,0 +1,5 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-qr-dialog.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+PASS: online without broken image, image load/error states, no overlapping polls, stale response ignored; exit 0
+

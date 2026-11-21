@@ -1,0 +1,24 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-phase5.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+[db] admin dibuat: harness-admin
+[schema] {"version":5,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase5-hDOIQ1\\migration-backups\\pre-t01-a60a2144-754c-4d05-a432-0d862ad8296b.sqlite","backupCount":1,"backupBytes":4096}
+{
+  "phase": 5,
+  "syntax": "OK",
+  "csvStatus": 200,
+  "attachmentHeader": true,
+  "quoteCommaAndNewlineRoundTrip": true,
+  "csvMessageRows": 3,
+  "foreignExportStatus": 403,
+  "unauthenticatedStatus": 401,
+  "intervalMs": 21600000,
+  "disabledOrInvalidRetentionPreservesMessages": true,
+  "oldMessagesDeleted": 1,
+  "cutoffBoundaryAndRecentPreserved": true,
+  "csvRowsAfterRetention": 2,
+  "deletedCountLogged": true,
+  "uiExportHandler": true,
+  "isolatedDatabase": true
+}
+

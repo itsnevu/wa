@@ -13,6 +13,7 @@ import { aiApi } from './ai/routes.js';
 import { issueMediaUrl, mediaError } from './media.js';
 import {requireSessionScope,requireTenantScope} from './tenantScope.js';
 import {mountSessionRoutes} from './sessionRoutes.js';
+import {mountSessionHealthRoutes} from './sessionHealthRoutes.js';
 import {platformApi,mountOwnerAudit} from './platformRoutes.js';
 
 
@@ -39,6 +40,7 @@ api.post('/login', (req, res) => {
 api.post('/logout',requireSessionScope, (req, res) => { logout(req); clearCookie(res); res.json({ ok: true }); });
 
 mountSessionRoutes(api);
+mountSessionHealthRoutes(api);
 api.use('/platform',platformApi);
 mountOwnerAudit(api);
 

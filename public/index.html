@@ -304,6 +304,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 <link rel="stylesheet" href="/module-guide.css" />
 <link rel="stylesheet" href="/ai.css" />
 <link rel="stylesheet" href="/platform.css" />
+<link rel="stylesheet" href="/session-health.css">
 </head>
 <body>
 <div id="sessionNotice" class="hidden" role="alert"></div>
@@ -431,6 +432,21 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 </div>
 
 <section id="platformPanel" class="hidden" aria-labelledby="platformTitle"></section>
+<dialog id="sessionHealthDialog">
+  <header><h2>Status sinkronisasi</h2><form method="dialog"><button aria-label="Tutup">Tutup</button></form></header>
+  <div data-health-detail></div>
+  <p><small>Reconnect hanya dapat menerima pesan yang masih tersimpan di cache WhatsApp, biasanya dalam jendela pendek. Penarikan riwayat lengkap untuk gap yang lebih lama tidak tersedia.</small></p>
+  <button class="primary" data-health-sync hidden>Sync sekarang</button>
+  <form data-health-confirm hidden>
+    <p>Sesi akan terputus sebentar. WA Suite akan menyambungkan ulang dengan kredensial yang tersimpan dan mencoba mengirim antrean.</p>
+    <label>Alasan opsional <input name="reason" maxlength="500"></label>
+    <button type="button" data-health-cancel>Batal</button>
+    <button class="primary" type="submit">Putus dan sambungkan ulang</button>
+  </form>
+  <p data-health-error role="alert"></p>
+  <section data-health-summary hidden></section>
+</dialog>
+<script src="/session-health.js"></script>
 <script src="/platform.js"></script>
 <script src="/media.js"></script>
 <script>
@@ -1335,7 +1351,8 @@ pages.numbers = { title: 'Nomor', render: async (root) => {
   const version = pageVersion;
   const rows = await call('GET', '/numbers');
   if (version !== pageVersion) return;
-  root.innerHTML = `<div class="card"><table><thead><tr><th>Nama</th><th>Nomor</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows.map((n) => `<tr><td>${esc(n.name)}</td><td>${esc(n.phone)}</td><td>${esc(n.status)}</td><td class="actions"><button data-qr="${n.id}">QR</button><button class="ghost danger" data-number-del="${n.id}" aria-label="Hapus nomor">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada nomor</td></tr>'}</tbody></table></div>`;
+  root.innerHTML = `<div class="card"><table><thead><tr><th>Nama</th><th>Nomor</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows.map((n) => `<tr><td>${esc(n.name)}</td><td>${esc(n.phone)}</td><td>${esc(n.status)} <button data-session-health="${n.id}" data-session-name="${esc(n.name)}" data-health-state="unknown">Tidak diketahui</button></td><td class="actions"><button data-qr="${n.id}">QR</button><button class="ghost danger" data-number-del="${n.id}" aria-label="Hapus nomor">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada nomor</td></tr>'}</tbody></table></div>`;
+  window.mountSessionHealth(root, call);
   root.querySelectorAll('[data-qr]').forEach((b) => {
     const chip = document.createElement('span');
     chip.className = 'chip';
