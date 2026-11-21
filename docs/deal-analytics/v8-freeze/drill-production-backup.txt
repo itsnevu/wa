@@ -1,0 +1,6 @@
+{"step":"backup","source":"c:\\Users\\user\\wa-suite\\data\\app.db","backup":"c:\\Users\\user\\wa-suite\\data\\migration-backups\\drill\\drill-2026-11-21T21-49-36-413Z.sqlite","bytes":786432,"ms":18}
+{"step":"restore","copy":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-drill-7fXNpf\\app.db"}
+{"step":"integrity_check","result":"ok","schema_version":4}
+{"step":"server_start","port":50657,"healthy":true,"ms":813,"schema_log":"[schema] {\"version\":8,\"backup\":\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\wa-drill-7fXNpf\\\\migration-backups\\\\pre-t01-aeacc49a-5d76-45c5-869f-de5822046e95.sqlite\",\"backupCount\":1,\"backupBytes\":786432}"}
+{"step":"server_stop","exit_code":null}
+{"result":"OK","backup":"c:\\Users\\user\\wa-suite\\data\\migration-backups\\drill\\drill-2026-11-21T21-49-36-413Z.sqlite","steps":5}

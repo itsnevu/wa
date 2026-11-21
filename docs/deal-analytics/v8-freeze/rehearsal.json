@@ -1,0 +1,105 @@
+{
+  "before": {
+    "version": 4,
+    "fingerprint": "089ba35f85201ac0e8280ce84784efe34fac6e368162f4867d920a992296676b",
+    "ddl": "445d764fd7bd372464a9c7f43f023f819810c30e149338da24dfd94f2ebd949c",
+    "integrity": "ok",
+    "fk": 0,
+    "counts": {
+      "numbers": 2,
+      "chats": 40,
+      "messages": 1883,
+      "users": 1,
+      "tenants": 1,
+      "tenant_members": 1,
+      "sessions": 1,
+      "rules": 0,
+      "templates": 2,
+      "contacts_v2": 0,
+      "ai_settings": 2,
+      "activity": 4
+    },
+    "deal_events": null
+  },
+  "migrate1": {
+    "exit": 0,
+    "ms": 126,
+    "log": "[schema] {\"version\":8,\"backup\":\"…\",\"backupCount\":1,\"backupBytes\":786432}"
+  },
+  "after1": {
+    "version": 8,
+    "fingerprint": "915debfcbcf7980db7d97c8c9af5f1f992a9c0470cb04041df480b8c393faa83",
+    "ddl": "9d60718e578948c47d2153c68d8026dc73c2f7a123234da4e5d81c57756457a2",
+    "integrity": "ok",
+    "fk": 0,
+    "counts": {
+      "numbers": 2,
+      "chats": 40,
+      "messages": 1883,
+      "users": 1,
+      "tenants": 1,
+      "tenant_members": 1,
+      "sessions": 1,
+      "rules": 0,
+      "templates": 2,
+      "contacts_v2": 0,
+      "ai_settings": 2,
+      "activity": 4
+    },
+    "deal_events": 0
+  },
+  "migrate2": {
+    "exit": 0,
+    "ms": 89,
+    "log": "(tidak ada log migrasi: sudah v8)"
+  },
+  "after2": {
+    "version": 8,
+    "fingerprint": "915debfcbcf7980db7d97c8c9af5f1f992a9c0470cb04041df480b8c393faa83",
+    "ddl": "9d60718e578948c47d2153c68d8026dc73c2f7a123234da4e5d81c57756457a2",
+    "integrity": "ok",
+    "fk": 0,
+    "counts": {
+      "numbers": 2,
+      "chats": 40,
+      "messages": 1883,
+      "users": 1,
+      "tenants": 1,
+      "tenant_members": 1,
+      "sessions": 1,
+      "rules": 0,
+      "templates": 2,
+      "contacts_v2": 0,
+      "ai_settings": 2,
+      "activity": 4
+    },
+    "deal_events": 0
+  },
+  "second_run_changes_nothing": true,
+  "fingerprint_is_current": true,
+  "rows_unchanged": true,
+  "smoke": {
+    "login": 200,
+    "analytics": 200,
+    "review": 200,
+    "decide_reject": 200,
+    "delete_chat_undecided": 200,
+    "delete_chat_decided": "409 DEAL_DECIDED",
+    "delete_number_with_decided_deal": "409",
+    "delete_number_clean": 200,
+    "audit_rows": [
+      {
+        "action": "chat_deleted",
+        "n": 1
+      },
+      {
+        "action": "number_deleted",
+        "n": 1
+      }
+    ]
+  },
+  "server_log_errors": [
+    "[api] 783cabb0-1378-4aa2-843a-e8e4f9fc6eaf DELETE /api/chats/72 SQLITE_CONSTRAINT_TRIGGER DEAL_DECIDED: deal sudah diputuskan dan tidak dapat dihapus",
+    "[api] 339a0b28-660e-4c7c-8528-886faed100cb DELETE /api/numbers/18 SQLITE_CONSTRAINT_TRIGGER DEAL_DECIDED: deal sudah diputuskan dan tidak dapat dihapus"
+  ]
+}

@@ -29,13 +29,16 @@ Protokol:
 | Versi | Isi | Pemilik |
 |---|---|---|
 | 1–7 | T01 … Deal review | — (sudah ada) |
-| 8 | Deal analytics | Claude |
+| 8 | Deal analytics — **BEKU** (22 Nov 2026, `docs/deal-analytics/V8-FREEZE.md`) | Claude |
 | 9 | Koreksi analytics (jadwal per hari, libur, bucket tak terjawab) | Claude (diklaim) |
 | 10 | Grup: `chat_type`, pengirim, `groups`, `lid_map`, `buyer_jid` | Claude (diklaim) |
 
 - Klaim nomor di tabel ini **sebelum** menulis migrasi.
 - Satu versi = satu fungsi `migrateX(db)` + satu baris di `src/schemaMigrations.js` + fingerprint `vN`.
 - Migrasi versi yang sudah dipakai database operasional **tidak boleh diubah**. Perbaikan selalu versi baru.
+- **v1–v8 beku.** Setiap perubahan schema berikutnya wajib v9 atau lebih tinggi. Fingerprint hanya menjaga
+  tabel dan kolom; untuk trigger, indeks, dan CHECK gunakan hash DDL di manifest pembekuan (`V8-FREEZE.md`).
+- Server dan migrasi memegang `data/app.db.lock`; jangan jalankan dua instance pada folder data yang sama.
 - Database operasional: backup → restore ke salinan → migrasi salinan + smoke → migrasi operasional + smoke. Tidak pernah migrasi langsung.
 
 ## 4. Commit
