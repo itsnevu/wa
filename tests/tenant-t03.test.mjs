@@ -62,7 +62,7 @@ test('05 contract: non-member active tenant => 403 TENANT_FORBIDDEN and reselect
 test('06 contract: suspended tenant => 403 TENANT_SUSPENDED',async()=>{const a=await selected();db.exec("UPDATE tenants SET status='suspended' WHERE id='A'");code(await request('/users',{cookie:a.cookie}),403,'TENANT_SUSPENDED');});
 test('07 contract: other users session resource => 404',async()=>{const a=await login();const b=await login('B-0');assert.equal((await request('/sessions/'+b.cookie.slice(4),{method:'DELETE',cookie:a.cookie})).status,404);});
 test('08 contract: platform admin without tenant can use platform route',async()=>{
-  db.prepare("UPDATE users SET platform_role='platform_admin' WHERE id=1").run();const p=await login('platform-fixture');
+  db.prepare("UPDATE users SET platform_role='admin' WHERE id=1").run();const p=await login('platform-fixture');
   assert.equal((await request('/platform/session',{cookie:p.cookie})).status,200);assert.equal((await request('/me',{cookie:p.cookie})).status,200);code(await request('/users',{cookie:p.cookie}),409,'TENANT_NOT_SELECTED');
 });
 test('09 fixation: pre-login cookie is never promoted',async()=>{
@@ -142,7 +142,7 @@ test('26 migration v1 -> v2 refuses implicit startup and invalidates every legac
     await ensureSchema(copy,{...settings,allowAutoMigrate:true});
     assert.equal(copy.prepare('SELECT count(*) n FROM sessions').get().n,0);
     assert.equal(copy.prepare('PRAGMA table_info(sessions)').all().some(c=>c.name==='token'),false);
-    assert.equal(copy.prepare('SELECT MAX(version) v FROM schema_migrations').get().v,3);
+    assert.equal(copy.prepare('SELECT MAX(version) v FROM schema_migrations').get().v,4);
     assert.deepEqual(copy.pragma('foreign_key_check'),[]);
   }finally{copy.close();}
 });

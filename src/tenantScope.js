@@ -1,5 +1,6 @@
 import {scoped} from './routeScopeMarker.js';
 import {readSession,sessionError,sendSessionError} from './sessionStore.js';
+import {can} from './capabilities.js';
 let defaults;
 export function configureTenantScope(database,enabled){defaults={database,enabled};}
 export function resolveTenantScope(req,options=defaults){
@@ -9,11 +10,14 @@ export function resolveTenantScope(req,options=defaults){
   const session=readSession(req,{database,enabled});
   if(req.user&&req.user.id!==session.user_id)throw sessionError(401,'SESSION_INVALID');
   const user={id:session.user_id,username:session.username,role:session.role,platform_role:session.platform_role};
-  if(mode==='platform'&&user.platform_role!=='platform_admin')throw sessionError(403,'PLATFORM_FORBIDDEN');
+  if(mode==='platform'&&!can(user,'tenant.list',{kind:'platform'}).ok)throw sessionError(403,'CAPABILITY_MISSING');
   if(mode!=='tenant')return Object.freeze({tenantId:session.active_tenant_id,userId:user.id,role:user.role,user,session,mode});
-  const tenantId=enabled?session.active_tenant_id:'default';
+  const platform=can(user,'tenant.list',{kind:'platform'}).ok;
+  if(platform&&!session.grant)throw sessionError(409,'TENANT_NOT_SELECTED',{reason:'GRANT_REQUIRED'});
+  const tenantId=session.grant?.tenant_id||(enabled?session.active_tenant_id:'default');
   if(!tenantId)throw sessionError(409,'TENANT_NOT_SELECTED',!database.prepare('SELECT 1 FROM tenant_members WHERE user_id=? LIMIT 1').get(user.id)?{reason:'NO_MEMBERSHIP'}:{});
   for(const source of [req.params,req.query,req.body])if(source&&Object.hasOwn(source,'tenant_id')&&source.tenant_id!==tenantId)throw sessionError(403,'TENANT_FORBIDDEN');
+  if(session.grant){const decision=can(user,['GET','HEAD','OPTIONS',undefined].includes(req.method)?'content.read':'content.write',{tenantId,grant:session.grant});if(!decision.ok)throw sessionError(403,decision.code);return Object.freeze({tenantId,userId:user.id,role:'platform_grant',user,session,grant:session.grant,mode});}
   const membership=database.prepare(`SELECT m.role,t.status FROM tenant_members m JOIN tenants t ON t.id=m.tenant_id WHERE m.tenant_id=? AND m.user_id=?`).get(tenantId,user.id);
   if(enabled&&!membership)throw sessionError(403,'TENANT_FORBIDDEN',{select_tenant:true});
   if(enabled&&membership.status==='suspended')throw sessionError(403,'TENANT_SUSPENDED');
@@ -27,4 +31,8 @@ function middleware(mode){return scoped(function tenantScopeMiddleware(req,res,n
 export const requireTenantScope=middleware('tenant');
 export const requireSessionScope=middleware('session');
 export const requirePlatformScope=middleware('platform');
-export function resolveHandshake(req){return tenantResolver.resolve(req,{...defaults,mode:'tenant'});}
+export function resolveHandshake(req){
+  const scope=tenantResolver.resolve(req,{...defaults,mode:'tenant'});
+  if(scope.grant)throw sessionError(403,'CAPABILITY_MISSING');
+  return scope;
+}

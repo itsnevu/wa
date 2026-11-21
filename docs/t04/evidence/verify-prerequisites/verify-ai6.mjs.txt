@@ -1,0 +1,7 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai6.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+[db] admin dibuat: harness-admin
+[schema] {"version":3,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai6-0yBMJq\\migration-backups\\pre-t01-ef9ea718-88ab-4c91-8dd4-c401b9ce018b.sqlite","backupCount":1,"backupBytes":4096}
+PASS ai6: Chrome screenshots for settings/usage thresholds/event alert/number badge/console/products/orders/logs/mobile; save, product create, order status, test no send, resume endpoint; exit 0
+

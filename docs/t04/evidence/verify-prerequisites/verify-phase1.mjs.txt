@@ -1,0 +1,25 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-phase1.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+[db] admin dibuat: phase1
+[schema] {"version":3,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase1-hjJl0X\\migration-backups\\pre-t01-c83df128-7446-4b21-8a91-1bb0c69caaae.sqlite","backupCount":1,"backupBytes":4096}
+{
+  "syntax": "OK",
+  "lockout": [
+    401,
+    401,
+    401,
+    401,
+    401,
+    429
+  ],
+  "passwordOldRejectedNewAccepted": true,
+  "usernameChanged": true,
+  "duplicateUsernameRejected": true,
+  "minimumPassword": 12,
+  "secureCookie": true,
+  "logoutAllTwoSessions": true,
+  "unauthenticatedRejected": true,
+  "isolatedDatabase": true
+}
+

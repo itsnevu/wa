@@ -1,0 +1,24 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-module-guide.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+ai: 8 steps, Indonesian copy, visible targets
+dashboard: 6 steps, Indonesian copy, visible targets
+chats: 23 steps, Indonesian copy, visible targets
+numbers: 5 steps, Indonesian copy, visible targets
+rules: 8 steps, Indonesian copy, visible targets
+templates: 5 steps, Indonesian copy, visible targets
+labels: 6 steps, Indonesian copy, visible targets
+agents: 4 steps, Indonesian copy, visible targets
+notifications: 2 steps, Indonesian copy, visible targets
+search: 4 steps, Indonesian copy, visible targets
+monitor: 4 steps, Indonesian copy, visible targets
+account: 4 steps, Indonesian copy, visible targets
+backups: 5 steps, Indonesian copy, visible targets
+Driver.js 1.14.0: local assets match installed package
+GET /: 200 text/html; charset=utf-8
+GET /module-guide.js: 200 text/javascript; charset=utf-8
+GET /module-guide.css: 200 text/css; charset=utf-8
+GET /vendor/driver/driver.js.mjs: 200 text/javascript; charset=utf-8
+GET /vendor/driver/driver.css: 200 text/css; charset=utf-8
+PASS: module coverage, hidden target filtering, navigation cleanup, local assets, HTTP serving; exit 0
+

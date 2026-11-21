@@ -381,11 +381,5 @@ export const pending=[
     "path": "/media/*",
     "pr": "T08",
     "alasan": "Rute legacy: scope tenant dikerjakan pada T08; perilaku tetap pada T02."
-  },
-  {
-    "method": "GET",
-    "path": "/api/platform/session",
-    "pr": "T04",
-    "alasan": "Operational identity now requires T04 capability authorization."
   }
 ];

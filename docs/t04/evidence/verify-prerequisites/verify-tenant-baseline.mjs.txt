@@ -1,0 +1,159 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-tenant-baseline.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+command: node scripts/verify-tenant-baseline.mjs
+baseline: 5c033e42231fa7dff1e81bd2b39ba91c3e17ae06
+inner command: node --test tests/tenant-t01.test.mjs
+exit: 1
+✖ expand/backfill/contract preserves rows, indexes, FKs; backup first; idempotent (0.8124ms)
+✖ backup failure leaves schema unchanged (0.293ms)
+✖ resolver matrix: authoritative session, membership, status, spoofing, revocation (0.9459ms)
+✖ failed verification rolls all schema changes back and restores FK enforcement (0.3417ms)
+✖ production database COPY: all resource counts preserved, zero unscoped rows (0.5271ms)
+✖ fresh bootstrap, legacy writes, restart, and activation fail closed before DB creation (103.8194ms)
+✖ complete A/B fixture: every resource scoped; tenant-local keys; cross-tenant relations rejected (0.5977ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 0
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 197.8267
+
+✖ failing tests:
+
+test at tests\tenant-t01.test.mjs:27:1
+✖ expand/backfill/contract preserves rows, indexes, FKs; backup first; idempotent (0.8124ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-pUmeZ6\artifacts\t01-baseline-rBrpuk\src\tenantMigration.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-pUmeZ6\artifacts\t01-baseline-rBrpuk\tests\tenant-t01.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-pUmeZ6/artifacts/t01-baseline-rBrpuk/src/tenantMigration.js'
+  }
+
+test at tests\tenant-t01.test.mjs:54:1
+✖ backup failure leaves schema unchanged (0.293ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-pUmeZ6\artifacts\t01-baseline-rBrpuk\src\tenantMigration.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-pUmeZ6\artifacts\t01-baseline-rBrpuk\tests\tenant-t01.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-pUmeZ6/artifacts/t01-baseline-rBrpuk/src/tenantMigration.js'
+  }
+
+test at tests\tenant-t01.test.mjs:66:1
+✖ resolver matrix: authoritative session, membership, status, spoofing, revocation (0.9459ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-pUmeZ6\artifacts\t01-baseline-rBrpuk\src\tenantMigration.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-pUmeZ6\artifacts\t01-baseline-rBrpuk\tests\tenant-t01.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-pUmeZ6/artifacts/t01-baseline-rBrpuk/src/tenantMigration.js'
+  }
+
+test at tests\tenant-t01.test.mjs:99:1
+✖ failed verification rolls all schema changes back and restores FK enforcement (0.3417ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-pUmeZ6\artifacts\t01-baseline-rBrpuk\src\tenantMigration.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-pUmeZ6\artifacts\t01-baseline-rBrpuk\tests\tenant-t01.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-pUmeZ6/artifacts/t01-baseline-rBrpuk/src/tenantMigration.js'
+  }
+
+test at tests\tenant-t01.test.mjs:113:1
+✖ production database COPY: all resource counts preserved, zero unscoped rows (0.5271ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-pUmeZ6\artifacts\t01-baseline-rBrpuk\src\tenantMigration.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-pUmeZ6\artifacts\t01-baseline-rBrpuk\tests\tenant-t01.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-pUmeZ6/artifacts/t01-baseline-rBrpuk/src/tenantMigration.js'
+  }
+
+test at tests\tenant-t01.test.mjs:144:1
+✖ fresh bootstrap, legacy writes, restart, and activation fail closed before DB creation (103.8194ms)
+  AssertionError [ERR_ASSERTION]: C:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:5
+  	return this[cppdb].prepare(sql, this, false, false);
+  	                   ^
+  
+  SqliteError: no such column: tenant_id
+      at Database.prepare (C:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
+      at file:///C:/Users/user/wa-suite/artifacts/t03-regression-pUmeZ6/artifacts/t01-baseline-rBrpuk/[eval1]:6:13 {
+    code: 'SQLITE_ERROR'
+  }
+  
+  Node.js v24.19.0
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/artifacts/t03-regression-pUmeZ6/artifacts/t01-baseline-rBrpuk/tests/tenant-t01.test.mjs:156:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t01.test.mjs:168:1
+✖ complete A/B fixture: every resource scoped; tenant-local keys; cross-tenant relations rejected (0.5977ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\artifacts\t03-regression-pUmeZ6\artifacts\t01-baseline-rBrpuk\src\tenantMigration.js' imported from C:\Users\user\wa-suite\artifacts\t03-regression-pUmeZ6\artifacts\t01-baseline-rBrpuk\tests\tenant-t01.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/artifacts/t03-regression-pUmeZ6/artifacts/t01-baseline-rBrpuk/src/tenantMigration.js'
+  }
+

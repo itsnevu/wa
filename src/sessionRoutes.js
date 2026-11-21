@@ -1,21 +1,27 @@
 import {db} from './db.js';
 import {config} from './config.js';
-import {requireSessionScope,requirePlatformScope} from './tenantScope.js';
+import {requireSessionScope} from './tenantScope.js';
+import {can,CAPABILITIES} from './capabilities.js';
 import {createSession,writeSessionCookie,sendSessionError,sessionError,revokeSession} from './sessionStore.js';
 export function mountSessionRoutes(api){
   api.get('/me',requireSessionScope,(req,res)=>{
     const s=req.tenantScope;
-    const tenants=db.prepare('SELECT t.id,t.name,t.status,m.role FROM tenant_members m JOIN tenants t ON t.id=m.tenant_id WHERE m.user_id=? ORDER BY t.id').all(s.userId);
-    res.json({user:s.user,tenants,active_tenant_id:s.session.active_tenant_id,tenant_mode:config.multitenantEnabled,passMin:config.passMin});
+    const capabilities=CAPABILITIES.filter(c=>can(s.user,c,{kind:'platform'}).ok);
+    const tenants=capabilities.includes('tenant.list')
+      ? db.prepare('SELECT id,name,slug,status FROM tenants WHERE deleted_at IS NULL ORDER BY id').all()
+      : db.prepare('SELECT t.id,t.name,t.status,m.role FROM tenant_members m JOIN tenants t ON t.id=m.tenant_id WHERE m.user_id=? AND t.deleted_at IS NULL ORDER BY t.id').all(s.userId);
+    const grant=s.session.grant;
+    res.json({user:{...s.user,capabilities},tenants,platform_grant:grant?{id:grant.id,tenant_id:grant.tenant_id,expires_at:grant.expires_at,capabilities:JSON.parse(grant.capabilities_json)}:null,active_tenant_id:s.session.active_tenant_id,tenant_mode:config.multitenantEnabled,passMin:config.passMin});
   });
   api.post('/tenant/switch',requireSessionScope,(req,res)=>{
     try{
+      if(can(req.user,'tenant.list',{kind:'platform'}).ok)throw sessionError(403,'CAPABILITY_MISSING');
       const id=req.body?.tenant_id;
       if(typeof id!=='string'||!id)throw sessionError(403,'TENANT_FORBIDDEN');
       const next=db.transaction(()=>{
-        const member=db.prepare('SELECT t.status FROM tenant_members m JOIN tenants t ON t.id=m.tenant_id WHERE m.user_id=? AND m.tenant_id=?').get(req.user.id,id);
+        const member=db.prepare('SELECT t.status,t.deleted_at FROM tenant_members m JOIN tenants t ON t.id=m.tenant_id WHERE m.user_id=? AND m.tenant_id=?').get(req.user.id,id);
         if(!member)throw sessionError(403,'TENANT_FORBIDDEN');
-        if(member.status==='suspended')throw sessionError(403,'TENANT_SUSPENDED');
+        if(member.status==='suspended'||member.deleted_at)throw sessionError(403,'TENANT_SUSPENDED');
         return createSession(req.user.id,req,{priorId:req.tenantScope.session.id,tenantId:id});
       }).immediate();
       writeSessionCookie(res,next);res.json({ok:true,active_tenant_id:id});
@@ -32,5 +38,4 @@ export function mountSessionRoutes(api){
     if(target.id===req.tenantScope.session.id)res.setHeader('Set-Cookie',`sid=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${config.secureCookie?'; Secure':''}`);
     res.json({ok:true});
   });
-  api.get('/platform/session',(req,res,next)=>requirePlatformScope(req,res,next),(req,res)=>res.json({user:req.user,platform:true}));
 }

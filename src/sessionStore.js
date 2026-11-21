@@ -1,5 +1,6 @@
 import {randomBytes,createHash} from 'node:crypto';
 import {config} from './config.js';
+import {inspectGrant} from './platformGrantState.js';
 let db;
 export function configureSessionStore(database){db=database;}
 export const GRACE_MS=0;
@@ -28,9 +29,15 @@ export function readSession(req,{database=db,enabled=config.multitenantEnabled,n
   const id=cookieId(req);
   const row=id?database.prepare(`SELECT s.*,u.username,u.role,u.platform_role,u.auth_version AS current_auth_version
     FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.id=?`).get(id):null;
+  if(row?.revocation_reason?.startsWith('TENANT_SUSPENDED:')){
+    const tenantId=row.revocation_reason.slice('TENANT_SUSPENDED:'.length);
+    const tenant=database.prepare('SELECT status,deleted_at FROM tenants WHERE id=?').get(tenantId);
+    if(tenant?.status==='suspended'||tenant?.deleted_at)throw sessionError(403,'TENANT_SUSPENDED');
+  }
   if(!row||row.revoked_at!==null||row.expires_at<=now)throw sessionError(401,'SESSION_INVALID');
+  if(row.platform_grant_id){const state=inspectGrant(database,row,req,now);if(state.error)throw sessionError(state.error==='TENANT_SUSPENDED'?403:409,state.error);row.grant=state.grant;}
   // Membership is authority, even when a change was made directly in SQL.
-  if(enabled&&row.active_tenant_id&&!database.prepare('SELECT 1 FROM tenant_members WHERE tenant_id=? AND user_id=?').get(row.active_tenant_id,row.user_id)){
+  if(enabled&&!row.grant&&row.active_tenant_id&&!database.prepare('SELECT 1 FROM tenant_members WHERE tenant_id=? AND user_id=?').get(row.active_tenant_id,row.user_id)){
     const replacement=createSession(row.user_id,req,{priorId:row.id,tenantId:null,database,now});
     throw sessionError(403,'TENANT_FORBIDDEN',{select_tenant:true,replacement});
   }

@@ -1,0 +1,22 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-phase2.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+[db] admin dibuat: harness-admin
+[schema] {"version":3,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase2-NX6YKk\\migration-backups\\pre-t01-be9b541c-4089-43ea-ba16-a0a904a34c10.sqlite","backupCount":1,"backupBytes":4096}
+{
+  "phase": 2,
+  "syntax": "OK",
+  "fakeMessagesThroughProductionHandler": 4,
+  "firstDatabaseAndUiName": "Budi",
+  "httpChatName": "Nama Diperbarui",
+  "uiChatLabel": "Nama Diperbarui",
+  "missingPushNamePreservesName": true,
+  "unnamedFallsBackToPn": true,
+  "priorityNamePnLid": true,
+  "isolatedDatabase": true
+}
+[in] 123456789@lid | fromMe= false | conversation
+[in] 123456789@lid | fromMe= false | conversation
+[in] 123456789@lid | fromMe= false | conversation
+[in] 987654321@lid | fromMe= false | conversation
+

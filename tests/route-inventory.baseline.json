@@ -6,7 +6,7 @@
     "T08": 4,
     "T13": 5,
     "T07": 1,
-    "T04": 1
+    "T04": 0
   },
   "entries": [
     "DELETE /api/backups/:name",
@@ -37,7 +37,6 @@
     "GET /api/numbers/:id/quota",
     "GET /api/numbers/:id/rules",
     "GET /api/orders",
-    "GET /api/platform/session",
     "GET /api/search",
     "GET /api/templates",
     "PATCH /api/chats/:chatId/assign",

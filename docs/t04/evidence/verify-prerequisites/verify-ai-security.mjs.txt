@@ -1,0 +1,7 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai-security.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+[db] admin dibuat: harness-admin
+[schema] {"version":3,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai-security-Nb2cJG\\migration-backups\\pre-t01-878c5b0a-b750-402f-aeab-d27c4aae8ff7.sqlite","backupCount":1,"backupBytes":4096}
+PASS ai-security: owner PATCH/resume 403, provider/base_url/api_key/model 400 for everyone, hidden from GET, DB values ignored, env host+key+model used, allowlist enforced; exit 0
+

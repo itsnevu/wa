@@ -1,0 +1,27 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-phase3.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+[db] admin dibuat: harness-admin
+[schema] {"version":4,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase3-GVcdwq\\migration-backups\\pre-t01-40dface1-af6f-4617-b10b-8b8ad776a0fd.sqlite","backupCount":1,"backupBytes":4096}
+{
+  "phase": 3,
+  "syntax": "OK",
+  "assignedNotificationsA": 1,
+  "assignedNotificationsB": 0,
+  "webSocketRecipients": [
+    1,
+    0
+  ],
+  "mineA": 1,
+  "mineBOwnNumber": 0,
+  "mineBForeignNumberStatus": 403,
+  "notificationsReadOnPanelOpen": true,
+  "badgeCleared": true,
+  "unassignAndOutgoingNoNotification": true,
+  "isolatedDatabase": true
+}
+[in] 123456789@lid | fromMe= false | conversation
+[in] 123456789@lid | fromMe= false | conversation
+[in] 123456789@lid | fromMe= false | conversation
+[in] 123456789@lid | fromMe= true | conversation
+

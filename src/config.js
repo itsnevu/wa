@@ -4,6 +4,8 @@ import {fileURLToPath} from 'node:url';
 import {assertStaticBoundary} from './staticBoundary.js';
 
 export const config = {
+  platformGrantTtlMinutes:Math.max(1,Number.parseInt(process.env.PLATFORM_GRANT_TTL_MINUTES||'60',10)||60),
+  platformGrantTtlMaxMinutes:Math.min(480,Math.max(1,Number.parseInt(process.env.PLATFORM_GRANT_TTL_MAX_MINUTES||'480',10)||480)),
   allowAutoMigrate: process.env.ALLOW_AUTO_MIGRATE === '1',
   migrationBackupKeep: Math.max(1, Number.parseInt(process.env.MIGRATION_BACKUP_KEEP || '5',10) || 5),
   multitenantEnabled: process.env.MULTITENANT_ENABLED === '1',

@@ -1,0 +1,23 @@
+command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-media.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 0
+✔ legacy path nomor B ditolak untuk A; tidak boleh ada fallback static (1017.3894ms)
+✔ penerbitan URL mengecek sesi dan akses chat, termasuk admin (56.396ms)
+✔ URL valid terikat pengguna, tetap membutuhkan sesi, dan private/no-store (63.0815ms)
+✔ signature, pengguna, expiry, UUID dan query duplikat tidak dapat diubah (106.2304ms)
+✔ ownership dicek ulang setelah URL diterbitkan dan registry mismatch ditolak (62.6514ms)
+✔ HTML aktif dipaksa unduh dan disandbox; URL basename tidak dipublikasikan (30.8904ms)
+✔ path traversal mentah, encoded, backslash dan path Windows ditolak (78.1942ms)
+✔ registry backfill stabil dan tidak menimpa ownership; pesan baru ikut terdaftar (406.0369ms)
+✔ file hilang ditolak tanpa membocorkan path filesystem (15.119ms)
+✔ symlink di media menuju luar direktori tidak bisa diunduh (14.6703ms)
+✔ flag nonaktif menutup akses media, tidak menghidupkan static lama (812.7994ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2694.0985
+

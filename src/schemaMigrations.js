@@ -5,8 +5,9 @@ import { bootstrapLegacy } from './legacySchema.js';
 import { tenantMigrationDone, backupBeforeTenantMigration, migrationBackupStats } from './tenantMigration.js';
 import {migrateSessionSchema} from './sessionMigration.js';
 import {migrateMembershipFix} from './membershipFixMigration.js';
+import {migratePlatformSchema} from './platformMigration.js';
 
-export const SCHEMA_VERSION=3;
+export const SCHEMA_VERSION=4;
 export const VERSION_TABLE=`CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY, name TEXT NOT NULL, fingerprint TEXT NOT NULL, applied_at INTEGER NOT NULL)`;
 const known=JSON.parse(fs.readFileSync(new URL('./schema-fingerprints.json',import.meta.url),'utf8'));
 export async function ensureSchema(db,config) {
@@ -16,8 +17,8 @@ export async function ensureSchema(db,config) {
   if(hasVersion) {
     const versions=db.prepare('SELECT * FROM schema_migrations ORDER BY version').all();
     fromVersion=versions.at(-1)?.version;
-    if(![1,2,3].includes(fromVersion)||versions.length!==fromVersion||versions.some((r,i)=>r.version!==i+1))throw Error('Schema version mismatch; no migration registered for this version');
-    const expected=fromVersion===1?known.v1:fromVersion===2?known.v2:known.current;
+    if(![1,2,3,4].includes(fromVersion)||versions.length!==fromVersion||versions.some((r,i)=>r.version!==i+1))throw Error('Schema version mismatch; no migration registered for this version');
+    const expected=fromVersion===1?known.v1:fromVersion===2?known.v2:fromVersion===3?known.v3:known.current;
     if(actual!==expected||versions.at(-1).fingerprint!==expected||versions[0].fingerprint!==known.v1)throw Error('Schema fingerprint mismatch; startup refused');
     if(fromVersion===SCHEMA_VERSION)return;
   }
@@ -34,10 +35,11 @@ export async function ensureSchema(db,config) {
       if(!fromVersion&&!tenantMigrationDone(db)) migrateTenantSchemaLocked(db,{backup});
       if(!fromVersion){db.exec(VERSION_TABLE);db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(1,'T01',known.v1,Date.now());}
       if(fromVersion<2){migrateSessionSchema(db);db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(2,'T03 sessions',known.v2,Date.now());}
-      migrateMembershipFix(db);
+      if(fromVersion<3){migrateMembershipFix(db);db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(3,'T04 prerequisites',known.v3,Date.now());}
+      migratePlatformSchema(db);
       if(schemaFingerprint(db)!==known.current) throw Error('Unexpected migrated schema fingerprint');
       if(db.pragma('foreign_key_check').length) throw Error('Schema migration foreign key verification failed');
-      db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(SCHEMA_VERSION,'T04 prerequisites',known.current,Date.now());
+      db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(SCHEMA_VERSION,'T04 platform',known.current,Date.now());
     }).immediate();
   } finally {db.pragma(`foreign_keys = ${fk?'ON':'OFF'}`);}
   console.log('[schema]',JSON.stringify({version:SCHEMA_VERSION,backup,...migrationBackupStats(dir)}));

@@ -1,0 +1,347 @@
+﻿command: node --test tests/tenant-t04.test.mjs
+SHA: f6bf7dc09c879e314dcfd9def935381e3a7a08c1
+exit: 1
+✖ 01 capability role matrix: platform admin has no implicit content access (1.2951ms)
+✖ 02 tenant admin denied on every platform endpoint; platform no grant on tenant route =>409 (60.1374ms)
+✔ 03 platform /me with null tenant works and includes tenant list (44.5619ms)
+✖ 04 enter rejects missing/short/long reason and excessive TTL (46.5416ms)
+✖ 05 enter persists session-bound readonly grant and write is READ_ONLY_SCOPE (28.0554ms)
+✖ 06 elevate permits write; leave revokes and tenant route becomes 409 (34.8089ms)
+✖ 07 expiry returns GRANT_EXPIRED once, resets session and audits once (44.192ms)
+✖ 08 tenant A grant never authorizes tenant B (61.5874ms)
+✖ 09 other device of same actor never inherits grant (77.2424ms)
+✖ 10 suspend invalidates grants and member sessions; reactivate requires fresh grant (92.322ms)
+✖ 11 loss of platform role revokes grants and session (46.2934ms)
+✖ 12 grant last_seen throttles to once per 60 seconds (46.4801ms)
+✖ 13 every mandatory action has exactly one correct before/after audit (46.0987ms)
+✖ 14 audit rejects UPDATE and DELETE (47.4215ms)
+✖ 15 owner audit is tenant-bound and redacts before/after (109.3932ms)
+✖ 16 tenant_admin cannot read owner audit (46.2382ms)
+✖ 17 invalid/reserved/duplicate slug and bad owner email rejected; unknown owner invited (46.8333ms)
+✖ 18 delete requires valid signed slug confirmation (41.4561ms)
+✖ 19 cursor snapshot is complete and duplicate-free during concurrent inserts (83.2729ms)
+✖ 20 platform role changes increment auth_version and force login (39.8366ms)
+✔ 21 T03 lifecycle works and pending T03 stays zero (57.9159ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 2
+ℹ fail 19
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1700.9476
+
+✖ failing tests:
+
+test at tests\tenant-t04.test.mjs:20:1
+✖ 01 capability role matrix: platform admin has no implicit content access (1.2951ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\Users\user\wa-suite\src\capabilities.js' imported from C:\Users\user\wa-suite\tests\tenant-t04.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///C:/Users/user/wa-suite/src/capabilities.js'
+  }
+
+test at tests\tenant-t04.test.mjs:27:1
+✖ 02 tenant admin denied on every platform endpoint; platform no grant on tenant route =>409 (60.1374ms)
+  AssertionError [ERR_ASSERTION]: GET /platform/tenants
+  
+  404 !== 403
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:29:605)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:33:1
+✖ 04 enter rejects missing/short/long reason and excessive TTL (46.5416ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 400
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:33:212)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:34:1
+✖ 05 enter persists session-bound readonly grant and write is READ_ONLY_SCOPE (28.0554ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 200
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:34:146)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:35:1
+✖ 06 elevate permits write; leave revokes and tenant route becomes 409 (34.8089ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 200
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:35:210)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:36:1
+✖ 07 expiry returns GRANT_EXPIRED once, resets session and audits once (44.192ms)
+  Error [SqliteError]: no such table: platform_grants
+      at Database.exec (C:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:9:14)
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:36:127)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'SQLITE_ERROR'
+  }
+
+test at tests\tenant-t04.test.mjs:37:1
+✖ 08 tenant A grant never authorizes tenant B (61.5874ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 403
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:37:155)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:38:1
+✖ 09 other device of same actor never inherits grant (77.2424ms)
+  Error [SqliteError]: no such column: platform_grant_id
+      at Database.prepare (C:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:38:208)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'SQLITE_ERROR'
+  }
+
+test at tests\tenant-t04.test.mjs:39:1
+✖ 10 suspend invalidates grants and member sessions; reactivate requires fresh grant (92.322ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 200
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:39:172)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:40:1
+✖ 11 loss of platform role revokes grants and session (46.2934ms)
+  Error [SqliteError]: CHECK constraint failed: platform_role IS NULL OR platform_role='platform_admin'
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:40:170)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'SQLITE_CONSTRAINT_CHECK'
+  }
+
+test at tests\tenant-t04.test.mjs:41:1
+✖ 12 grant last_seen throttles to once per 60 seconds (46.4801ms)
+  Error [SqliteError]: no such table: platform_grants
+      at Database.exec (C:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:9:14)
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:41:110)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'SQLITE_ERROR'
+  }
+
+test at tests\tenant-t04.test.mjs:42:1
+✖ 13 every mandatory action has exactly one correct before/after audit (46.0987ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 201
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:43:182)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 201,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:53:1
+✖ 14 audit rejects UPDATE and DELETE (47.4215ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /append.only/i. Input:
+  
+  'SqliteError: no such table: platform_audit'
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:53:97)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: SqliteError: no such table: platform_audit
+        at Database.exec (C:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:9:14)
+        at file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:53:111
+        at getActual (node:assert:611:5)
+        at strict.throws (node:assert:759:24)
+        at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:53:97)
+        at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+        at async Test.run (node:internal/test_runner/test:1389:7)
+        at async Test.processPendingSubtests (node:internal/test_runner/test:960:7),
+    expected: /append.only/i,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:54:1
+✖ 15 owner audit is tenant-bound and redacts before/after (109.3932ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 200
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:54:235)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:55:1
+✖ 16 tenant_admin cannot read owner audit (46.2382ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 403
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:55:157)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:56:1
+✖ 17 invalid/reserved/duplicate slug and bad owner email rejected; unknown owner invited (46.8333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 400
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:56:272)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:57:1
+✖ 18 delete requires valid signed slug confirmation (41.4561ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 400
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:57:145)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:58:1
+✖ 19 cursor snapshot is complete and duplicate-free during concurrent inserts (83.2729ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 200
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:58:226)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\tenant-t04.test.mjs:59:1
+✖ 20 platform role changes increment auth_version and force login (39.8366ms)
+  Error [SqliteError]: CHECK constraint failed: platform_role IS NULL OR platform_role='platform_admin'
+      at Database.exec (C:\Users\user\wa-suite\node_modules\better-sqlite3\lib\methods\wrappers.js:9:14)
+      at TestContext.<anonymous> (file:///C:/Users/user/wa-suite/tests/tenant-t04.test.mjs:59:195)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'SQLITE_CONSTRAINT_CHECK'
+  }

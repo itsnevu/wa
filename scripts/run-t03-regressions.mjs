@@ -7,8 +7,8 @@ const root=process.cwd();const work=fs.mkdtempSync(path.join(root,'artifacts','t
 const output=path.join(root,'docs',process.argv[3]||'t03','evidence',`verify-${phase}`);fs.mkdirSync(output,{recursive:true});
 const sha=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 const files=execFileSync('git',['ls-files','-z'],{encoding:'utf8'}).split('\0').filter(Boolean);
-function addSources(dir){for(const entry of fs.readdirSync(path.join(root,dir),{withFileTypes:true})){const relative=path.join(dir,entry.name);if(entry.isDirectory())addSources(relative);else if(/\.(js|mjs|json)$/.test(entry.name)&&!files.includes(relative.replaceAll('\\','/')))files.push(relative);}}
-for(const dir of ['src','scripts','tests'])addSources(dir);
+function addSources(dir){for(const entry of fs.readdirSync(path.join(root,dir),{withFileTypes:true})){const relative=path.join(dir,entry.name);if(entry.isDirectory())addSources(relative);else if(/\.(js|mjs|json|css)$/.test(entry.name)&&!files.includes(relative.replaceAll('\\','/')))files.push(relative);}}
+for(const dir of ['src','scripts','tests','public'])addSources(dir);
 for(const file of files){if(file.startsWith('artifacts/'))continue;const target=path.join(work,file);fs.mkdirSync(path.dirname(target),{recursive:true});fs.copyFileSync(path.join(root,file),target);}
 fs.cpSync(path.join(root,'node_modules','driver.js'),path.join(work,'node_modules','driver.js'),{recursive:true});
 fs.mkdirSync(path.join(work,'data'),{recursive:true});

@@ -303,6 +303,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 <link rel="stylesheet" href="/vendor/driver/driver.css" />
 <link rel="stylesheet" href="/module-guide.css" />
 <link rel="stylesheet" href="/ai.css" />
+<link rel="stylesheet" href="/platform.css" />
 </head>
 <body>
 <div id="sessionNotice" class="hidden" role="alert"></div>
@@ -429,6 +430,8 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
   </div>
 </div>
 
+<section id="platformPanel" class="hidden" aria-labelledby="platformTitle"></section>
+<script src="/platform.js"></script>
 <script src="/media.js"></script>
 <script>
 const $ = (s) => document.querySelector(s);
@@ -526,7 +529,7 @@ async function call(method, url, body) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     if (res.status === 401 && url !== '/login') showLogin();
-    if (res.status === 409 && data.code === 'TENANT_NOT_SELECTED') { if(data.reason==='NO_MEMBERSHIP')state.tenants=[]; showTenantPicker(state.tenants || []); }
+    if (res.status === 409 && data.code === 'TENANT_NOT_SELECTED' && !url.startsWith('/platform/')) { if(data.reason==='NO_MEMBERSHIP')state.tenants=[]; showTenantPicker(state.tenants || []); }
     if (res.status === 403 && data.select_tenant) {
       const session = await fetch('/api/me').then(r => r.json()).catch(() => ({}));
       state.tenants = session.tenants || [];
@@ -546,13 +549,22 @@ async function call(method, url, body) {
   return data;
 }
 
+const ownerInvitation = new URLSearchParams(location.hash.slice(1)).get('owner-invite');
+
 function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
 function showLogin() {
+  $('#platformPanel').classList.add('hidden');
   $('#sessionNotice').classList.add('hidden');
   $('#app').classList.add('hidden');
   $('#tenantPicker').classList.add('hidden');
   $('#login').classList.remove('hidden');
+  if (ownerInvitation) {
+    $('#login h3').textContent = 'Aktifkan akun pemilik';
+    $('#login .login-intro').textContent = 'Buat username dan password untuk menerima undangan workspace.';
+    $('#login button').textContent = 'Aktifkan akun';
+    $('#p').autocomplete = 'new-password';
+  }
   state.me = null;
   state.tenants = [];
 }
@@ -584,9 +596,15 @@ $('#tenantLogout').onclick = async () => {
 };
 
 async function boot() {
+  if (ownerInvitation) { showLogin(); return; }
   try {
     const out = await call('GET', '/me');
     state.me = out.user; state.passMin = out.passMin || 12; state.tenants = out.tenants || [];
+    if (out.user.capabilities?.includes('tenant.list')) {
+      $('#login').classList.add('hidden');
+      showPlatform(out.platform_grant);
+      return;
+    }
     if (out.tenant_mode) {
       const active = state.tenants.find(tenant => tenant.id === out.active_tenant_id);
       if (!active || active.status !== 'active') {
@@ -601,7 +619,14 @@ async function boot() {
       button.onclick = async () => { const session = await call('GET','/me'); state.tenants = session.tenants; showTenantPicker(state.tenants); };
       $('#app .rail').append(button);
     }
-  } catch (error) { if (error.status !== 409 && error.status !== 403) showLogin(); return; }
+    if (state.tenants.some(tenant => tenant.id === out.active_tenant_id && tenant.role === 'owner') && !$('#btnTenantAudit')) {
+      const button = document.createElement('button');
+      button.id = 'btnTenantAudit'; button.type = 'button'; button.textContent = 'Audit workspace';
+      button.setAttribute('aria-label', 'Audit workspace');
+      button.onclick = () => showOwnerAudit();
+      $('#app .rail').append(button);
+    }
+  } catch (error) { if (error.code === 'GRANT_EXPIRED') { await boot(); return; } if (error.status !== 409 && error.status !== 403) showLogin(); return; }
   $('#app').classList.remove('hidden');
   await loadNumbers(); await loadTemplates(); await loadLabels();
   await loadNotificationCount();
@@ -1088,7 +1113,13 @@ $('#qrRetry').onclick = () => { if (currentQrNumber) showQr(currentQrNumber); };
 
 $('#login').onsubmit = async (e) => {
   e.preventDefault();
-  try { await call('POST', '/login', { username: $('#u').value, password: $('#p').value }); location.reload(); }
+  const credentials = {username: $('#u').value, password: $('#p').value};
+  if (ownerInvitation) credentials.invitation_token = ownerInvitation;
+  try {
+    await call('POST', '/login', credentials);
+    if (ownerInvitation) history.replaceState(null, '', location.pathname + location.search);
+    location.reload();
+  }
   catch (err) { $('#lerr').textContent = err.message; }
 };
 

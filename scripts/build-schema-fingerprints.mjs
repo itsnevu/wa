@@ -6,6 +6,7 @@ import {schemaFingerprint} from '../src/schemaFingerprint.js';
 import {migrateTenantSchemaLocked} from '../src/tenantMigration.js';
 import {migrateSessionSchema} from '../src/sessionMigration.js';
 import {migrateMembershipFix} from '../src/membershipFixMigration.js';
+import {migratePlatformSchema} from '../src/platformMigration.js';
 const db=new Database(':memory:');
 const legacy={empty:schemaFingerprint(db)};
 bootstrapLegacy(db,{adminUser:'schema-fixture',adminPass:'schema-fixture-password'});
@@ -19,6 +20,7 @@ db.exec('CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY, name TEXT N
 const v1=schemaFingerprint(db);
 db.transaction(()=>migrateSessionSchema(db)).immediate();
 const v2=schemaFingerprint(db);migrateMembershipFix(db);
+const v3=schemaFingerprint(db);db.transaction(()=>migratePlatformSchema(db)).immediate();
 const current=schemaFingerprint(db);
-fs.writeFileSync('src/schema-fingerprints.json',JSON.stringify({legacy,t01,v1,v2,current},null,2)+'\n');
+fs.writeFileSync('src/schema-fingerprints.json',JSON.stringify({legacy,t01,v1,v2,v3,current},null,2)+'\n');
 db.close();

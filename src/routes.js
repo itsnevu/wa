@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db, q } from './db.js';
-import { login, logout, setCookie, clearCookie, currentUser, requireAuth, requireAdmin, canAccessNumber } from './auth.js';
+import { acceptOwnerInvitation, login, logout, setCookie, clearCookie, requireAuth, requireAdmin, canAccessNumber } from './auth.js';
 import { hashPassword, verifyPassword } from './passwords.js';
 import * as guard from './loginGuard.js';
 import * as wa from './wa.js';
@@ -13,19 +13,22 @@ import { aiApi } from './ai/routes.js';
 import { issueMediaUrl, mediaError } from './media.js';
 import {requireSessionScope,requireTenantScope} from './tenantScope.js';
 import {mountSessionRoutes} from './sessionRoutes.js';
+import {platformApi,mountOwnerAudit} from './platformRoutes.js';
+
+
 
 export const api = Router();
 
 api.get('/health', (_req, res) => res.json({ ok: true }));
 
 api.post('/login', (req, res) => {
-  const { username, password } = req.body || {};
+  const { username, password, invitation_token } = req.body || {};
   if (typeof username !== 'string' || typeof password !== 'string') return res.status(400).json({ error: 'username dan password wajib' });
   if (guard.blocked(username, req.ip)) return res.status(429).json({ error: 'terlalu banyak percobaan, coba lagi nanti' });
-  const out = login(username, password,req);
+  const out = invitation_token === undefined ? login(username, password, req) : acceptOwnerInvitation(invitation_token, username.trim(), password, req);
   if (!out) {
     guard.fail(username, req.ip);
-    return res.status(401).json({ error: 'username atau password salah' });
+    return res.status(401).json({ error: invitation_token === undefined ? 'username atau password salah' : 'Undangan atau kredensial aktivasi tidak valid' });
   }
   guard.reset(username, req.ip);
   setCookie(res, out.token, out.expires);
@@ -36,6 +39,30 @@ api.post('/login', (req, res) => {
 api.post('/logout',requireSessionScope, (req, res) => { logout(req); clearCookie(res); res.json({ ok: true }); });
 
 mountSessionRoutes(api);
+api.use('/platform',platformApi);
+mountOwnerAudit(api);
+
+api.post('/password',requireSessionScope, (req, res) => {
+  const { old, next } = req.body || {};
+  if (typeof next !== 'string' || next.length < config.passMin) return res.status(400).json({ error: `password minimal ${config.passMin} karakter` });
+  const row = q.userByName.get(req.user.username);
+  if (!row || !verifyPassword(String(old || ''), row.pass)) return res.status(401).json({ error: 'password lama salah' });
+  q.setUserPass.run(hashPassword(next), req.user.id);
+  res.json({ ok: true });
+});
+
+api.post('/logout-all',requireSessionScope, (req, res) => {
+  q.deleteAllSessions.run(req.user.id);
+  clearCookie(res);
+  res.json({ ok: true });
+});
+
+api.patch('/me',requireSessionScope, (req, res) => {
+  const name = String(req.body?.username || '').trim();
+  if (name.length < 3) return res.status(400).json({ error: 'username minimal 3 karakter' });
+  try { q.setUsername.run(name, req.user.id); res.json({ ok: true }); }
+  catch { res.status(400).json({ error: 'username sudah dipakai' }); }
+});
 
 api.use(requireAuth);
 api.use(aiApi);
@@ -65,27 +92,6 @@ api.get('/search', (req, res) => {
   res.json(rows);
 });
 
-api.post('/password',requireSessionScope, (req, res) => {
-  const { old, next } = req.body || {};
-  if (typeof next !== 'string' || next.length < config.passMin) return res.status(400).json({ error: `password minimal ${config.passMin} karakter` });
-  const row = q.userByName.get(req.user.username);
-  if (!row || !verifyPassword(String(old || ''), row.pass)) return res.status(401).json({ error: 'password lama salah' });
-  q.setUserPass.run(hashPassword(next), req.user.id);
-  res.json({ ok: true });
-});
-
-api.post('/logout-all',requireSessionScope, (req, res) => {
-  q.deleteAllSessions.run(req.user.id);
-  clearCookie(res);
-  res.json({ ok: true });
-});
-
-api.patch('/me',requireSessionScope, (req, res) => {
-  const name = String(req.body?.username || '').trim();
-  if (name.length < 3) return res.status(400).json({ error: 'username minimal 3 karakter' });
-  try { q.setUsername.run(name, req.user.id); res.json({ ok: true }); }
-  catch { res.status(400).json({ error: 'username sudah dipakai' }); }
-});
 
 api.get('/backups', requireAdmin, (_req, res) => res.json(backup.list()));
 
@@ -112,7 +118,10 @@ api.get('/numbers', (req, res) => {
   const rows = req.user.role === 'admin' ? q.allNumbers.all() : q.numbersByOwner.all(req.user.id);
   const day = limits.aiDay();
   const stopped = db.prepare("SELECT number_id FROM ai_alerts WHERE day=? AND level='stop'").all(day);
-  res.json(rows.map(n=>({...n,ai_stopped:stopped.some(a=>a.number_id===n.id)})));
+  res.json(rows.map(({ id, name, phone, status, owner_id, created_at, last_seen, tenant_id }) => ({
+    id, name, phone, status, owner_id, created_at, last_seen, tenant_id,
+    ai_stopped: stopped.some(alert => alert.number_id === id),
+  })));
 });
 
 api.post('/numbers', requireAdmin, (req, res) => {
