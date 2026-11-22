@@ -68,3 +68,11 @@
 .da-legend small { color:var(--da-ink-2); text-align:right; font-variant-numeric:tabular-nums; }
 /* Aging table: let the long first column wrap instead of forcing a horizontal scroll. */
 .da-scroll td:first-child { white-space:normal; min-width:7rem; }
+/* v9: per-day schedule */
+.da-week { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; width:100%; }
+.da-day { display:grid; gap:4px; margin:0; padding:8px; border:1px solid var(--line); border-radius:var(--r); min-width:0; }
+.da-day legend { font-weight:600; font-size:.85rem; padding:0 4px; }
+.da-day input[type=time] { width:100%; max-width:none; }
+.da-closed { display:flex !important; align-items:center; gap:6px; }
+.da-hours textarea { width:100%; box-sizing:border-box; font:inherit; }
+.da-hours > label:has(textarea) { flex-basis:100%; }

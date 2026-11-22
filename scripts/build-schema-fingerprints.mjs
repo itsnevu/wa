@@ -12,6 +12,7 @@ import {migrateSessionHealth} from '../src/sessionHealthMigration.js';
 import {migrateDeals} from '../src/dealMigration.js';
 import {migrateDealReview} from '../src/dealReviewMigration.js';
 import {migrateDealAnalytics} from '../src/dealAnalyticsMigration.js';
+import {migrateDealAnalyticsV9} from '../src/dealAnalyticsV9Migration.js';
 const db=new Database(':memory:');
 const legacy={empty:schemaFingerprint(db)};
 bootstrapLegacy(db,{adminUser:'schema-fixture',adminPass:'schema-fixture-password'});
@@ -39,8 +40,10 @@ function versionFingerprint(version) {
   if (version >= 9) ddl[`v${version}`] = schemaDdlHash(db);
   return schemaFingerprint(db);
 }
-const current=versionFingerprint(8);
+const v8=versionFingerprint(8);
+db.transaction(()=>migrateDealAnalyticsV9(db,{businessStart:0,businessEnd:0})).immediate();
+const current=versionFingerprint(9);
 fs.writeFileSync('src/schema-fingerprints.json',JSON.stringify({
-  legacy,t01,v1,v2,v3,v4,v5,v6,v7,current,...(Object.keys(ddl).length ? {ddl} : {}),
+  legacy,t01,v1,v2,v3,v4,v5,v6,v7,v8,current,...(Object.keys(ddl).length ? {ddl} : {}),
 },null,2)+'\n');
 db.close();

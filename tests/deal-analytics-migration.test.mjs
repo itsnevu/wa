@@ -10,7 +10,8 @@ import test from 'node:test';
 import Database from 'better-sqlite3';
 import { buildV7 } from './v7-fixture.mjs';
 import { schemaFingerprint } from '../src/schemaFingerprint.js';
-import { schemaDdlHash } from '../src/schemaDdlHash.js';
+import { schemaDdlHash, verifySchemaDdl } from '../src/schemaDdlHash.js';
+import { SCHEMA_VERSION } from '../src/schemaMigrations.js';
 import { childClose, stopFixtureChild } from './child-fixture.mjs';
 
 // Tests 11 and 12: a genuine v7 database with data migrates to v8 once, a second run changes nothing,
@@ -66,7 +67,7 @@ test('11a. v7 -> v8 pada salinan berisi data: versi, fingerprint, backup, baris 
   const after = counts(db);
   const delta = Object.fromEntries(tables.map(t=>[t,after[t]-before[t]]));
   console.log('MIGRATION v7->v8', JSON.stringify({ ms:Math.round(migrationMs),before,after,delta }));
-  assert.deepEqual(db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(r=>r.version),[1,2,3,4,5,6,7,8]);
+  assert.deepEqual(db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(r=>r.version),[1,2,3,4,5,6,7,8,9]);
   assert.equal(schemaFingerprint(db),known.current);
   assert.equal(db.pragma('integrity_check',{ simple:true }),'ok');
   assert.deepEqual(db.pragma('foreign_key_check'),[]);
@@ -160,7 +161,7 @@ test('12. rollback: backup otomatis dipulihkan sebagai v7 yang valid, server men
   const refused = await startServer(restored,{ ALLOW_AUTO_MIGRATE:'0' });
   console.log('ROLLBACK start without ALLOW_AUTO_MIGRATE:', refused.exited, refused.out.match(/Schema version[^\n]*/)?.[0]);
   assert.notEqual(refused.exited,0); assert.equal(refused.healthy,undefined);
-  assert.match(refused.out,/Schema version 7 != 8/);
+  assert.match(refused.out,new RegExp(`Schema version 7 != ${SCHEMA_VERSION}`));
   const startedOk = await startServer(restored,{ ALLOW_AUTO_MIGRATE:'1' });
   console.log('ROLLBACK start with ALLOW_AUTO_MIGRATE=1: healthy =',startedOk.healthy);
   assert.equal(startedOk.healthy,true,startedOk.out.slice(-800));
@@ -193,38 +194,43 @@ async function withDdlCopy(change, verify) {
   assert.deepEqual(await fs.promises.readdir(root), [], 'no v8-drift fixture remains after the child closes');
 }
 
-const storedHash = db.prepare('SELECT hash FROM schema_ddl_hash WHERE version=8').pluck().get();
+const HASHED = SCHEMA_VERSION;
+const storedHash = db.prepare('SELECT hash FROM schema_ddl_hash WHERE version=?').pluck().get(HASHED);
 function assertDdlRefusal(out, recorded, current) {
   assert.equal(out.exited, 1);
   assert.equal(out.healthy, undefined);
-  assert.ok(out.out.includes(`Schema DDL hash mismatch for version 8; recorded hash ${recorded}; current hash ${current}`), out.out);
+  assert.ok(out.out.includes(`Schema DDL hash mismatch for version ${HASHED}; recorded hash ${recorded}; current hash ${current}`), out.out);
   assert.match(out.out, /Restore a verified backup or rerun the migration on a copy/);
   console.log(out.out.split('\n').find(line => line.startsWith('Error: Schema DDL hash mismatch')));
 }
 
 test('G4.1 catatan hash berbeda menolak startup dan memberi langkah pemulihan', async () => {
   const bad = '0'.repeat(64);
-  await withDdlCopy(`UPDATE schema_ddl_hash SET hash='${bad}' WHERE version=8`,
+  await withDdlCopy(`UPDATE schema_ddl_hash SET hash='${bad}' WHERE version=${HASHED}`,
     (out, _file, hash) => assertDdlRefusal(out, bad, hash));
 });
 
-test('G4.2 v8 lama dicatat grandfathered, dan drift sesudahnya memberi peringatan', async () => {
-  await withDdlCopy('DROP TABLE schema_ddl_hash', async (out, file, hash) => {
-    assert.equal(out.healthy, true, out.out);
-    assert.match(out.out, /DDL version 8 grandfathered/);
-    const copy = new Database(file);
-    let updated;
+test('G4.2 v8 tanpa catatan dicatat grandfathered (hanya peringatan), versi ber-hash tanpa catatan ditolak', async () => {
+  // Mechanism level: a v8-era database without a ledger is grandfathered and drift only warns.
+  const legacy = new Database(':memory:');
+  try {
+    legacy.exec(db.prepare("SELECT group_concat(sql,';') FROM sqlite_master WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name!='schema_ddl_hash'").pluck().get());
+    const warnings=[]; const warn=console.warn; console.warn=(...m)=>warnings.push(m.join(' '));
     try {
-      assert.deepEqual(copy.prepare('SELECT version, hash, grandfathered FROM schema_ddl_hash').all(), [
-        { version: 8, hash, grandfathered: 1 },
-      ]);
-      copy.exec('CREATE INDEX g4_legacy_drift ON deals(amount)');
-      updated = schemaDdlHash(copy);
-    } finally { copy.close(); }
-    const startup = await startServer(path.dirname(file), { ALLOW_AUTO_MIGRATE:'0' });
-    assert.equal(startup.healthy, true, startup.out);
-    assert.ok(startup.out.includes(`grandfathered; recorded hash ${hash}; current hash ${updated}`));
-    console.log(startup.out.split('\n').find(line => line.includes('grandfathered')));
+      const first=verifySchemaDdl(legacy,8);
+      assert.deepEqual(legacy.prepare('SELECT version,hash,grandfathered FROM schema_ddl_hash').all(),[{version:8,hash:first.hash,grandfathered:1}]);
+      legacy.exec('CREATE INDEX g4_legacy_drift ON deals(amount)');
+      const drifted=schemaDdlHash(legacy);
+      verifySchemaDdl(legacy,8);
+      assert.ok(warnings.some(w=>w.includes(`grandfathered; recorded hash ${first.hash}; current hash ${drifted}`)),warnings.join(' | '));
+      assert.throws(()=>verifySchemaDdl(legacy,8,{upgrading:true}),/Schema DDL hash mismatch for version 8/);
+      console.log(warnings.find(w=>w.includes('current hash')));
+    } finally { console.warn=warn; }
+  } finally { legacy.close(); }
+  // Strict from v9: a hashed version whose ledger is missing refuses to start.
+  await withDdlCopy('DROP TABLE schema_ddl_hash', (out) => {
+    assert.equal(out.exited, 1); assert.equal(out.healthy, undefined);
+    assert.ok(out.out.includes(`Schema DDL hash mismatch for version ${HASHED}; recorded hash (missing)`), out.out);
   });
 });
 
@@ -240,7 +246,7 @@ test('G4.4 perubahan indeks pada versi ber-hash menolak startup', async () => {
 
 test('G4.5 health memaparkan versi dan hash DDL aktif', async () => {
   await withDdlCopy('', (out, _file, hash) => {
-    assert.deepEqual(out.health, { ok: true, schema_version: 8, schema_ddl_hash: hash });
+    assert.deepEqual(out.health, { ok: true, schema_version: HASHED, schema_ddl_hash: hash });
     assert.equal(hash, storedHash);
     console.log('HEALTH', JSON.stringify(out.health));
   });

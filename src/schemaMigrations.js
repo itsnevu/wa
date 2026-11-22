@@ -16,7 +16,9 @@ import { migrateDealReview } from './dealReviewMigration.js';
 
 import { migrateDealAnalytics } from './dealAnalyticsMigration.js';
 
-export const SCHEMA_VERSION=8;
+import { migrateDealAnalyticsV9 } from './dealAnalyticsV9Migration.js';
+
+export const SCHEMA_VERSION=9;
 export const VERSION_TABLE=`CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY, name TEXT NOT NULL, fingerprint TEXT NOT NULL, applied_at INTEGER NOT NULL)`;
 const known=JSON.parse(fs.readFileSync(new URL('./schema-fingerprints.json',import.meta.url),'utf8'));
 export async function ensureSchema(db,config) {
@@ -26,13 +28,15 @@ export async function ensureSchema(db,config) {
   if(hasVersion) {
     const versions=db.prepare('SELECT * FROM schema_migrations ORDER BY version').all();
     fromVersion=versions.at(-1)?.version;
-    if(![1,2,3,4,5,6,7,8].includes(fromVersion)||versions.length!==fromVersion||versions.some((r,i)=>r.version!==i+1))throw Error('Schema version mismatch; no migration registered for this version');
-    const expected=fromVersion===1?known.v1:fromVersion===2?known.v2:fromVersion===3?known.v3:fromVersion===4?known.v4:fromVersion===5?known.v5:fromVersion===6?known.v6:fromVersion===7?known.v7:known.current;
+    if(![1,2,3,4,5,6,7,8,9].includes(fromVersion)||versions.length!==fromVersion||versions.some((r,i)=>r.version!==i+1))throw Error('Schema version mismatch; no migration registered for this version');
+    const expected=fromVersion===1?known.v1:fromVersion===2?known.v2:fromVersion===3?known.v3:fromVersion===4?known.v4:fromVersion===5?known.v5:fromVersion===6?known.v6:fromVersion===7?known.v7:fromVersion===8?known.v8:known.current;
     if(actual!==expected||versions.at(-1).fingerprint!==expected||versions[0].fingerprint!==known.v1)throw Error('Schema fingerprint mismatch; startup refused');
     if(fromVersion===SCHEMA_VERSION)return db.transaction(()=>verifySchemaDdl(db,fromVersion)).immediate();
   }
   if(!hasVersion&&!Object.values(known.legacy).includes(actual) && actual!==known.t01) throw Error('Schema fingerprint mismatch before migration; startup refused');
   if(!config.allowAutoMigrate) throw Error(`Schema version ${fromVersion} != ${SCHEMA_VERSION}; run ALLOW_AUTO_MIGRATE=1 node scripts/migrate-schema.mjs during maintenance`);
+  // A v8 database upgraded straight to v9 still gets its v8 DDL recorded (grandfathered) for the audit trail.
+  if(fromVersion===8) db.transaction(()=>verifySchemaDdl(db,8)).immediate();
   const beforeDdlHash=schemaDdlHash(db);
   const dir=path.join(config.dataDir,'migration-backups');
   const backup=await backupBeforeTenantMigration(db,dir,config.migrationBackupKeep);
@@ -51,10 +55,11 @@ export async function ensureSchema(db,config) {
       if(fromVersion<5){migrateSessionHealth(db);db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(5,'Session sync health',known.v5,Date.now());}
       if(fromVersion<6){migrateDeals(db);db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(6,'Deal foundation',known.v6,Date.now());}
       if(fromVersion<7){migrateDealReview(db);db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(7,'Deal review',known.v7,Date.now());}
-      migrateDealAnalytics(db);
+      if(fromVersion<8){migrateDealAnalytics(db);db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(8,'Deal analytics',known.v8,Date.now());}
+      migrateDealAnalyticsV9(db,config);
       if(schemaFingerprint(db)!==known.current) throw Error('Unexpected migrated schema fingerprint');
       if(db.pragma('foreign_key_check').length) throw Error('Schema migration foreign key verification failed');
-      db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(SCHEMA_VERSION,'Deal analytics',known.current,Date.now());
+      db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(SCHEMA_VERSION,'Analytics corrections',known.current,Date.now());
       return recordSchemaDdl(db,SCHEMA_VERSION);
     }).immediate();
   } finally {db.pragma(`foreign_keys = ${fk?'ON':'OFF'}`);}

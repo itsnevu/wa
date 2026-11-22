@@ -48,8 +48,11 @@ const decide = (d,decision,at,extra={}) => {
 const message = (d,fromMe,ts,extra={}) => db.prepare(`INSERT INTO messages(number_id,chat_id,tenant_id,from_me,body,ts,agent_id,analytics_source)
   VALUES(?,?,?,?,?,?,?,?)`).run(d.number,d.chat,d.tenant,fromMe,'isi chat rahasia',ts,extra.agent ?? null,extra.source ?? null);
 const summary = (scope=ownerA,range=RANGE) => A.tenantDealAnalytics(scope,range).summary;
-// Opening hours come from server config until v9; only the time zone is stored per tenant.
-const hours = () => { config.businessStart = 9; config.businessEnd = 17; return A.configureDealHours(ownerA,{ timezone:'Asia/Jakarta' }); };
+// v9: per-weekday schedule (0=Monday) and holidays are stored per tenant.
+const week = (open=540,close=1020,closed=[]) => Array.from({length:7},(_,weekday)=>({ weekday,open_min:open,close_min:close,closed:closed.includes(weekday) }));
+const hours = (extra={}) => A.configureDealHours(ownerA,{ timezone:'Asia/Jakarta',days:week(),...extra });
+const H = 3600000;
+const writes = () => db.prepare("SELECT (SELECT count(*) FROM deal_events)+(SELECT count(*) FROM deal_unanswered_marks) n").get().n;
 
 async function request(path,{ cookie,method='GET',body }={}) {
   const r = await fetch(base+path,{ method,headers:{ 'Content-Type':'application/json',...(cookie?{cookie}:{}) },
@@ -64,23 +67,27 @@ async function login(username) {
   return r.headers.get('set-cookie').split(';')[0];
 }
 
-test('1. pesan di luar jam operasional tidak menurunkan closing_rate; balasan dan keputusan tidak hitung ganda', () => {
+test('1. pesan di luar jam operasional tidak menurunkan closing_rate; ambang 4 jam operasional; tidak hitung ganda', () => {
   hours();
   const won = deal(); decide(won,'verified_lunas',MONDAY+DAY);
   const night = deal(); message(night,0,OUTSIDE);
   const day = deal(); message(day,0,INSIDE);
-  // Injected clock: before 24 hours nothing is recorded yet.
-  assert.equal(A.sweepUnanswered('A',INSIDE+DAY-1),0);
+  // Injected clock: just under 4 operating hours nothing is recorded.
+  assert.equal(A.sweepUnanswered('A',INSIDE+4*H-10*60000),0);
+  assert.equal(summary().counts.qualified_unanswered,0);
+  assert.equal(A.sweepUnanswered('A',INSIDE+4*H+10*60000),1);
   let s = summary();
   assert.equal(s.counts.qualified_unanswered,1);
   assert.deepEqual([s.closing_rate.numerator,s.closing_rate.n],[1,2]);
   assert.ok(!A.insideBusinessHours(OUTSIDE,A.businessHours('A')));
-  // Repeated reads stay idempotent.
+  // The night message never counts and the job is idempotent.
+  assert.equal(A.sweepUnanswered('A',NOW),0);
   assert.equal(A.sweepUnanswered('A',NOW),0);
   // A later reply clears it; a new inbound inside hours may count again, still once per deal.
   message(day,1,INSIDE+2*DAY,{ agent:10,source:'human' });
   assert.equal(summary().counts.qualified_unanswered,0);
   message(day,0,INSIDE+3*DAY);
+  assert.equal(A.sweepUnanswered('A',NOW),1);
   assert.equal(summary().counts.qualified_unanswered,1);
   // Final decision replaces unanswered (no double count in the denominator).
   decide(day,'rejected',INSIDE+4*DAY,{ reason_code:'harga_tidak_cocok' });
@@ -88,6 +95,38 @@ test('1. pesan di luar jam operasional tidak menurunkan closing_rate; balasan da
   assert.equal(s.counts.qualified_unanswered,0);
   assert.equal(s.counts.rejected,1);
   assert.equal(s.closing_rate.n,2);
+});
+
+test('1b. jadwal per hari dan hari libur: waktu tutup dan libur tidak dihitung sebagai jam operasional', () => {
+  // Saturday (5) and Sunday (6) closed; Monday 2026-03-09 is a holiday.
+  hours({ days:week(540,1020,[5,6]),holidays:[{ day:'2026-03-09',label:'Libur' }] });
+  const h = A.businessHours('A');
+  assert.equal(h.days[5].closed,true); assert.deepEqual(h.holidays,[{ day:'2026-03-09',label:'Libur' }]);
+  // Friday 2026-03-06 16:00 WIB = 09:00 UTC: 1 operating hour left on Friday.
+  const fri = Date.UTC(2026,2,6,9); const d = deal(); message(d,0,fri);
+  assert.equal(A.sweepUnanswered('A',Date.UTC(2026,2,8,12)),0,'weekend closed');
+  assert.equal(A.sweepUnanswered('A',Date.UTC(2026,2,9,9)),0,'Monday is a holiday');
+  // Tuesday 09:00 WIB + 3h -> 12:00 WIB = 05:00 UTC. Before: 0, after: 1.
+  assert.equal(A.sweepUnanswered('A',Date.UTC(2026,2,10,4,50)),0);
+  assert.equal(A.sweepUnanswered('A',Date.UTC(2026,2,10,5,10)),1);
+  assert.ok(!A.insideBusinessHours(Date.UTC(2026,2,9,4),h),'holiday is never inside');
+});
+
+test('1c. ambang hanya untuk candidate, awaiting_proof, dp_aktif', () => {
+  hours();
+  const states = ['candidate','awaiting_proof','dp_aktif','proof_submitted','expired'];
+  const deals = states.map(state=>{ const d=deal(); if (state!=='candidate') decide(d,state,MONDAY); message(d,0,INSIDE); return d; });
+  assert.equal(A.sweepUnanswered('A',NOW),3);
+  const marked = db.prepare("SELECT deal_id FROM deal_unanswered_marks").pluck().all();
+  assert.deepEqual(marked.sort((x,y)=>x-y),deals.slice(0,3).map(d=>d.id));
+});
+
+test('1d. membuka dashboard tidak menulis apa pun', () => {
+  hours();
+  const d = deal(); message(d,0,INSIDE);
+  const before = writes();
+  summary(); A.tenantDealAnalytics(ownerA,RANGE); A.exportDealAnalytics(ownerA,RANGE);
+  assert.equal(writes(),before);
 });
 
 test('2. DP aktif di luar penyebut closing, DP hangus di dalam; open_deals dan dp_share', () => {
@@ -119,10 +158,19 @@ test('3. refund menurunkan neto, bruto dan riwayat pelunasan tetap', () => {
   assert.throws(()=>A.recordAnalyticsOutcome(adminA,won.id,{ ...body,amount:5 },MONDAY+2*DAY),/sudah dipakai/);
   assert.throws(()=>A.recordAnalyticsOutcome(adminA,won.id,{ ...body,amount:800000,request_id:'refund-0002' },MONDAY+2*DAY),/melebihi/);
   const s = summary();
-  assert.deepEqual(s.revenue,{ gross:1000000,net:700000,refund:300000,n:1 });
+  assert.deepEqual(s.revenue,{ gross:1000000,net:700000,refund:300000,cash_in:0,amount_mismatch:1,n:1 });
   assert.equal(s.counts.verified_lunas,1);
   assert.equal(s.closing_rate.numerator,1);
   assert.equal(s.aov.net,700000);
+});
+
+test('3b. bruto vs kas masuk dan amount_mismatch', () => {
+  const full = deal(); decide(full,'verified_lunas',MONDAY+DAY); db.prepare('UPDATE deals SET paid_amount=1000000 WHERE id=?').run(full.id);
+  const short = deal(); decide(short,'verified_lunas',MONDAY+DAY); db.prepare('UPDATE deals SET paid_amount=900000 WHERE id=?').run(short.id);
+  const r = summary().revenue;
+  assert.equal(r.gross,2000000);
+  assert.equal(r.cash_in,1900000);
+  assert.equal(r.amount_mismatch,1);
 });
 
 test('4. origin DP tetap DP setelah lunas', () => {

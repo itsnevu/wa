@@ -75,7 +75,10 @@
       const s = data.summary, f = s.funnel, h = data.hours;
       const trendMax = Math.max(1,...data.weekly.map(w => w.counts.verified_lunas));
       const labelEvery = Math.max(1,Math.ceil(data.weekly.length / (innerWidth < 600 ? 4 : 6)));
-      const schedule = h.start_min === h.end_min ? '24 jam' : `${hhmm(h.start_min)}–${hhmm(h.end_min)}`;
+      const DAYS = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+      const dayText = d => d.closed ? 'tutup' : (d.open_min === 0 && d.close_min === 1440 ? '24 jam' : `${hhmm(d.open_min)}–${hhmm(d.close_min % 1440)}`);
+      const schedule = h.days.every(d => dayText(d) === dayText(h.days[0])) ? `setiap hari ${dayText(h.days[0])}` : 'per hari (lihat pengaturan)';
+      const toMin = v => { const [hh,mm] = String(v).split(':').map(Number); return hh*60 + mm; };
       const reasonRows = Object.entries(s.reasons).sort((a,b) => b[1] - a[1]);
       root.innerHTML = `<section class="deal-analytics" aria-label="Analytics closing dan DP">
         <div class="da-toolbar">
@@ -108,6 +111,7 @@
           ${money('AOV bruto',s.aov.gross,s.aov.n,'per deal lunas')}
           ${money('Pendapatan bruto',s.revenue.gross,s.revenue.n,'sebelum refund')}
           ${money('Pendapatan neto',s.revenue.net,s.revenue.n,`refund ${rupiah(s.revenue.refund)}`)}
+          ${money('Kas masuk',s.revenue.cash_in,s.revenue.n,s.revenue.amount_mismatch ? `${s.revenue.amount_mismatch} deal kas masuk < tagihan` : 'sesuai tagihan')}
         </div>
         <div class="da-grid"${s.n === 0 ? ' hidden' : ''}>
           <article class="card"><h3>Tren mingguan (deal lunas)</h3>
@@ -135,10 +139,15 @@
         <details class="card"><summary>Jam operasional untuk “qualified tak terjawab”</summary>
           <form class="da-hours" data-hours>
             <label>Zona waktu (IANA)<input name="timezone" value="${esc(h.timezone)}" maxlength="64" required></label>
-            <button type="submit">Simpan zona waktu</button>
+            <div class="da-week">${h.days.map(d => `<fieldset class="da-day"><legend>${DAYS[d.weekday]}</legend>
+              <label>Buka<input type="time" name="open${d.weekday}" value="${hhmm(d.open_min % 1440)}" ${d.closed ? 'disabled' : ''}></label>
+              <label>Tutup<input type="time" name="close${d.weekday}" value="${hhmm(d.close_min % 1440)}" ${d.closed ? 'disabled' : ''}></label>
+              <label class="da-closed"><input type="checkbox" name="closed${d.weekday}" ${d.closed ? 'checked' : ''}> Tutup</label></fieldset>`).join('')}</div>
+            <label>Hari libur (satu per baris: YYYY-MM-DD keterangan)<textarea name="holidays" rows="3">${esc(h.holidays.map(x => (x.day + ' ' + (x.label ?? '')).trim()).join('\n'))}</textarea></label>
+            <button type="submit">Simpan jadwal</button>
           </form>
-          <p class="da-note">Jam buka ${schedule} saat ini mengikuti konfigurasi server. Jadwal per hari dan hari libur menyusul.</p>
-          <p class="da-note">Pesan masuk di luar jam ini tidak menurunkan closing rate. Pesan di dalam jam yang tidak dibalas 24 jam dihitung sekali per deal.</p>
+          <p class="da-note">Jam operasional: ${schedule}. Isi 00:00–00:00 untuk buka 24 jam.</p>
+          <p class="da-note">Pesan masuk di luar jam buka atau di hari libur tidak menurunkan closing rate. Pesan di dalam jam yang tidak dibalas selama 4 jam operasional dihitung sekali per deal.</p>
           <p class="da-feedback" role="status"></p></details>
       </section>`;
       root.querySelector('[data-weeks]').onchange = e => { weeks = Number(e.target.value); load(); };
@@ -147,7 +156,15 @@
         e.preventDefault();
         const form = new FormData(e.target), feedback = root.querySelector('.da-feedback');
         try {
-          await call('PATCH','/deals/analytics/hours',{ timezone:String(form.get('timezone')).trim() });
+          const days = h.days.map(d => {
+            const closed = form.get('closed' + d.weekday) === 'on';
+            let open = toMin(form.get('open' + d.weekday) ?? hhmm(d.open_min % 1440)), close = toMin(form.get('close' + d.weekday) ?? hhmm(d.close_min % 1440));
+            if (!closed && open === close) { open = 0; close = 1440; }
+            return { weekday:d.weekday,open_min:open,close_min:close,closed };
+          });
+          const holidays = String(form.get('holidays') || '').split('\n').map(l => l.trim()).filter(Boolean)
+            .map(l => { const [day,...rest] = l.split(/\s+/); return { day,label:rest.join(' ') || null }; });
+          await call('PATCH','/deals/analytics/hours',{ timezone:String(form.get('timezone')).trim(),days,holidays });
           load();
         } catch (err) { feedback.textContent = err.message; }
       };

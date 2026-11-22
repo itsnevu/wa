@@ -79,7 +79,7 @@ try {
       leaked:root.textContent.includes('3456-7890'), unknown:root.textContent.includes('Belum tercatat'),
       csv:root.querySelector('a[href^="/api/deals/analytics/export"]') !== null };
   })()`);
-  assert.equal(checks.kpis,8); assert.ok(checks.low>0,'n<10 badge visible'); assert.ok(checks.trend>=12);
+  assert.equal(checks.kpis,9); assert.ok(checks.low>0,'n<10 badge visible'); assert.ok(checks.trend>=12);
   assert.ok(checks.funnel); assert.ok(checks.csv); assert.ok(checks.unknown,'unknown attribution explicit');
   for (const [name,width,height] of [['desktop',1366,900],['360px',360,780]]) {
     await send('Emulation.setDeviceMetricsOverride',{ width,height,deviceScaleFactor:1,mobile:width===360 });

@@ -25,36 +25,80 @@ const latestInbound = db.prepare(`SELECT id,ts FROM messages WHERE tenant_id=? A
 const replied = db.prepare(`SELECT 1 FROM messages WHERE tenant_id=? AND chat_id=? AND from_me=1
   AND kind<>'call' AND id>? LIMIT 1`);
 const tenants = db.prepare("SELECT id FROM tenants WHERE deleted_at IS NULL");
+// v9: only these states can be "unanswered"; the threshold is measured in operating time.
 const openForReply = db.prepare(`SELECT d.id,d.chat_id FROM deals d WHERE d.tenant_id=?
-  AND d.state IN ('candidate','awaiting_proof','expired')`);
-const lastReplyMark = db.prepare(`SELECT type,payload_json FROM deal_events WHERE deal_id=?
-  AND type IN ('analytics_unanswered','analytics_answered') ORDER BY id DESC LIMIT 1`);
-// A qualified customer message counts as unanswered only after this much wall-clock time without any reply.
-export const UNANSWERED_AFTER = DAY;
+  AND d.state IN ('candidate','awaiting_proof','dp_aktif')`);
+const hoursRows = db.prepare('SELECT weekday,open_min,close_min,closed FROM tenant_business_hours WHERE tenant_id=? ORDER BY weekday');
+const holidayRows = db.prepare('SELECT day,label FROM tenant_holidays WHERE tenant_id=? ORDER BY day');
+const putHours = db.prepare(`INSERT INTO tenant_business_hours(tenant_id,weekday,open_min,close_min,closed) VALUES(?,?,?,?,?)
+  ON CONFLICT(tenant_id,weekday) DO UPDATE SET open_min=excluded.open_min,close_min=excluded.close_min,closed=excluded.closed`);
+const clearHolidays = db.prepare('DELETE FROM tenant_holidays WHERE tenant_id=?');
+const putHoliday = db.prepare('INSERT INTO tenant_holidays(tenant_id,day,label) VALUES(?,?,?)');
+const markUnanswered = db.prepare('INSERT OR IGNORE INTO deal_unanswered_marks(deal_id,bucket,created_at) VALUES(?,?,?)');
+const dealPaid = db.prepare('SELECT id,amount,paid_amount FROM deals WHERE tenant_id=? AND created_at>=? AND created_at<?');
+// A qualified customer message counts as unanswered after this much OPERATING time without a reply.
+// (24 hours remains an owner escalation, not a counting criterion.)
+export const UNANSWERED_AFTER = 4*60*60*1000;
+const STEP = 5*60*1000;
 const DIGITS = /\+?\d(?:[ .()-]*\d){6,}/g;
 
+const DAY_INDEX={Mon:0,Tue:1,Wed:2,Thu:3,Fri:4,Sat:5,Sun:6};
+function defaultDay(weekday) {
+  const open=config.businessStart===config.businessEnd?0:config.businessStart*60;
+  const close=config.businessStart===config.businessEnd?1440:config.businessEnd*60;
+  return {weekday,open_min:open,close_min:close,closed:false};
+}
+// Per-weekday schedule (0=Monday) and holidays, stored per tenant since v9.
 export function businessHours(tenantId) {
   const hours = tenantHours.get(tenantId);
   if (!hours) throw error(404,'Tenant tidak ditemukan.');
-  return {
-    timezone:hours.timezone,
-    start_min:config.businessStart*60,
-    end_min:config.businessEnd*60,
-    source:'server_config',
-  };
+  const stored = new Map(hoursRows.all(tenantId).map(r=>[r.weekday,{...r,closed:Boolean(r.closed)}]));
+  const days = Array.from({length:7},(_,w)=>stored.get(w) ?? defaultDay(w));
+  return { timezone:hours.timezone, days, holidays:holidayRows.all(tenantId), source:'tenant_schedule' };
 }
-export function insideBusinessHours(at,{timezone,start_min,end_min}) {
-  const parts = new Intl.DateTimeFormat('en-GB',{timeZone:timezone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(at);
-  const read = name => Number(parts.find(p=>p.type===name).value);
-  const minute = read('hour')*60+read('minute');
-  return start_min===end_min || (start_min<end_min ? minute>=start_min && minute<end_min : minute>=start_min || minute<end_min);
+function localParts(at,timezone) {
+  const p=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:timezone,year:'numeric',month:'2-digit',day:'2-digit',
+    weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(at).map(x=>[x.type,x.value]));
+  return {date:`${p.year}-${p.month}-${p.day}`,weekday:DAY_INDEX[p.weekday],minute:Number(p.hour)*60+Number(p.minute)};
 }
+export function insideBusinessHours(at,{timezone,days,holidays}) {
+  const {date,weekday,minute}=localParts(at,timezone);
+  if (holidays?.some(h=>h.day===date)) return false;
+  const d=days[weekday];
+  if (!d || d.closed) return false;
+  if (d.open_min===d.close_min) return false;
+  return d.open_min<d.close_min ? minute>=d.open_min && minute<d.close_min : minute>=d.open_min || minute<d.close_min;
+}
+// Operating time between two instants, sampled every 5 minutes and stopping once `cap` is reached.
+export function operatingElapsed(from,to,hours,cap=Infinity) {
+  let total=0;
+  for (let at=from; at<to && total<cap; at+=STEP) if (insideBusinessHours(at,hours)) total+=Math.min(STEP,to-at);
+  return total;
+}
+const HHMM=/^\d{1,4}$/;
 export function configureDealHours(scope,body) {
   authorizeDealAnalytics(scope);
-  const {timezone} = body || {};
+  const {timezone,days,holidays} = body || {};
   if (typeof timezone!=='string' || timezone.length>64) throw error(400,'Zona waktu tidak valid.');
   try { new Intl.DateTimeFormat('en-GB',{timeZone:timezone}); } catch { throw error(400,'Zona waktu IANA tidak valid.'); }
-  setTimezone.run(timezone,scope.tenantId);
+  if (days!==undefined && (!Array.isArray(days) || days.length!==7)) throw error(400,'Jadwal harus berisi 7 hari.');
+  for (const d of days ?? []) {
+    if (!Number.isInteger(d?.weekday) || d.weekday<0 || d.weekday>6 || !HHMM.test(String(d.open_min)) || !HHMM.test(String(d.close_min))
+      || d.open_min<0 || d.open_min>1440 || d.close_min<0 || d.close_min>1440 || (!d.closed && d.open_min===d.close_min)) {
+      throw error(400,'Jam buka/tutup tidak valid.');
+    }
+  }
+  if (holidays!==undefined && (!Array.isArray(holidays) || holidays.length>366)) throw error(400,'Daftar hari libur tidak valid.');
+  for (const h of holidays ?? []) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(h?.day ?? '') || Number.isNaN(Date.parse(h.day)) || (h.label!=null && String(h.label).length>80)) {
+      throw error(400,'Tanggal libur tidak valid.');
+    }
+  }
+  db.transaction(()=>{
+    setTimezone.run(timezone,scope.tenantId);
+    for (const d of days ?? []) putHours.run(scope.tenantId,d.weekday,d.open_min,d.close_min,d.closed?1:0);
+    if (holidays) { clearHolidays.run(scope.tenantId); for (const h of new Map(holidays.map(h=>[h.day,h])).values()) putHoliday.run(scope.tenantId,h.day,h.label ?? null); }
+  }).immediate();
   return businessHours(scope.tenantId);
 }
 
@@ -63,24 +107,33 @@ function pendingInbound(tenantId,chatId,now) {
   if (!inbound || inbound.ts>now || replied.get(tenantId,chatId,inbound.id)) return null;
   return inbound;
 }
-function alreadyMarked(dealId,inboundId) {
-  const last=lastReplyMark.get(dealId);
-  return last?.type==='analytics_unanswered' && JSON.parse(last.payload_json).inbound_id===inboundId;
-}
-// Writes replayable facts so the metric survives message retention. Only inbound messages received inside
-// tenant business hours are eligible; each inbound message is recorded at most once per deal.
+// Writes replayable facts so the metric survives message retention. Runs ONLY from the background job
+// (never from a read request). Idempotent through the unique (deal_id, bucket) mark.
 export const sweepUnanswered=db.transaction((tenantId,now=Date.now())=>{
   const hours=businessHours(tenantId);
   let recorded=0;
   for (const deal of openForReply.all(tenantId)) {
     const inbound=pendingInbound(tenantId,deal.chat_id,now);
-    if (!inbound || now-inbound.ts<UNANSWERED_AFTER || !insideBusinessHours(inbound.ts,hours)) continue;
-    if (alreadyMarked(deal.id,inbound.id)) continue;
-    appendDealEvent(deal.id,'analytics_unanswered',{eligible:true,inbound_id:inbound.id,inbound_at:inbound.ts,source:'sweep',...hours},null,now);
+    // Messages received outside the schedule (or on a holiday) never count; the 4h is operating time.
+    if (!inbound || !insideBusinessHours(inbound.ts,hours)) continue;
+    if (operatingElapsed(inbound.ts,now,hours,UNANSWERED_AFTER)<UNANSWERED_AFTER) continue;
+    if (!markUnanswered.run(deal.id,'inbound:'+inbound.id,now).changes) continue;
+    appendDealEvent(deal.id,'analytics_unanswered',{eligible:true,inbound_id:inbound.id,inbound_at:inbound.ts,source:'job',
+      threshold_ms:UNANSWERED_AFTER,timezone:hours.timezone},null,now);
     recorded++;
   }
   return recorded;
 });
+export function sweepAllUnanswered(now=Date.now()) {
+  let recorded=0;
+  for (const {id} of tenants.all()) recorded+=sweepUnanswered(id,now);
+  return recorded;
+}
+// 5-minute job; returns the interval handle so the caller can stop it on shutdown.
+export function startUnansweredJob(every=5*60*1000) {
+  const run=()=>{ try { sweepAllUnanswered(); } catch (err) { console.error('[analytics] unanswered sweep failed',err.message); } };
+  return setInterval(run,every).unref();
+}
 
 function readHistory(rows) {
   const facts = new Map();
@@ -146,16 +199,18 @@ function summarize(rows,now) {
   const funnel={inquiry:rows.length,qualified:0,candidate:0,proof:0,lunas:0};
   const closingTimes=[],queueAge=[],activeDP=[],forfeitedDP=[];
   const reasons={};
-  let gross=0,refund=0;
+  let gross=0,refund=0,cashIn=0,mismatch=0;
   for (const f of rows) {
     const settled=f.closedAt!=null;
     const lost=f.state==='dp_hangus' && f.everDP;
     const rejected=f.state==='rejected' && !settled;
-    const unattended=f.unanswered && ['candidate','awaiting_proof','expired','no_signal'].includes(f.state);
+    const unattended=f.unanswered && ['candidate','awaiting_proof','dp_aktif'].includes(f.state);
     if (settled) {
       counts.verified_lunas++; funnel.lunas++;
       counts[f.origin==='dp'?'settled_dp':'settled_direct']++;
       gross+=f.gross; refund+=f.refunded;
+      // Cash in comes from the recorded payments, never from OCR.
+      const paid=f.cashIn ?? 0; cashIn+=paid; if (paid<f.gross) mismatch++;
       closingTimes.push(Math.max(0,f.closedAt-f.opened));
     } else if (rejected) {
       counts.rejected++;
@@ -185,7 +240,7 @@ function summarize(rows,now) {
     dp_share:metric(dp_paid,money_in),dp_settle:metric(settled_dp,settled_dp+dp_hangus),
     open_deals:{value:dp_aktif+awaiting_proof,n:dp_aktif+awaiting_proof,dp_aktif,awaiting_proof},
     pending_verification:{value:pending_verification,n:pending_verification},
-    revenue:{gross,net:gross-refund,refund,n:verified_lunas},aov:{gross:verified_lunas?gross/verified_lunas:null,net:verified_lunas?(gross-refund)/verified_lunas:null,n:verified_lunas},
+    revenue:{gross,net:gross-refund,refund,cash_in:cashIn,amount_mismatch:mismatch,n:verified_lunas},aov:{gross:verified_lunas?gross/verified_lunas:null,net:verified_lunas?(gross-refund)/verified_lunas:null,n:verified_lunas},
     time_to_close:distribution(closingTimes),aging:{review:distribution(queueAge),dp_active:distribution(activeDP),dp_hangus:distribution(forfeitedDP)} };
 }
 
@@ -229,9 +284,10 @@ export function analyticsRange(query,now=Date.now(),exporting=false) {
   }
   return {from,to,now};
 }
+// Read-only: opening the dashboard must never write (v9).
 function scopedFacts(tenantId,{from,to,now}) {
-  sweepUnanswered(tenantId,now);
-  return readHistory(history.all(tenantId,from,to,now));
+  const money=new Map(dealPaid.all(tenantId,from,to).map(r=>[r.id,r]));
+  return readHistory(history.all(tenantId,from,to,now)).map(f=>({...f,cashIn:money.get(f.id)?.paid_amount ?? 0}));
 }
 export function tenantDealAnalytics(scope,range) {
   authorizeDealAnalytics(scope);
@@ -282,8 +338,8 @@ export const recordAnalyticsOutcome=db.transaction((scope,id,body,now=Date.now()
       if (!inbound) throw error(409,'Tidak ada pesan masuk yang masih menunggu jawaban.');
       const hours=businessHours(scope.tenantId);
       const eligible=insideBusinessHours(inbound.ts,hours);
-      if (alreadyMarked(id,inbound.id)) return {recorded:false,eligible};
-      appendDealEvent(id,'analytics_unanswered',{eligible,inbound_id:inbound.id,inbound_at:inbound.ts,source:'manual',...hours},scope.userId,now);
+      if (!markUnanswered.run(id,'inbound:'+inbound.id,now).changes) return {recorded:false,eligible};
+      appendDealEvent(id,'analytics_unanswered',{eligible,inbound_id:inbound.id,inbound_at:inbound.ts,source:'manual',timezone:hours.timezone},scope.userId,now);
       return {recorded:true,eligible};
     }
   } else throw error(400,'Aksi tidak dikenal.');

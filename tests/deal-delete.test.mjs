@@ -160,12 +160,12 @@ test('9. hapus user yang pernah memverifikasi -> berhasil, actor_label tetap', a
   assert.deepEqual([row.by,row.actor_label],[null,'A-1']);
 });
 
-test('10. tidak ada kode yang membaca open_min/close_min', () => {
+test('10. open_min/close_min hanya dibaca oleh jadwal operasional v9', () => {
   const hits = [];
   for (const dir of ['src','public']) for (const f of fs.readdirSync(dir,{ recursive:true })) {
     const file = path.join(dir,String(f));
     if (!/\.(m?js|html)$/.test(file) || !fs.statSync(file).isFile()) continue;
-    fs.readFileSync(file,'utf8').split('\n').forEach((line,i)=>{ if (/open_min|close_min/.test(line)) hits.push(`${file}:${i+1}`); });
+    fs.readFileSync(file,'utf8').split('\n').forEach((line,i)=>{ if (/open_min|close_min/.test(line) && !/dealAnalytics(V9Migration)?.js$|deal-analytics.js$/.test(file)) hits.push(`${file}:${i+1}`); });
   }
   assert.deepEqual(hits,[]);
 });

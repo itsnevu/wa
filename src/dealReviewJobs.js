@@ -70,6 +70,8 @@ export async function runDealReviewJobs({ now = Date.now(), sendReminder } = {})
           db.transaction(() => {
             delivered.run(now,tenant,entry.notice_key);
             appendDealEvent(entry.deal_id,'dp_reminder_skipped',{ kind:entry.kind,reason:'group_chat' },null,now);
+            // v9: queue for re-delivery to the buyer's DM once buyer_jid exists (v10).
+            db.prepare(`INSERT OR IGNORE INTO dp_reminder_rescan(tenant_id,deal_id,kind,status,created_at) VALUES(?,?,?,'awaiting_buyer_jid',?)`).run(tenant,entry.deal_id,entry.kind,now);
           }).immediate();
           continue;
         }
