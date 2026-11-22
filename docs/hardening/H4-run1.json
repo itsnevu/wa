@@ -1,0 +1,160 @@
+{
+  "at": "2026-11-22T17:53:22.992Z",
+  "node": "v24.19.0",
+  "files": 19,
+  "runs": 13,
+  "total_failures": 3,
+  "unique_failures": 1,
+  "hook_failures": 0,
+  "runs_with_failure": 3,
+  "leftover_temp_dirs": [],
+  "flakes": [
+    {
+      "test": "5. disconnect gagal -> baris tetap terhapus, kegagalan tercatat",
+      "occurrences": 3,
+      "runs": [
+        "seq-5",
+        "par-1",
+        "par-2"
+      ]
+    }
+  ],
+  "detail": [
+    {
+      "label": "seq-1",
+      "exit": 0,
+      "tests": 147,
+      "pass": 147,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25300,
+      "failed": []
+    },
+    {
+      "label": "seq-2",
+      "exit": 0,
+      "tests": 147,
+      "pass": 147,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25220,
+      "failed": []
+    },
+    {
+      "label": "seq-3",
+      "exit": 0,
+      "tests": 147,
+      "pass": 147,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25397,
+      "failed": []
+    },
+    {
+      "label": "seq-4",
+      "exit": 0,
+      "tests": 147,
+      "pass": 147,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25301,
+      "failed": []
+    },
+    {
+      "label": "seq-5",
+      "exit": 1,
+      "tests": 147,
+      "pass": 146,
+      "fail": 1,
+      "hook_failures": 0,
+      "duration_ms": 25443,
+      "failed": [
+        "5. disconnect gagal -> baris tetap terhapus, kegagalan tercatat"
+      ]
+    },
+    {
+      "label": "seq-6",
+      "exit": 0,
+      "tests": 147,
+      "pass": 147,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25150,
+      "failed": []
+    },
+    {
+      "label": "seq-7",
+      "exit": 0,
+      "tests": 147,
+      "pass": 147,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25140,
+      "failed": []
+    },
+    {
+      "label": "seq-8",
+      "exit": 0,
+      "tests": 147,
+      "pass": 147,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25394,
+      "failed": []
+    },
+    {
+      "label": "seq-9",
+      "exit": 0,
+      "tests": 147,
+      "pass": 147,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25617,
+      "failed": []
+    },
+    {
+      "label": "seq-10",
+      "exit": 0,
+      "tests": 147,
+      "pass": 147,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25419,
+      "failed": []
+    },
+    {
+      "label": "par-1",
+      "exit": 1,
+      "tests": 147,
+      "pass": 146,
+      "fail": 1,
+      "hook_failures": 0,
+      "duration_ms": 28328,
+      "failed": [
+        "5. disconnect gagal -> baris tetap terhapus, kegagalan tercatat"
+      ]
+    },
+    {
+      "label": "par-2",
+      "exit": 1,
+      "tests": 147,
+      "pass": 146,
+      "fail": 1,
+      "hook_failures": 0,
+      "duration_ms": 29282,
+      "failed": [
+        "5. disconnect gagal -> baris tetap terhapus, kegagalan tercatat"
+      ]
+    },
+    {
+      "label": "par-3",
+      "exit": 0,
+      "tests": 147,
+      "pass": 147,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 28606,
+      "failed": []
+    }
+  ]
+}
