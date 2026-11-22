@@ -1,0 +1,144 @@
+{
+  "at": "2026-11-22T17:37:27.631Z",
+  "node": "v24.19.0",
+  "files": 16,
+  "runs": 13,
+  "total_failures": 0,
+  "unique_failures": 0,
+  "hook_failures": 0,
+  "runs_with_failure": 0,
+  "leftover_temp_dirs": [],
+  "flakes": [],
+  "detail": [
+    {
+      "label": "seq-1",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25374,
+      "failed": []
+    },
+    {
+      "label": "seq-2",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25347,
+      "failed": []
+    },
+    {
+      "label": "seq-3",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25934,
+      "failed": []
+    },
+    {
+      "label": "seq-4",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25425,
+      "failed": []
+    },
+    {
+      "label": "seq-5",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25473,
+      "failed": []
+    },
+    {
+      "label": "seq-6",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25356,
+      "failed": []
+    },
+    {
+      "label": "seq-7",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25530,
+      "failed": []
+    },
+    {
+      "label": "seq-8",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25544,
+      "failed": []
+    },
+    {
+      "label": "seq-9",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25371,
+      "failed": []
+    },
+    {
+      "label": "seq-10",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 25704,
+      "failed": []
+    },
+    {
+      "label": "par-1",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 27215,
+      "failed": []
+    },
+    {
+      "label": "par-2",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 28116,
+      "failed": []
+    },
+    {
+      "label": "par-3",
+      "exit": 0,
+      "tests": 134,
+      "pass": 134,
+      "fail": 0,
+      "hook_failures": 0,
+      "duration_ms": 27804,
+      "failed": []
+    }
+  ]
+}
