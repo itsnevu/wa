@@ -4,15 +4,39 @@ import os from 'node:os';
 import path from 'node:path';
 import net from 'node:net';
 import { spawn } from 'node:child_process';
+import { rm } from 'node:fs/promises';
+import { setTimeout as pause } from 'node:timers/promises';
 import test from 'node:test';
 import Database from 'better-sqlite3';
 import { buildV7 } from './v7-fixture.mjs';
 import { schemaFingerprint } from '../src/schemaFingerprint.js';
+import { schemaDdlHash } from '../src/schemaDdlHash.js';
+import { childClose, stopFixtureChild } from './child-fixture.mjs';
 
 // Tests 11 and 12: a genuine v7 database with data migrates to v8 once, a second run changes nothing,
 // and the automatic pre-migration backup restores to a valid v7 database that a server can start from.
 const known = JSON.parse(fs.readFileSync(new URL('../src/schema-fingerprints.json',import.meta.url),'utf8'));
 const DAY = 86400000;
+const removeFixture = dir => rm(dir, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 });
+const temp = os.tmpdir();
+for (const entry of await fs.promises.readdir(temp, { withFileTypes: true })) {
+  if (!entry.isDirectory() || !/^v8-drift-[a-zA-Z0-9]{6}$/.test(entry.name)) continue;
+  const stale = path.join(temp, entry.name);
+  const info = await fs.promises.lstat(stale).catch(error => {
+    if (error.code !== 'ENOENT') throw error;
+  });
+  // The old flat fixtures had a sub-minute startup/teardown; avoid racing any live run.
+  if (!info || Date.now() - info.mtimeMs < 300_000) continue;
+  let holder;
+  try { holder = JSON.parse(await fs.promises.readFile(path.join(stale, 'app.db.lock'), 'utf8')); }
+  catch (error) { if (error.code !== 'ENOENT') throw error; }
+  if (Number.isSafeInteger(holder?.pid) && holder.pid > 0) {
+    try { process.kill(holder.pid, 0); continue; }
+    catch (error) { if (error.code !== 'ESRCH') continue; }
+  }
+  await removeFixture(stale);
+}
+
 const { dir, file, ids, T } = buildV7();
 const tables = ['deals','deal_events','deal_evidence','deal_verifications','dp_payments','messages','chats','tenants'];
 const counts = db => Object.fromEntries(tables.map(t=>[t,db.prepare(`SELECT count(*) AS n FROM ${t}`).get().n]));
@@ -28,7 +52,13 @@ const { config } = await import('../src/config.js');
 const { ensureSchema } = await import('../src/schemaMigrations.js');
 const A = await import('../src/dealAnalytics.js');
 const scratch = [];
-test.after(()=>{ db.close(); for (const d of [dir,...scratch]) fs.rmSync(d,{ recursive:true,force:true }); });
+test.after(async () => {
+  if (db.open) {
+    try { db.pragma('wal_checkpoint(TRUNCATE)'); }
+    finally { db.close(); }
+  }
+  for (const d of [dir, ...scratch]) await removeFixture(d);
+});
 const owner = { tenantId:'T',role:'owner',userId:500 };
 const range = { from:T-DAY,to:T+20*DAY,now:T+20*DAY };
 
@@ -78,18 +108,41 @@ async function freePort() {
   const s = net.createServer(); s.listen(0,'127.0.0.1'); await new Promise(r=>s.once('listening',r));
   const { port } = s.address(); await new Promise(r=>s.close(r)); return port;
 }
-function startServer(dataDir,env) {
-  return freePort().then(port => new Promise(resolve => {
-    const child = spawn(process.execPath,['--regexp-interpret-all','src/index.js'],{
-      env:{ ...process.env,DATA_DIR:dataDir,PORT:String(port),HOST:'127.0.0.1',ADMIN_USER:'',ADMIN_PASS:'',...env },windowsHide:true });
-    let out = '';
-    child.stdout.on('data',d=>{ out += d; }); child.stderr.on('data',d=>{ out += d; });
-    const deadline = setTimeout(()=>{ child.kill(); resolve({ exited:null,out,port }); },20000);
-    const poll = setInterval(async () => {
-      try { const r = await fetch(`http://127.0.0.1:${port}/api/health`); if (r.ok) { clearInterval(poll); clearTimeout(deadline); child.kill(); resolve({ healthy:true,out,port }); } } catch {}
-    },250);
-    child.once('exit',code=>{ clearInterval(poll); clearTimeout(deadline); resolve({ exited:code,out,port }); });
-  }));
+async function startServer(dataDir, env) {
+  const port = await freePort();
+  const child = spawn(process.execPath, ['--regexp-interpret-all', 'tests/migration-server-child.mjs'], {
+    env: { ...process.env, DATA_DIR: dataDir, PORT: String(port), HOST: '127.0.0.1', ADMIN_USER: '', ADMIN_PASS: '', ...env },
+    stdio: ['ignore', 'pipe', 'pipe', 'ipc'], windowsHide: true,
+  });
+  const closed = childClose(child);
+  let out = '';
+  child.stdout.on('data', d => { out += d; });
+  child.stderr.on('data', d => { out += d; });
+  const polling = new AbortController();
+  const ready = (async () => {
+    for (let attempt = 0; attempt < 80 && !polling.signal.aborted; attempt++) {
+      try {
+        const response = await fetch(`http://127.0.0.1:${port}/api/health`, {
+          signal: AbortSignal.any([polling.signal, AbortSignal.timeout(200)]),
+        });
+        if (response.ok) return { healthy: true, health: await response.json() };
+      } catch {}
+      await pause(250, undefined, { signal: polling.signal }).catch(() => {});
+    }
+    return {};
+  })();
+  const status = await Promise.race([ready, closed.then(() => ({}))]);
+  polling.abort();
+  await ready;
+  const { code, signal, error } = await stopFixtureChild(child, closed, () => {
+    child.send('shutdown', () => {});
+  });
+  if (error) throw error;
+  if (status.healthy) assert.deepEqual([code, signal], [0, null], out);
+  for (const suffix of ['-wal', '-shm']) {
+    assert.equal(fs.existsSync(path.join(dataDir, 'app.db' + suffix)), false, `leftover ${suffix}: ${out}`);
+  }
+  return { ...status, exited: code, out, port };
 }
 
 test('12. rollback: backup otomatis dipulihkan sebagai v7 yang valid, server menolak tanpa izin migrasi lalu start setelah diizinkan', async () => {
@@ -122,14 +175,73 @@ test('7. fingerprint tidak cocok (kolom berubah) -> server menolak start dengan 
   assert.notEqual(out.exited,0); assert.match(out.out,/Schema fingerprint mismatch; startup refused/);
 });
 
-// Documents a limit of the fingerprint (tables/columns only): trigger and index drift is NOT refused.
-// Kept as an explicit, passing record so the freeze manifest must cover it with a full DDL hash.
-test('7b. batas fingerprint: perubahan indeks/trigger TIDAK terdeteksi saat start', async () => {
-  const drift = fs.mkdtempSync(path.join(os.tmpdir(),'v8-drift-')); scratch.push(drift);
-  await db.backup(path.join(drift,'app.db'));
-  const t = new Database(path.join(drift,'app.db'));
-  t.exec('CREATE INDEX drift_idx ON deals(amount); DROP TRIGGER deal_decided_delete_guard;'); t.close();
-  const out = await startServer(drift,{ ALLOW_AUTO_MIGRATE:'1' });
-  console.log('DRIFT index+trigger start: healthy =',out.healthy);
-  assert.equal(out.healthy,true);
+async function withDdlCopy(change, verify) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wa-v8-suite-')); scratch.push(root);
+  const drift = fs.mkdtempSync(path.join(root, 'v8-drift-'));
+  const file = path.join(drift, 'app.db');
+  try {
+    await db.backup(file);
+    const copy = new Database(file);
+    let hash;
+    try {
+      copy.exec(change);
+      assert.equal(schemaFingerprint(copy), known.current);
+      hash = schemaDdlHash(copy);
+    } finally { copy.close(); }
+    await verify(await startServer(drift, { ALLOW_AUTO_MIGRATE:'0' }), file, hash);
+  } finally { await removeFixture(drift); }
+  assert.deepEqual(await fs.promises.readdir(root), [], 'no v8-drift fixture remains after the child closes');
+}
+
+const storedHash = db.prepare('SELECT hash FROM schema_ddl_hash WHERE version=8').pluck().get();
+function assertDdlRefusal(out, recorded, current) {
+  assert.equal(out.exited, 1);
+  assert.equal(out.healthy, undefined);
+  assert.ok(out.out.includes(`Schema DDL hash mismatch for version 8; recorded hash ${recorded}; current hash ${current}`), out.out);
+  assert.match(out.out, /Restore a verified backup or rerun the migration on a copy/);
+  console.log(out.out.split('\n').find(line => line.startsWith('Error: Schema DDL hash mismatch')));
+}
+
+test('G4.1 catatan hash berbeda menolak startup dan memberi langkah pemulihan', async () => {
+  const bad = '0'.repeat(64);
+  await withDdlCopy(`UPDATE schema_ddl_hash SET hash='${bad}' WHERE version=8`,
+    (out, _file, hash) => assertDdlRefusal(out, bad, hash));
+});
+
+test('G4.2 v8 lama dicatat grandfathered, dan drift sesudahnya memberi peringatan', async () => {
+  await withDdlCopy('DROP TABLE schema_ddl_hash', async (out, file, hash) => {
+    assert.equal(out.healthy, true, out.out);
+    assert.match(out.out, /DDL version 8 grandfathered/);
+    const copy = new Database(file);
+    let updated;
+    try {
+      assert.deepEqual(copy.prepare('SELECT version, hash, grandfathered FROM schema_ddl_hash').all(), [
+        { version: 8, hash, grandfathered: 1 },
+      ]);
+      copy.exec('CREATE INDEX g4_legacy_drift ON deals(amount)');
+      updated = schemaDdlHash(copy);
+    } finally { copy.close(); }
+    const startup = await startServer(path.dirname(file), { ALLOW_AUTO_MIGRATE:'0' });
+    assert.equal(startup.healthy, true, startup.out);
+    assert.ok(startup.out.includes(`grandfathered; recorded hash ${hash}; current hash ${updated}`));
+    console.log(startup.out.split('\n').find(line => line.includes('grandfathered')));
+  });
+});
+
+test('G4.3 (7b) perubahan trigger pada versi ber-hash menolak startup', async () => {
+  await withDdlCopy('DROP TRIGGER deal_decided_delete_guard',
+    (out, _file, hash) => assertDdlRefusal(out, storedHash, hash));
+});
+
+test('G4.4 perubahan indeks pada versi ber-hash menolak startup', async () => {
+  await withDdlCopy('CREATE INDEX g4_drift_idx ON deals(amount)',
+    (out, _file, hash) => assertDdlRefusal(out, storedHash, hash));
+});
+
+test('G4.5 health memaparkan versi dan hash DDL aktif', async () => {
+  await withDdlCopy('', (out, _file, hash) => {
+    assert.deepEqual(out.health, { ok: true, schema_version: 8, schema_ddl_hash: hash });
+    assert.equal(hash, storedHash);
+    console.log('HEALTH', JSON.stringify(out.health));
+  });
 });

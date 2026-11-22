@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 export function schemaShape(db) {
-  return db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all().map(({name})=>({
+  // The startup ledger is validated separately from the frozen migration shapes.
+  return db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name!='schema_ddl_hash' ORDER BY name").all().map(({name})=>({
     table:name, columns:db.prepare(`PRAGMA table_info("${name.replaceAll('"','""')}")`).all().map(({name,type,notnull,dflt_value,pk})=>({name,type,notnull,dflt_value,pk})).sort((a,b)=>a.name.localeCompare(b.name,'en')),
   }));
 }

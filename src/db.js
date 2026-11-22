@@ -14,7 +14,16 @@ acquireInstanceLock(config.dataDir, process.argv[1]?.endsWith('migrate-schema.mj
 export const db = new Database(path.join(config.dataDir, 'app.db'));
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
-await ensureSchema(db, config);
+export const schemaStatus = await ensureSchema(db, config).catch(error => {
+  try {
+    db.pragma('wal_checkpoint(TRUNCATE)');
+  } catch (checkpointError) {
+    console.error('[schema checkpoint]', checkpointError);
+  } finally {
+    db.close();
+  }
+  throw error;
+});
 configureSessionStore(db);
 fs.mkdirSync(path.join(config.dataDir, 'media'), { recursive: true });
 fs.mkdirSync(path.join(config.dataDir, 'sessions'), { recursive: true });

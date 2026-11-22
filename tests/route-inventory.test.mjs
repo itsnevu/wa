@@ -14,7 +14,7 @@ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'t02-inventory-'));
 Object.assign(process.env,{DATA_DIR:dir,ALLOW_AUTO_MIGRATE:'1',MULTITENANT_ENABLED:'0',ADMIN_USER:'inventory-fixture',ADMIN_PASS:'fixture-password-123'});
 const {createHttpSurface}=await import('../src/httpSurface.js');
 const {requireAuth}=await import('../src/auth.js');
-const {db}=await import('../src/db.js');
+const {db,schemaStatus}=await import('../src/db.js');
 const baseline=JSON.parse(fs.readFileSync(new URL('./route-inventory.baseline.json',import.meta.url),'utf8'));
 const surface=createHttpSurface();
 if(process.env.INVENTORY_INJECT_UNSCOPED==='1')surface.app.get('/__unscoped_injected',(_q,r)=>r.end());
@@ -53,7 +53,8 @@ test('HTTP construction preserves public static, login, health and auth response
   await new Promise(resolve=>h.server.listen(0,'127.0.0.1',resolve));
   const base=`http://127.0.0.1:${h.server.address().port}`;
   try{
-    const health=await fetch(base+'/api/health');assert.equal(health.status,200);assert.deepEqual(await health.json(),{ok:true});
+    const health=await fetch(base+'/api/health');assert.equal(health.status,200);
+    assert.deepEqual(await health.json(),{ok:true,schema_version:schemaStatus.version,schema_ddl_hash:schemaStatus.hash});
     const login=await fetch(base+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});assert.equal(login.status,400);
     assert.equal((await fetch(base+'/api/numbers')).status,401);
     assert.equal((await fetch(base+'/media/fixture')).status,401);

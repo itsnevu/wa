@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { schemaFingerprint } from './schemaFingerprint.js';
+import { recordSchemaDdl, schemaDdlHash, verifySchemaDdl } from './schemaDdlHash.js';
 import { bootstrapLegacy } from './legacySchema.js';
 import { tenantMigrationDone, backupBeforeTenantMigration, migrationBackupStats } from './tenantMigration.js';
 import {migrateSessionSchema} from './sessionMigration.js';
@@ -28,16 +29,18 @@ export async function ensureSchema(db,config) {
     if(![1,2,3,4,5,6,7,8].includes(fromVersion)||versions.length!==fromVersion||versions.some((r,i)=>r.version!==i+1))throw Error('Schema version mismatch; no migration registered for this version');
     const expected=fromVersion===1?known.v1:fromVersion===2?known.v2:fromVersion===3?known.v3:fromVersion===4?known.v4:fromVersion===5?known.v5:fromVersion===6?known.v6:fromVersion===7?known.v7:known.current;
     if(actual!==expected||versions.at(-1).fingerprint!==expected||versions[0].fingerprint!==known.v1)throw Error('Schema fingerprint mismatch; startup refused');
-    if(fromVersion===SCHEMA_VERSION)return;
+    if(fromVersion===SCHEMA_VERSION)return db.transaction(()=>verifySchemaDdl(db,fromVersion)).immediate();
   }
   if(!hasVersion&&!Object.values(known.legacy).includes(actual) && actual!==known.t01) throw Error('Schema fingerprint mismatch before migration; startup refused');
   if(!config.allowAutoMigrate) throw Error(`Schema version ${fromVersion} != ${SCHEMA_VERSION}; run ALLOW_AUTO_MIGRATE=1 node scripts/migrate-schema.mjs during maintenance`);
+  const beforeDdlHash=schemaDdlHash(db);
   const dir=path.join(config.dataDir,'migration-backups');
   const backup=await backupBeforeTenantMigration(db,dir,config.migrationBackupKeep);
   const fk=db.pragma('foreign_keys',{simple:true}); db.pragma('foreign_keys = OFF');
+  let status;
   try {
-    db.transaction(()=>{
-      if(schemaFingerprint(db)!==actual) throw Error('Schema changed while waiting for BEGIN IMMEDIATE');
+    status=db.transaction(()=>{
+      if(schemaFingerprint(db)!==actual||schemaDdlHash(db)!==beforeDdlHash) throw Error('Schema changed while waiting for BEGIN IMMEDIATE');
       if(!fromVersion&&!tenantMigrationDone(db)) bootstrapLegacy(db,config);
       // A single transaction owns legacy bootstrap, tenant rebuild and version record.
       if(!fromVersion&&!tenantMigrationDone(db)) migrateTenantSchemaLocked(db,{backup});
@@ -52,9 +55,11 @@ export async function ensureSchema(db,config) {
       if(schemaFingerprint(db)!==known.current) throw Error('Unexpected migrated schema fingerprint');
       if(db.pragma('foreign_key_check').length) throw Error('Schema migration foreign key verification failed');
       db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(SCHEMA_VERSION,'Deal analytics',known.current,Date.now());
+      return recordSchemaDdl(db,SCHEMA_VERSION);
     }).immediate();
   } finally {db.pragma(`foreign_keys = ${fk?'ON':'OFF'}`);}
   console.log('[schema]',JSON.stringify({version:SCHEMA_VERSION,backup,...migrationBackupStats(dir)}));
+  return status;
 }
 // Imported separately so the public migration helper also remains independently testable.
 import { migrateTenantSchemaLocked } from './tenantMigration.js';

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import Database from 'better-sqlite3';
 import {bootstrapLegacy} from '../src/legacySchema.js';
 import {schemaFingerprint} from '../src/schemaFingerprint.js';
+import {schemaDdlHash} from '../src/schemaDdlHash.js';
 import {migrateTenantSchemaLocked} from '../src/tenantMigration.js';
 import {migrateSessionSchema} from '../src/sessionMigration.js';
 import {migrateMembershipFix} from '../src/membershipFixMigration.js';
@@ -33,6 +34,13 @@ const v6=schemaFingerprint(db);
 db.transaction(()=>migrateDealReview(db)).immediate();
 const v7=schemaFingerprint(db);
 db.transaction(()=>migrateDealAnalytics(db)).immediate();
-const current=schemaFingerprint(db);
-fs.writeFileSync('src/schema-fingerprints.json',JSON.stringify({legacy,t01,v1,v2,v3,v4,v5,v6,v7,current},null,2)+'\n');
+const ddl = {};
+function versionFingerprint(version) {
+  if (version >= 9) ddl[`v${version}`] = schemaDdlHash(db);
+  return schemaFingerprint(db);
+}
+const current=versionFingerprint(8);
+fs.writeFileSync('src/schema-fingerprints.json',JSON.stringify({
+  legacy,t01,v1,v2,v3,v4,v5,v6,v7,current,...(Object.keys(ddl).length ? {ddl} : {}),
+},null,2)+'\n');
 db.close();

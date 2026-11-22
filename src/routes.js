@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { db, q } from './db.js';
+import { db, q, schemaStatus } from './db.js';
 import { acceptOwnerInvitation, login, logout, setCookie, clearCookie, requireAuth, requireAdmin, canAccessNumber } from './auth.js';
 import { hashPassword, verifyPassword } from './passwords.js';
 import * as guard from './loginGuard.js';
@@ -24,7 +24,9 @@ import {mountDealAnalytics} from './dealAnalyticsRoutes.js';
 
 export const api = Router();
 
-api.get('/health', (_req, res) => res.json({ ok: true }));
+api.get('/health', (_req, res) => res.json({
+  ok: true, schema_version: schemaStatus.version, schema_ddl_hash: schemaStatus.hash,
+}));
 
 api.post('/login', (req, res) => {
   const { username, password, invitation_token } = req.body || {};

@@ -58,3 +58,10 @@ Bukti mentah di `docs/deal-analytics/v8-freeze/`.
 ## Pernyataan
 
 Schema v8 dibekukan. Migrasi `src/dealAnalyticsMigration.js` dan entri v8 di `src/schemaMigrations.js` tidak boleh diubah lagi. Fingerprint tidak menjaga trigger, indeks, maupun CHECK; sampai mekanisme hash DDL G4 berlaku, kepatuhan dijaga oleh manifest ini dan tinjauan kode.
+
+## G4: penegakan hash DDL (23 Nov 2026)
+
+- Mekanisme: `src/schemaDdlHash.js`. Hash = sha256 dari `[type, name, tbl_name, sql dinormalkan]` seluruh objek `sqlite_master` kecuali `sqlite_*` dan `schema_ddl_hash`, urut `type, name`. Tabel `schema_ddl_hash` sendiri **tidak** ikut dihitung (juga dikecualikan dari fingerprint tabel/kolom).
+- Hash database produksi `data/app.db` (v8), dihitung read-only 23 Nov 2026: `9d60718e578948c47d2153c68d8026dc73c2f7a123234da4e5d81c57756457a2`, **sama** dengan gladi G3.
+- Startup pertama dengan kode G4 mencatat v8 sebagai `grandfathered=1` dan menulis peringatan. Penegakan ketat (tolak start bila hash beda) berlaku sejak v9.
+- `/api/health` memuat `schema_version` dan `schema_ddl_hash`.
