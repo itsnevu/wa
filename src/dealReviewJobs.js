@@ -94,8 +94,9 @@ export async function runDealReviewJobs({ now = Date.now(), sendReminder } = {})
   } finally { running = false; }
 }
 
-export function startDealReviewJobs(sendReminder) {
-  const tick = () => void runDealReviewJobs({ sendReminder }).catch(err => console.error('[deal.jobs]',err.message));
+// H1: the clock is injectable (default real clock) so DP/SLA deadlines can be driven without waiting.
+export function startDealReviewJobs(sendReminder,{ clock = { now: () => Date.now() } } = {}) {
+  const tick = () => void runDealReviewJobs({ now: clock.now(), sendReminder }).catch(err => console.error('[deal.jobs]',err.message));
   setImmediate(tick);
   return setInterval(tick,60000);
 }

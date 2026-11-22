@@ -146,7 +146,7 @@ async function startServer(dataDir, env) {
   return { ...status, exited: code, out, port };
 }
 
-test('12. rollback: backup otomatis dipulihkan sebagai v7 yang valid, server menolak tanpa izin migrasi lalu start setelah diizinkan', async () => {
+test('12. rollback: backup otomatis dipulihkan sebagai v7 yang valid, server menolak tanpa izin migrasi lalu start setelah diizinkan @realtime', async () => {
   const backups = path.join(dir,'migration-backups');
   const backup = path.join(backups,fs.readdirSync(backups).find(f=>f.endsWith('.sqlite')));
   const restored = fs.mkdtempSync(path.join(os.tmpdir(),'v8-rollback-')); scratch.push(restored);
@@ -167,7 +167,7 @@ test('12. rollback: backup otomatis dipulihkan sebagai v7 yang valid, server men
   assert.equal(startedOk.healthy,true,startedOk.out.slice(-800));
 });
 
-test('7. fingerprint tidak cocok (kolom berubah) -> server menolak start dengan pesan jelas', async () => {
+test('7. fingerprint tidak cocok (kolom berubah) -> server menolak start dengan pesan jelas @realtime', async () => {
   const tampered = fs.mkdtempSync(path.join(os.tmpdir(),'v8-tamper-')); scratch.push(tampered);
   await db.backup(path.join(tampered,'app.db'));
   const t = new Database(path.join(tampered,'app.db')); t.exec('ALTER TABLE deals ADD COLUMN tamper INTEGER'); t.close();
@@ -204,13 +204,13 @@ function assertDdlRefusal(out, recorded, current) {
   console.log(out.out.split('\n').find(line => line.startsWith('Error: Schema DDL hash mismatch')));
 }
 
-test('G4.1 catatan hash berbeda menolak startup dan memberi langkah pemulihan', async () => {
+test('G4.1 catatan hash berbeda menolak startup dan memberi langkah pemulihan @realtime', async () => {
   const bad = '0'.repeat(64);
   await withDdlCopy(`UPDATE schema_ddl_hash SET hash='${bad}' WHERE version=${HASHED}`,
     (out, _file, hash) => assertDdlRefusal(out, bad, hash));
 });
 
-test('G4.2 v8 tanpa catatan dicatat grandfathered (hanya peringatan), versi ber-hash tanpa catatan ditolak', async () => {
+test('G4.2 v8 tanpa catatan dicatat grandfathered (hanya peringatan), versi ber-hash tanpa catatan ditolak @realtime', async () => {
   // Mechanism level: a v8-era database without a ledger is grandfathered and drift only warns.
   const legacy = new Database(':memory:');
   try {
@@ -234,17 +234,17 @@ test('G4.2 v8 tanpa catatan dicatat grandfathered (hanya peringatan), versi ber-
   });
 });
 
-test('G4.3 (7b) perubahan trigger pada versi ber-hash menolak startup', async () => {
+test('G4.3 (7b) perubahan trigger pada versi ber-hash menolak startup @realtime', async () => {
   await withDdlCopy('DROP TRIGGER deal_decided_delete_guard',
     (out, _file, hash) => assertDdlRefusal(out, storedHash, hash));
 });
 
-test('G4.4 perubahan indeks pada versi ber-hash menolak startup', async () => {
+test('G4.4 perubahan indeks pada versi ber-hash menolak startup @realtime', async () => {
   await withDdlCopy('CREATE INDEX g4_drift_idx ON deals(amount)',
     (out, _file, hash) => assertDdlRefusal(out, storedHash, hash));
 });
 
-test('G4.5 health memaparkan versi dan hash DDL aktif', async () => {
+test('G4.5 health memaparkan versi dan hash DDL aktif @realtime', async () => {
   await withDdlCopy('', (out, _file, hash) => {
     assert.deepEqual(out.health, { ok: true, schema_version: HASHED, schema_ddl_hash: hash });
     assert.equal(hash, storedHash);

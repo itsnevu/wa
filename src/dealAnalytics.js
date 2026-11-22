@@ -130,8 +130,8 @@ export function sweepAllUnanswered(now=Date.now()) {
   return recorded;
 }
 // 5-minute job; returns the interval handle so the caller can stop it on shutdown.
-export function startUnansweredJob(every=5*60*1000) {
-  const run=()=>{ try { sweepAllUnanswered(); } catch (err) { console.error('[analytics] unanswered sweep failed',err.message); } };
+export function startUnansweredJob(every=5*60*1000,{clock={now:()=>Date.now()}}={}) {
+  const run=()=>{ try { sweepAllUnanswered(clock.now()); } catch (err) { console.error('[analytics] unanswered sweep failed',err.message); } };
   return setInterval(run,every).unref();
 }
 

@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { twoTenants } from './tenant-fixture.mjs';
+import { waitForEvent } from './lib/wait.mjs';
 
 // Tugas 5A gerbang 2: delete semantics for deals, evidence snapshots and verifier deletion (tests 1-10).
 const fixture = twoTenants();
@@ -82,7 +83,8 @@ test('5. disconnect gagal -> baris tetap terhapus, kegagalan tercatat', async ()
   const { spawn } = await import('node:child_process');
   const holder = spawn(process.execPath,['-e','setTimeout(()=>{},10000)'],{ cwd:session,stdio:'ignore' });
   const closed = childClose(holder);
-  await new Promise(r=>setTimeout(r,300));
+  // H1: wait for the holder process to exist (it holds the cwd from spawn) instead of a fixed 300 ms sleep.
+  await waitForEvent(holder,'spawn',{ deadline:5000 });
   const logged = []; const original = console.error; console.error = (...a) => logged.push(a.join(' '));
   try {
     const r = await request('/numbers/12',{ cookie:owner,method:'DELETE' });

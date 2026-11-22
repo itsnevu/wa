@@ -8,6 +8,7 @@ import { registerHooks } from 'node:module';
 import test from 'node:test';
 import Database from 'better-sqlite3';
 import { twoTenants } from './tenant-fixture.mjs';
+import { waitFor } from './lib/wait.mjs';
 import { schemaFingerprint } from '../src/schemaFingerprint.js';
 
 const fixture = twoTenants();
@@ -98,14 +99,8 @@ async function login(username) {
   assert.equal(status, 200);
   return response.headers.get('set-cookie').split(';')[0];
 }
-const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
-async function wait(predicate) {
-  for (let i = 0; i < 180; i++) {
-    if (await predicate()) return;
-    await pause(50);
-  }
-  throw Error('Timed out waiting for test condition');
-}
+// H1: shared deterministic helper with a labelled failure message.
+const wait = (predicate, label = 'session-health condition') => waitFor(predicate, { deadline: 9000, interval: 50, label });
 
 test.after(async () => {
   disconnect(10);
