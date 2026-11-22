@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { childClose, stopFixtureBrowser } from '../tests/child-fixture.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
@@ -16,12 +17,13 @@ config.multitenantEnabled=true;
 const h=createHttpSurface();await new Promise(r=>h.server.listen(0,'127.0.0.1',r));
 const origin=`http://127.0.0.1:${h.server.address().port}`;
 const evidence=path.resolve('docs/t04/evidence');fs.mkdirSync(evidence,{recursive:true});
-let browser,ws;const pending=new Map();
+let browser,browserClosed,ws;const pending=new Map();
 try{
   const executable=[process.env.MEDIA_TEST_BROWSER,'C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe','/usr/bin/google-chrome','/usr/bin/chromium'].find(p=>p&&fs.existsSync(p));
   assert.ok(executable,'A local Chrome/Edge executable is required');
   const profile=path.join(fixture.dir,'browser');
   browser=spawn(executable,['--headless=new','--disable-gpu','--no-first-run','--no-default-browser-check','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank'],{windowsHide:true,stdio:'ignore'});
+  browserClosed=childClose(browser);
   const portFile=path.join(profile,'DevToolsActivePort');
   for(let i=0;i<150&&!fs.existsSync(portFile);i++)await new Promise(r=>setTimeout(r,100));
   assert.ok(fs.existsSync(portFile));
@@ -65,7 +67,7 @@ try{
   await capture('owner-audit');
   console.log('T04 UI verified at desktop and 360px');
 }finally{
-  ws?.close();if(browser&&browser.exitCode===null){browser.kill();await Promise.race([once(browser,'exit'),new Promise(r=>setTimeout(r,3000))]);}
+  if(browser) await stopFixtureBrowser(browser,browserClosed,ws);
   for(const socket of h.wss.clients)socket.terminate();h.wss.close();h.server.closeAllConnections();await new Promise(r=>h.server.close(r));
   db.close();fixture.db.close();fs.rmSync(fixture.dir,{recursive:true,force:true,maxRetries:10,retryDelay:200});
 }

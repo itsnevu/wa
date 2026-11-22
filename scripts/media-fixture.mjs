@@ -6,6 +6,8 @@ import net from 'node:net';
 import { once } from 'node:events';
 import { spawn } from 'node:child_process';
 import Database from 'better-sqlite3';
+import { rm } from 'node:fs/promises';
+import { childClose, stopFixtureChild } from '../tests/child-fixture.mjs';
 
 export const fixtureKey = 'fixture-only-media-key-not-a-production-secret';
 export async function mediaFixture() {
@@ -15,14 +17,15 @@ export async function mediaFixture() {
   const port = probe.address().port;
   await new Promise(resolve => probe.close(resolve));
   const base = `http://127.0.0.1:${port}`;
-  let child, database, output = '';
+  let child, closed, database, output = '';
   async function start(enabled = '1') {
-    child = spawn(process.execPath, ['--regexp-interpret-all', 'src/index.js'], {
+    child = spawn(process.execPath, ['--regexp-interpret-all', 'tests/migration-server-child.mjs'], {
       env: { ...process.env, DATA_DIR: temp, BACKUP_DIR: path.join(temp, 'backups'), BACKUP_HOUR: '-1',
         PORT: String(port), HOST: '127.0.0.1', ADMIN_USER: 'media-admin', ADMIN_PASS: 'media-fixture-password',
         SECURE_COOKIE: '0', MEDIA_SIGNING_KEY: fixtureKey, MEDIA_SIGNED_URLS_ENABLED: enabled },
-      windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
     });
+    closed = childClose(child);
     child.stdout.on('data', b => { output += b; });
     child.stderr.on('data', b => { output += b; });
     for (let i = 0; i < 100; i++) {
@@ -33,10 +36,7 @@ export async function mediaFixture() {
     throw new Error('Server fixture tidak siap: ' + output);
   }
   async function stop() {
-    if (child && child.exitCode === null) {
-      const done = once(child, 'exit'); child.kill();
-      await done;
-    }
+    if (child) await stopFixtureChild(child, closed, () => child.send('shutdown', () => {}));
   }
   const request = (url, cookie = '', method = 'GET', body) => fetch(base + url, {
     method, headers: { cookie, 'content-type': 'application/json' },
@@ -74,8 +74,10 @@ export async function mediaFixture() {
     const sign = (c, file, cookie) => request(`/api/chats/${c}/media-url`, cookie, 'POST', { media_path: file });
     return { temp, base, db: database, request, sign, admin, a, b, na, nb, ca, cb, ma, mb, uid, seed,
       output: () => output, restart: async enabled => { await stop(); await start(enabled); },
-      async close() { await stop(); database.close(); fs.rmSync(temp, { recursive: true, force: true }); } };
+      async close() { await stop(); database.close(); await rm(temp, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 }); } };
   } catch (err) {
-    await stop(); database?.close(); fs.rmSync(temp, { recursive: true, force: true }); throw err;
+    await stop(); database?.close();
+    await rm(temp, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 });
+    throw err;
   }
 }

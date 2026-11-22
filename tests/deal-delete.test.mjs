@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { childClose, stopFixtureChild } from './child-fixture.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
@@ -16,7 +17,7 @@ db.prepare('UPDATE users SET pass=?').run(hashPassword('delete-fixture-password'
 const h = createHttpSurface();
 await new Promise(resolve=>h.server.listen(0,'127.0.0.1',resolve));
 const base = `http://127.0.0.1:${h.server.address().port}/api`;
-test.after(async()=>{ h.wss.close(); h.server.closeAllConnections(); await new Promise(r=>h.server.close(r)); db.close(); fixture.close(); });
+test.after(async()=>{ h.wss.close(); h.server.closeAllConnections(); await new Promise(r=>h.server.close(r)); db.close(); await fixture.closeAsync(); });
 
 async function request(url,{ cookie,method='GET',body }={}) {
   const r = await fetch(base+url,{ method,headers:{ 'Content-Type':'application/json',...(cookie?{cookie}:{}) },body:body===undefined?undefined:JSON.stringify(body) });
@@ -80,12 +81,13 @@ test('5. disconnect gagal -> baris tetap terhapus, kegagalan tercatat', async ()
   // Another process holding the directory as its cwd makes the cleanup fail (EPERM/EBUSY on Windows).
   const { spawn } = await import('node:child_process');
   const holder = spawn(process.execPath,['-e','setTimeout(()=>{},10000)'],{ cwd:session,stdio:'ignore' });
+  const closed = childClose(holder);
   await new Promise(r=>setTimeout(r,300));
   const logged = []; const original = console.error; console.error = (...a) => logged.push(a.join(' '));
   try {
     const r = await request('/numbers/12',{ cookie:owner,method:'DELETE' });
     assert.equal(r.status,200,r.text);
-  } finally { console.error = original; holder.kill(); await new Promise(r=>holder.once('exit',r)); }
+  } finally { console.error = original; await stopFixtureChild(holder, closed); }
   assert.equal(Boolean(db.prepare('SELECT 1 FROM numbers WHERE id=12').get()),false);
   assert.ok(logged.some(line=>line.includes('[number.delete]') && line.includes('12')),logged.join('\n'));
 });

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { EventEmitter, once } from 'node:events';
+import { childClose, stopFixtureBrowser } from './child-fixture.mjs';
 import { spawn } from 'node:child_process';
 import { registerHooks } from 'node:module';
 import test from 'node:test';
@@ -115,7 +116,7 @@ test.after(async () => {
   db.close();
   hooks.deregister();
   delete globalThis.createSessionSyncSocket;
-  fixture.close();
+  await fixture.closeAsync();
 });
 
 test('session health columns, current fingerprint and pre-migration backup', () => {
@@ -253,6 +254,7 @@ test('real browser renders badge, confirmation, progress and summary at desktop 
   const profile = path.join(fixture.dir, 'browser');
   const browser = spawn(executable, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'], { windowsHide: true, stdio: 'ignore' });
+  const browserClosed = childClose(browser);
   let socket;
   try {
     const portFile = path.join(profile, 'DevToolsActivePort');
@@ -314,10 +316,6 @@ test('real browser renders badge, confirmation, progress and summary at desktop 
       disconnect(id);
     }
   } finally {
-    socket?.close();
-    if (browser.exitCode === null) {
-      browser.kill();
-      await Promise.race([once(browser, 'exit'), pause(3000)]);
-    }
+    await stopFixtureBrowser(browser, browserClosed, socket);
   }
 });

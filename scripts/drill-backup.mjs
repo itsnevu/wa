@@ -11,6 +11,8 @@ import path from 'node:path';
 import net from 'node:net';
 import { spawn } from 'node:child_process';
 import Database from 'better-sqlite3';
+import { rm } from 'node:fs/promises';
+import { childClose, stopFixtureChild } from '../tests/child-fixture.mjs';
 
 const arg = (name, fallback) => { const i = process.argv.indexOf('--' + name); return i > 0 ? process.argv[i + 1] : fallback; };
 const source = path.resolve(arg('source', 'data/app.db'));
@@ -59,13 +61,13 @@ step('restore', { copy: path.join(copyDir, 'app.db') });
 // 4. Start the server against the copy (auto-migrate is allowed on the copy only) and wait for health.
 const port = await freePort();
 started = Date.now();
-const child = spawn(process.execPath, ['--regexp-interpret-all', 'src/index.js'], {
+const child = spawn(process.execPath, ['--regexp-interpret-all', 'tests/migration-server-child.mjs'], {
   env: { ...process.env, DATA_DIR: copyDir, PORT: String(port), HOST: '127.0.0.1', ALLOW_AUTO_MIGRATE: '1', ADMIN_USER: '', ADMIN_PASS: '' },
-  windowsHide: true,
+  windowsHide: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
 });
 let log = '';
 child.stdout.on('data', d => { log += d; }); child.stderr.on('data', d => { log += d; });
-const exited = new Promise(r => child.once('exit', code => r(code)));
+const closed = childClose(child);
 let healthy = false;
 while (Date.now() - started < timeoutMs && child.exitCode === null) {
   try { const r = await fetch(`http://127.0.0.1:${port}/api/health`); if (r.ok) { healthy = true; break; } } catch {}
@@ -74,9 +76,8 @@ while (Date.now() - started < timeoutMs && child.exitCode === null) {
 step('server_start', { port, healthy, ms: Date.now() - started, schema_log: log.match(/\[schema\][^\n]*/)?.[0] ?? null });
 
 // 5. Stop it again and clean the throwaway copy.
-child.kill();
-const code = await exited;
+const { code } = await stopFixtureChild(child, closed, () => child.send('shutdown', () => {}));
 step('server_stop', { exit_code: code });
-fs.rmSync(copyDir, { recursive: true, force: true });
-if (!healthy) fail('server did not become healthy against the restored copy:\n' + log.slice(-2000));
+await rm(copyDir, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 });
+if (!healthy || code !== 0) fail('server failed against the restored copy:\n' + log.slice(-2000));
 console.log(JSON.stringify({ result: 'OK', backup, steps: steps.length }));

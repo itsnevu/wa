@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { childClose, stopFixtureBrowser } from '../tests/child-fixture.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
@@ -8,7 +9,7 @@ import { mediaFixture } from './media-fixture.mjs';
 const h = await mediaFixture();
 const dir = path.resolve('docs/pr01/evidence');
 fs.mkdirSync(dir, { recursive: true });
-let browser, ws;
+let browser, browserClosed, ws;
 const checks = [], errors = [], pending = new Map();
 try {
   const executable = [process.env.MEDIA_TEST_BROWSER, 'C:/Program Files/Google/Chrome/Application/chrome.exe',
@@ -17,6 +18,7 @@ try {
   const profile = path.join(h.temp, 'browser-profile');
   browser = spawn(executable, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'], { windowsHide: true, stdio: 'ignore' });
+  browserClosed = childClose(browser);
   const portFile = path.join(profile, 'DevToolsActivePort');
   for (let i = 0; i < 150 && !fs.existsSync(portFile); i++) await new Promise(r => setTimeout(r, 100));
   assert.ok(fs.existsSync(portFile), 'Port browser tersedia');
@@ -86,11 +88,7 @@ try {
   fs.writeFileSync(path.join(dir, 'browser.txt'), checks.join('\n') + '\nExit code: 0\n');
   console.log(checks.join('\n'));
 } finally {
-  if (ws?.readyState === 1) { ws.send(JSON.stringify({ id: 999999, method: 'Browser.close' })); ws.close(); }
-  if (browser) {
-    await Promise.race([once(browser, 'exit').catch(() => {}), new Promise(r => setTimeout(r, 2500))]);
-    if (browser.exitCode === null) browser.kill();
-  }
+  if (browser) await stopFixtureBrowser(browser, browserClosed, ws);
   for (let i = 0; i < 20; i++) {
     try { await h.close(); break; } catch (err) { if (i === 19) throw err; await new Promise(r => setTimeout(r, 100)); }
   }

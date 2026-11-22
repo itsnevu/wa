@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { once } from 'node:events';
+import { childClose, stopFixtureBrowser } from './child-fixture.mjs';
 import { spawn } from 'node:child_process';
 import test from 'node:test';
 import { twoTenants } from './tenant-fixture.mjs';
@@ -26,7 +27,7 @@ test.after(async () => {
   h.server.closeAllConnections();
   await new Promise(resolve=>h.server.close(resolve));
   db.close();
-  fixture.close();
+  await fixture.closeAsync();
 });
 
 async function request(url,cookie,body) {
@@ -162,6 +163,7 @@ test('Chrome desktop and 360px render card, SLA, reason grid, proof and DP form'
   const profile = path.join(fixture.dir,'review-browser');
   const browser = spawn(executable,['--headless=new','--disable-gpu','--no-first-run','--remote-debugging-port=0',
     `--user-data-dir=${profile}`,'about:blank'],{ windowsHide:true,stdio:'ignore' });
+  const browserClosed = childClose(browser);
   let socket;
   try {
     const portFile = path.join(profile,'DevToolsActivePort');
@@ -223,10 +225,6 @@ test('Chrome desktop and 360px render card, SLA, reason grid, proof and DP form'
     await wait(()=>evalJs(`!${card}`));
     assert.equal(get(id).state,'verified_lunas');
   } finally {
-    socket?.close();
-    if (browser.exitCode===null) {
-      browser.kill();
-      await Promise.race([once(browser,'exit'),pause(3000)]);
-    }
+    await stopFixtureBrowser(browser, browserClosed, socket);
   }
 });

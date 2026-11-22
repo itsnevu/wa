@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { childClose, stopFixtureBrowser } from '../tests/child-fixture.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
@@ -9,7 +10,7 @@ import {setup} from './phase-harness.mjs';
 
 const h=await setup('ai6');
 const originalFetch=globalThis.fetch;
-let server,browser,ws,wss;
+let server,browser,browserClosed,ws,wss;
 const pending=new Map();
 try {
   const n=h.number();
@@ -30,6 +31,7 @@ try {
   assert.ok(executable,'Chrome or Edge required for screenshot verification');
   const profile=path.join(h.temp,'browser-profile');
   browser=spawn(executable,['--headless=new','--disable-gpu','--no-first-run','--no-default-browser-check','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore',windowsHide:true});
+  browserClosed=childClose(browser);
   const portFile=path.join(profile,'DevToolsActivePort');
   for(let i=0;i<150 && !fs.existsSync(portFile);i++) await new Promise(r=>setTimeout(r,100));
   assert.ok(fs.existsSync(portFile),'browser debug port available');
@@ -100,14 +102,7 @@ try {
   assert.deepEqual(errors,[]);
   console.log('PASS ai6: Chrome screenshots for settings/usage thresholds/event alert/number badge/console/products/orders/logs/mobile; save, product create, order status, test no send, resume endpoint; exit 0');
 } finally {
-  if(ws && ws.readyState===1) {
-    try {ws.send(JSON.stringify({id:999999,method:'Browser.close'}));}catch{}
-    ws.close();
-  }
-  if(browser) {
-    await Promise.race([once(browser,'exit').catch(()=>{}),new Promise(r=>setTimeout(r,2500))]);
-    if(browser.exitCode===null) browser.kill();
-  }
+  if(browser) await stopFixtureBrowser(browser,browserClosed,ws);
   if(wss){for(const client of wss.clients)client.terminate();await new Promise(r=>wss.close(r));}
   if(server)await new Promise(r=>server.close(r));
   globalThis.fetch=originalFetch;

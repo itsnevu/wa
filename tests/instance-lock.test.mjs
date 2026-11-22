@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import test from 'node:test';
+import { childClose, stopFixtureChild } from './child-fixture.mjs';
 
 // G3: migration and server run under a single per-data-directory lock taken in src/db.js.
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'instance-lock-'));
@@ -17,8 +18,9 @@ const openDb = (extra = '') => spawnSync(process.execPath, ['--input-type=module
 test('kunci: instance kedua dan migrasi ditolak selama pemegang hidup; dilepas saat pemegang berhenti', async () => {
   assert.equal(openDb().status, 0, 'first open creates and migrates the database');
   assert.equal(fs.existsSync(lockFile), false, 'lock released on normal exit');
-  const holder = spawn(process.execPath, ['--input-type=module', '-e', "const {db}=await import('./src/db.js'); console.log('HOLDING'); setTimeout(()=>{},15000);"],
+  const holder = spawn(process.execPath, ['--input-type=module', '-e', "const {db}=await import('./src/db.js'); db.pragma('wal_checkpoint(TRUNCATE)'); db.close(); console.log('HOLDING'); setTimeout(()=>{},15000);"],
     { env, windowsHide: true });
+  const closed = childClose(holder);
   await new Promise((resolve, reject) => {
     holder.stdout.on('data', d => { if (String(d).includes('HOLDING')) resolve(); });
     holder.once('exit', code => reject(Error('holder exited early ' + code)));
@@ -32,7 +34,7 @@ test('kunci: instance kedua dan migrasi ditolak selama pemegang hidup; dilepas s
     const migrate = spawnSync(process.execPath, ['scripts/migrate-schema.mjs'], { env, encoding: 'utf8', windowsHide: true });
     assert.notEqual(migrate.status, 0); assert.match(migrate.stderr, /INSTANCE_LOCKED|sedang dipegang instance lain/);
   } finally {
-    holder.kill(); await new Promise(r => holder.once('exit', r));
+    await stopFixtureChild(holder, closed);
   }
   // A killed holder cannot run its exit hook: its lock is stale and must be taken over.
   assert.equal(fs.existsSync(lockFile), true, 'killed process leaves a stale lock');

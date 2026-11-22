@@ -9,6 +9,8 @@ import vm from 'node:vm';
 import {WebSocket as NetworkSocket,WebSocketServer} from 'ws';
 import {once} from 'node:events';
 import { spawnSync } from 'node:child_process';
+import { rm } from 'node:fs/promises';
+import { childClose, stopFixtureChild } from '../tests/child-fixture.mjs';
 import { readSource, setup } from './phase-harness.mjs';
 
 // Server produksi berjalan dengan --regexp-interpret-all (package.json "start"); uji dengan flag yang sama.
@@ -79,12 +81,13 @@ async function startServer(seed) {
   const port = probe.address().port;
   await new Promise(resolve => probe.close(resolve));
   const { spawn } = await import('node:child_process');
-  const child = spawn(process.execPath, ['src/index.js'], {
+  const child = spawn(process.execPath, ['tests/migration-server-child.mjs'], {
     env: { ...process.env, DATA_DIR: temp, BACKUP_DIR: path.join(temp, 'backups'), BACKUP_HOUR: '-1', PORT: String(port),
       HOST: '127.0.0.1', ADMIN_USER: 'harness-admin', ADMIN_PASS: 'harness-password-123', SECURE_COOKIE: '0',
       MEDIA_SIGNED_URLS_ENABLED: '1', MEDIA_SIGNING_KEY: 'fixture-only-hardening-media-key-32chars' },
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
   });
+  const closed = childClose(child);
   let out = '';
   child.stdout.on('data', (d) => { out += d; });
   child.stderr.on('data', (d) => { out += d; });
@@ -99,13 +102,9 @@ async function startServer(seed) {
     return r.headers.get('set-cookie').split(';')[0];
   };
   return { temp, base, child, login, output: () => out,
-    async stop(signal = 'SIGTERM') {
-      if (child.exitCode === null) {
-        const done = new Promise((r) => child.once('exit', r));
-        child.kill(signal);
-        await Promise.race([done, new Promise((r) => setTimeout(r, 7000))]);
-      }
-      fs.rmSync(temp, { recursive: true, force: true });
+    async stop() {
+      await stopFixtureChild(child, closed, () => child.send('shutdown', () => {}));
+      await rm(temp, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 });
     } };
 }
 
@@ -475,7 +474,7 @@ await step(9, 'ketahanan proses dan shutdown', async () => {
   ].join('\n'));
   const port = 40000 + Math.floor(Math.random() * 20000);
   const { spawn } = await import('node:child_process');
-  const child = spawn(process.execPath, ['--import', new URL(`file:///${preload.replace(/\\/g, '/')}`).href, 'src/index.js'], {
+  const child = spawn(process.execPath, ['--import', new URL(`file:///${preload.replace(/\\/g, '/')}`).href, 'tests/migration-server-child.mjs'], {
     env: { ...process.env, DATA_DIR: path.join(temp, 'data'), BACKUP_DIR: path.join(temp, 'b'), BACKUP_HOUR: '-1', PORT: String(port), HOST: '127.0.0.1',
       ADMIN_USER: 'harness-admin', ADMIN_PASS: 'harness-password-123' },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -483,7 +482,7 @@ await step(9, 'ketahanan proses dan shutdown', async () => {
   let out = '';
   child.stdout.on('data', (d) => { out += d; });
   child.stderr.on('data', (d) => { out += d; });
-  const exited = new Promise((r) => child.once('exit', (code) => r(code)));
+  const closed = childClose(child);
   const base = `http://127.0.0.1:${port}`;
   for (let i = 0; i < 50; i += 1) {
     try { if ((await fetch(base + '/api/health')).ok) break; } catch { /* belum siap */ }
@@ -495,8 +494,8 @@ await step(9, 'ketahanan proses dan shutdown', async () => {
   const ws = new WebSocket(`ws://127.0.0.1:${port}/ws`, { headers: { cookie } });
   await new Promise((r, j) => { ws.once('open', r); ws.once('error', j); });
   log(9, 'klien WebSocket terbuka sebelum shutdown');
-  const code = await Promise.race([exited, new Promise((r) => setTimeout(() => r('menggantung'), 15000))]);
-  fs.rmSync(temp, { recursive: true, force: true });
+  const { code } = await stopFixtureChild(child, closed, () => {});
+  await rm(temp, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 });
   for (const line of out.trim().split('\n')) log(9, `  ${line.split('\n')[0]}`);
   assert.equal(code, 0);
   assert.match(out, /listener SIGTERM=1 SIGINT=1 unhandledRejection=1 uncaughtException=1/);

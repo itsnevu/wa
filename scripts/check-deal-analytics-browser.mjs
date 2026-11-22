@@ -1,5 +1,6 @@
 // Browser check for the tenant analytics dashboard at desktop and 360 px. Uses a fixture copy only.
 import assert from 'node:assert/strict';
+import { childClose, stopFixtureBrowser } from '../tests/child-fixture.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
@@ -38,7 +39,7 @@ await new Promise(r=>h.server.listen(0,'127.0.0.1',r));
 const origin = `http://127.0.0.1:${h.server.address().port}`;
 const evidence = path.resolve('docs/deal-analytics/evidence');
 fs.mkdirSync(evidence,{ recursive:true });
-let browser, ws;
+let browser, browserClosed, ws;
 const pending = new Map();
 try {
   const executable = [process.env.MEDIA_TEST_BROWSER,'C:/Program Files/Google/Chrome/Application/chrome.exe',
@@ -47,6 +48,7 @@ try {
   const profile = path.join(fixture.dir,'browser');
   browser = spawn(executable,['--headless=new','--disable-gpu','--no-first-run','--no-default-browser-check','--remote-debugging-port=0',
     `--user-data-dir=${profile}`,'about:blank'],{ windowsHide:true,stdio:'ignore' });
+  browserClosed = childClose(browser);
   const portFile = path.join(profile,'DevToolsActivePort');
   for (let i=0;i<150 && !fs.existsSync(portFile);i++) await new Promise(r=>setTimeout(r,100));
   const port = fs.readFileSync(portFile,'utf8').split('\n')[0];
@@ -99,10 +101,8 @@ try {
   await wait("document.querySelector('#page')?.textContent.includes('pengelola tenant')");
   console.log('PASS deal analytics UI: 8 KPI with n, n<10 badge, weekly trend, funnel note, explicit unknown attribution, CSV link, no overflow at 1366px and 360px, agent refused; screenshots in docs/deal-analytics/evidence');
 } finally {
-  try { ws?.close(); } catch {}
-  browser?.kill();
+  if (browser) await stopFixtureBrowser(browser, browserClosed, ws);
   h.wss.close(); h.server.closeAllConnections(); await new Promise(r=>h.server.close(r));
   db.close();
-  await new Promise(r=>setTimeout(r,500));
-  try { fixture.close(); } catch {}
+  await fixture.closeAsync();
 }

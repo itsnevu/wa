@@ -54,6 +54,15 @@ export function twoTenants() {
       }
       db.prepare('INSERT INTO sessions(id,user_id,expires_at,auth_version) VALUES(?,?,?,?)').run('session-P',1,9999999999999,db.prepare('SELECT auth_version FROM users WHERE id=1').get().auth_version);
     })();
-    return {db,dir,close(){db.close();fs.rmSync(dir,{recursive:true,force:true});}};
+    const removal = { recursive: true, force: true, maxRetries: 8, retryDelay: 100 };
+    function closeDb() {
+      try { db.pragma('wal_checkpoint(TRUNCATE)'); }
+      finally { db.close(); }
+    }
+    return {
+      db, dir,
+      close() { closeDb(); fs.rmSync(dir, removal); },
+      closeAsync() { closeDb(); return fs.promises.rm(dir, removal); },
+    };
   } catch(error) { db.close(); fs.rmSync(dir,{recursive:true,force:true}); throw error; }
 }
