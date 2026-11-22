@@ -6,6 +6,7 @@ import { childClose, stopFixtureBrowser } from './child-fixture.mjs';
 import { spawn } from 'node:child_process';
 import test from 'node:test';
 import { twoTenants } from './tenant-fixture.mjs';
+import { waitFor } from './lib/wait.mjs';
 
 const fixture = twoTenants();
 Object.assign(process.env,{ DATA_DIR:fixture.dir,ALLOW_AUTO_MIGRATE:'1',MULTITENANT_ENABLED:'0',
@@ -146,14 +147,8 @@ test('owner takes one random 5% sample per window and records false positives', 
   assert.deepEqual(done.data.audit_stats,[{ admin_id:10,classifier_version:'fixture-v1',audited:1,false_positive:1 }]);
 });
 
-const pause = ms => new Promise(resolve=>setTimeout(resolve,ms));
-async function wait(fn) {
-  for(let i=0;i<160;i++) {
-    if (await fn()) return;
-    await pause(50);
-  }
-  throw Error('Timed out waiting for browser');
-}
+// H1: shared deterministic helper; the failure message names what was awaited and the last value seen.
+const wait = (fn,label='browser condition') => waitFor(fn,{ deadline:8000,interval:50,label });
 
 test('Chrome desktop and 360px render card, SLA, reason grid, proof and DP form', async () => {
   const id = deal(10,'A',Date.now()-26*3600000);
@@ -201,6 +196,8 @@ test('Chrome desktop and 360px render card, SLA, reason grid, proof and DP form'
     const dialog = "document.querySelector('.deal-dialog')";
     for(const width of [1366,360]) {
       await cdp('Emulation.setDeviceMetricsOverride',{width,height:width===360?780:900,deviceScaleFactor:1,mobile:width===360});
+      // The resize re-renders the review list; the card is briefly absent (flake seen in H0 follow-up run).
+      await wait(()=>evalJs(`!!${card}?.querySelector('[data-action=paid]')`),`deal card rendered at ${width}px`);
       assert.equal(await evalJs(`${card}.querySelector('[data-action=paid]').disabled`),true);
       assert.equal(await evalJs(`${card}.querySelector('.deal-sla').textContent.includes('Lewat SLA')`),true);
       assert.equal(await evalJs(`${card}.querySelectorAll('.deal-messages li').length<=6`),true);
