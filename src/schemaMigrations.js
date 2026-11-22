@@ -59,6 +59,9 @@ export async function ensureSchema(db,config) {
       migrateDealAnalyticsV9(db,config);
       if(schemaFingerprint(db)!==known.current) throw Error('Unexpected migrated schema fingerprint');
       if(db.pragma('foreign_key_check').length) throw Error('Schema migration foreign key verification failed');
+      // H2: integrity verified inside the migration transaction, so a failure rolls everything back.
+      const integrity=(config.integrityCheck ?? (d=>d.pragma('integrity_check',{simple:true})))(db);
+      if(integrity!=='ok') throw Error(`Schema migration integrity_check failed (${integrity}); rolled back`);
       db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(SCHEMA_VERSION,'Analytics corrections',known.current,Date.now());
       return recordSchemaDdl(db,SCHEMA_VERSION);
     }).immediate();

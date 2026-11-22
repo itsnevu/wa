@@ -1,3 +1,4 @@
+import { trackJob } from './shutdown.js';
 import { db } from './db.js';
 import { DAY, OPEN_REVIEW, appendDealEvent, insertDealNotice } from './dealReview.js';
 
@@ -96,7 +97,8 @@ export async function runDealReviewJobs({ now = Date.now(), sendReminder } = {})
 
 // H1: the clock is injectable (default real clock) so DP/SLA deadlines can be driven without waiting.
 export function startDealReviewJobs(sendReminder,{ clock = { now: () => Date.now() } } = {}) {
-  const tick = () => void runDealReviewJobs({ now: clock.now(), sendReminder }).catch(err => console.error('[deal.jobs]',err.message));
+  // Tracked so a graceful shutdown waits for a reminder run already in progress (H2).
+  const tick = () => void trackJob(runDealReviewJobs({ now: clock.now(), sendReminder })).catch(err => console.error('[deal.jobs]',err.message));
   setImmediate(tick);
   return setInterval(tick,60000);
 }

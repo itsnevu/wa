@@ -6,6 +6,7 @@ import * as wa from './wa.js';
 import * as backup from './backup.js';
 import { db, q } from './db.js';
 import { shutdown as shutdownRegex } from './regexRunner.js';
+import { gracefulShutdown } from './shutdown.js';
 
 import { startDealSweep } from './dealDetection.js';
 
@@ -85,14 +86,9 @@ const shutdown = () => {
   closing = true;
   console.log('[shutdown] menutup');
   for (const n of q.allNumbers.all()) wa.disconnect(n.id);
-  clearInterval(dealSweepTimer);
-  clearInterval(dealReviewTimer);
-  clearInterval(unansweredTimer);
-  shutdownRegex();
-  // Klien WS menahan server.close(); tutup agar tidak selalu jatuh ke batas 5 detik.
-  for (const client of wss.clients) client.terminate();
-  server.close(() => process.exit(0));
-  setTimeout(() => process.exit(0), 5000);
+  // H2: wait for in-flight requests and jobs, checkpoint WAL, close the database, then exit.
+  void gracefulShutdown({ server, wss, db, timeoutMs: 10000,
+    stops: [() => clearInterval(dealSweepTimer), () => clearInterval(dealReviewTimer), () => clearInterval(unansweredTimer), shutdownRegex] });
 };
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
