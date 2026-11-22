@@ -26,6 +26,8 @@ export const config = {
   dataDir: process.env.DATA_DIR || path.resolve('data'),
   mediaSignedUrlsEnabled: process.env.MEDIA_SIGNED_URLS_ENABLED === '1',
   mediaSigningKey: process.env.MEDIA_SIGNING_KEY || '',
+  mediaSigningKeyPrevious: process.env.MEDIA_SIGNING_KEY_PREVIOUS || '',
+  mediaSigningKeyPreviousUntil: Number(process.env.MEDIA_SIGNING_KEY_PREVIOUS_UNTIL || 0),
   adminUser: process.env.ADMIN_USER || 'admin',
   adminPass: process.env.ADMIN_PASS || 'admin123',
   delayMin: Number(process.env.SEND_DELAY_MIN || 1200),

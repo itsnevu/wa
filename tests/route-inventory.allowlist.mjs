@@ -10,6 +10,11 @@ export const publicRoutes=[
     "alasan": "Liveness publik tanpa data tenant."
   },
   {
+    "method": "GET",
+    "path": "/api/ready",
+    "alasan": "Readiness publik (H3): status database/migrasi dan metrik agregat, tanpa data tenant."
+  },
+  {
     "method": "USE",
     "path": "/*",
     "alasan": "Static assets dari direktori public saja."

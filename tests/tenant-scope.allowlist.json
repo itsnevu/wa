@@ -1,0 +1,854 @@
+[
+  {
+    "id": "src/auth.js :: UPDATE tenant_invitations SET accepted_at=? WHERE id=?",
+    "tables": [
+      "tenant_invitations"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT m.id,m.number_id,m.media_path FROM messages m JOIN chats c ON c.id=m.chat_id JOIN numbers n ON n.id=c.number_id WHERE m.media_path IS NOT NULL AND m.medi",
+    "tables": [
+      "messages",
+      "chats",
+      "numbers",
+      "media_records"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT OR IGNORE INTO media_records(uuid,message_id,number_id,storage_path,created_at) VALUES(?,?,?,?,?)",
+    "tables": [
+      "media_records"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM ai_settings WHERE number_id = ?",
+    "tables": [
+      "ai_settings"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE chats SET ai_paused_until = ? WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM ai_usage WHERE number_id = ? AND day = ?",
+    "tables": [
+      "ai_usage"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT INTO ai_usage(number_id, day, tokens, replies) VALUES (?, ?, ?, ?) ON CONFLICT(number_id, day) DO UPDATE SET tokens = tokens + excluded.tokens, replies =",
+    "tables": [
+      "ai_usage"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM ai_seen WHERE wa_id = ?",
+    "tables": [
+      "ai_seen"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT OR IGNORE INTO ai_seen(wa_id, at) VALUES (?, ?)",
+    "tables": [
+      "ai_seen"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT COUNT(*) AS n FROM ai_logs WHERE chat_id = ? AND at > ?",
+    "tables": [
+      "ai_logs"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT at FROM ai_logs WHERE chat_id = ? AND reply IS NOT NULL AND error IS NULL ORDER BY at DESC, id DESC LIMIT 1",
+    "tables": [
+      "ai_logs"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM messages WHERE chat_id = ? ORDER BY ts DESC, id DESC LIMIT ?",
+    "tables": [
+      "messages"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT OR IGNORE INTO ai_notice(number_id, chat_id, day, kind) VALUES (?, ?, ?, ?)",
+    "tables": [
+      "ai_notice"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT OR IGNORE INTO ai_alerts(number_id, day, level, at) VALUES (?, ?, ?, ?)",
+    "tables": [
+      "ai_alerts"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT INTO ai_logs(number_id, chat_id, prompt, reply, tokens, model, error, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    "tables": [
+      "ai_logs"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM products WHERE number_id = ? AND active = 1 AND (name LIKE ? OR sku LIKE ?) ORDER BY name LIMIT 20",
+    "tables": [
+      "products"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM products WHERE number_id = ? AND sku = ? AND active = 1",
+    "tables": [
+      "products"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE products SET stock = stock - ? WHERE number_id = ? AND sku = ?",
+    "tables": [
+      "products"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT INTO orders(number_id, chat_id, code, items_json, total, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+    "tables": [
+      "orders"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE chats SET state = ? WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT INTO activity (user_id, number_id, action, detail, at) VALUES (?, ?, ?, ?, ?)",
+    "tables": [
+      "activity"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT a.*, u.username, n.name AS number_name FROM activity a LEFT JOIN users u ON u.id = a.user_id LEFT JOIN numbers n ON n.id = a.number_id ORDER BY a.id DESC",
+    "tables": [
+      "activity",
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE numbers SET last_seen = ? WHERE id = ?",
+    "tables": [
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM numbers ORDER BY id",
+    "tables": [
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM numbers WHERE owner_id = ? ORDER BY id",
+    "tables": [
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM numbers WHERE id = ?",
+    "tables": [
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT INTO numbers (phone, name, owner_id, created_at) VALUES (?, ?, ?, ?)",
+    "tables": [
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE numbers SET status = ? WHERE id = ?",
+    "tables": [
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: DELETE FROM numbers WHERE id = ?",
+    "tables": [
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM chats WHERE number_id = ? ORDER BY last_at DESC LIMIT 200",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT c.*, ct.name AS local_name FROM chats c LEFT JOIN contacts_v2 ct ON ct.number_id = c.number_id AND ct.jid = c.jid WHERE c.id = ?",
+    "tables": [
+      "chats",
+      "contacts_v2"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT c.*, u.username AS assignee_name, ct.name AS local_name, m.body AS last_body, m.kind AS last_kind, m.from_me AS last_from_me FROM chats c LEFT JOIN users",
+    "tables": [
+      "chats",
+      "contacts_v2",
+      "messages"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE chats SET status = ? WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE chats SET status = 'new' WHERE id = ? AND status = 'resolved'",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: DELETE FROM chats WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM chats WHERE number_id = ? AND jid = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT INTO chats (number_id, jid, name, last_at) VALUES (?, ?, ?, ?)",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE chats SET last_at = ?, name = COALESCE(?, name) WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE chats SET unread = unread + 1 WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE chats SET unread = 0 WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE chats SET unread = ? WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE chats SET pn = ? WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE chats SET name = ? WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE chats SET push_name = ? WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT INTO contacts_v2 (number_id, jid, name, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(number_id, jid) DO UPDATE SET name = excluded.name, updated_at = excl",
+    "tables": [
+      "contacts_v2"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM contacts_v2 WHERE number_id = ? AND jid = ?",
+    "tables": [
+      "contacts_v2"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: DELETE FROM contacts_v2 WHERE number_id = ? AND jid = ?",
+    "tables": [
+      "contacts_v2"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE chats SET assignee_id = ? WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT INTO notifications (user_id, number_id, chat_id, created_at) VALUES (?, ?, ?, ?)",
+    "tables": [
+      "notifications"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT f.*, c.name, c.push_name, c.pn, c.jid FROM notifications f JOIN chats c ON c.id = f.chat_id WHERE f.user_id = ? ORDER BY f.id DESC LIMIT ?",
+    "tables": [
+      "notifications",
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE notifications SET read_at = ? WHERE user_id = ? AND read_at IS NULL",
+    "tables": [
+      "notifications"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT COUNT(*) AS count FROM notifications WHERE user_id = ? AND read_at IS NULL",
+    "tables": [
+      "notifications"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM chats WHERE number_id = ? AND assignee_id = ? ORDER BY last_at DESC LIMIT 200",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT OR IGNORE INTO messages (number_id, chat_id, from_me, body, ts, agent_id, kind, media_path, mime, wa_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    "tables": [
+      "messages"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE messages SET media_path = ? WHERE id = ?",
+    "tables": [
+      "messages"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM messages WHERE number_id = ? AND wa_id = ?",
+    "tables": [
+      "messages"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM (SELECT * FROM messages WHERE chat_id = ? AND ts < ? ORDER BY ts DESC LIMIT 500) ORDER BY ts ASC",
+    "tables": [
+      "messages"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM rules WHERE number_id = ? AND enabled = 1 ORDER BY priority ASC, id ASC",
+    "tables": [
+      "rules"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM rules WHERE number_id = ? ORDER BY priority ASC, id ASC",
+    "tables": [
+      "rules"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT INTO rules (number_id, match_type, pattern, reply, priority) VALUES (?, ?, ?, ?, ?)",
+    "tables": [
+      "rules"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE rules SET enabled = ?, slow = 0 WHERE id = ?",
+    "tables": [
+      "rules"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: UPDATE rules SET slow = 1 WHERE id = ?",
+    "tables": [
+      "rules"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: DELETE FROM rules WHERE id = ?",
+    "tables": [
+      "rules"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM templates ORDER BY id DESC",
+    "tables": [
+      "templates"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT INTO templates (number_id, title, body) VALUES (?, ?, ?)",
+    "tables": [
+      "templates"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: DELETE FROM templates WHERE id = ?",
+    "tables": [
+      "templates"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT * FROM labels ORDER BY name",
+    "tables": [
+      "labels"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT INTO labels (name, color) VALUES (?, ?)",
+    "tables": [
+      "labels"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: DELETE FROM labels WHERE id = ?",
+    "tables": [
+      "labels"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: SELECT l.* FROM labels l JOIN chat_labels cl ON cl.label_id = l.id WHERE cl.chat_id = ?",
+    "tables": [
+      "labels",
+      "chat_labels"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: INSERT OR IGNORE INTO chat_labels (chat_id, label_id) VALUES (?, ?)",
+    "tables": [
+      "chat_labels"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/db.js :: DELETE FROM chat_labels WHERE chat_id = ? AND label_id = ?",
+    "tables": [
+      "chat_labels"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/dealAnalyticsMigration.js :: CASE WHEN ?.from_me=1 THEN COALESCE((SELECT username FROM users WHERE id=?.agent_id),'Tim') ELSE COALESCE((SELECT name FROM contacts_v2 WHERE number_id=?.number",
+    "tables": [
+      "contacts_v2"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/index.js :: DELETE FROM messages WHERE ts < ?",
+    "tables": [
+      "messages"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/index.js :: UPDATE numbers SET status = 'offline'",
+    "tables": [
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/legacySchema.js :: INSERT OR IGNORE INTO contacts_v2 (number_id, jid, name, updated_at) SELECT c.number_id, ct.jid, ct.name, ct.updated_at FROM contacts ct JOIN chats c ON c.jid =",
+    "tables": [
+      "contacts_v2",
+      "contacts",
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/legacySchema.js :: INSERT OR IGNORE INTO media_records(uuid,message_id,number_id,storage_path,created_at) VALUES (?,?,?,?,?)",
+    "tables": [
+      "media_records"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/legacySchema.js :: SELECT m.id,m.number_id,m.media_path FROM messages m JOIN chats c ON c.id=m.chat_id JOIN numbers n ON n.id=c.number_id WHERE m.media_path IS NOT NULL AND m.medi",
+    "tables": [
+      "messages",
+      "chats",
+      "numbers",
+      "media_records"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/legacySchema.js :: UPDATE ai_settings SET stop_reply = ? WHERE stop_reply = ''",
+    "tables": [
+      "ai_settings"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/limits.js :: SELECT count FROM send_count WHERE number_id = ? AND day = ?",
+    "tables": [
+      "send_count"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/media.js :: SELECT 1 FROM messages WHERE media_path=? AND number_id<>? LIMIT 1",
+    "tables": [
+      "messages"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/media.js :: INSERT OR IGNORE INTO media_records(uuid,message_id,number_id,storage_path,created_at) VALUES(?,?,?,?,?)",
+    "tables": [
+      "media_records"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/media.js :: SELECT m.id,m.number_id,m.media_path,c.number_id AS chat_number,n.owner_id FROM messages m JOIN chats c ON c.id=m.chat_id JOIN numbers n ON n.id=c.number_id WHE",
+    "tables": [
+      "messages",
+      "chats",
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/media.js :: SELECT uuid FROM media_records WHERE message_id=?",
+    "tables": [
+      "media_records"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/platformAudit.js :: UPDATE platform_grants SET revoked_at=? WHERE id=? AND revoked_at IS NULL",
+    "tables": [
+      "platform_grants"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/platformAudit.js :: SELECT revoked_at FROM platform_grants WHERE id=?",
+    "tables": [
+      "platform_grants"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/platformGrantState.js :: SELECT * FROM platform_grants WHERE id=? AND actor_user_id=?",
+    "tables": [
+      "platform_grants"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/platformGrantState.js :: UPDATE platform_grants SET last_seen_at=? WHERE id=? AND last_seen_at<=?",
+    "tables": [
+      "platform_grants"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/platformRoutes.js :: INSERT INTO platform_grants(?) VALUES(?)",
+    "tables": [
+      "platform_grants"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/platformRoutes.js :: UPDATE platform_grants SET capabilities_json=?,reason=?,expires_at=? WHERE id=? AND revoked_at IS NULL",
+    "tables": [
+      "platform_grants"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/readiness.js :: SELECT coalesce(sum(queue_depth),0) depth FROM numbers",
+    "tables": [
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/readiness.js :: SELECT drop_count_json FROM numbers",
+    "tables": [
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/readiness.js :: SELECT min(at) at FROM deal_job_notices WHERE delivered_at IS NULL",
+    "tables": [
+      "deal_job_notices"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/routes.js :: SELECT m.id, m.body, m.ts, m.chat_id, m.number_id, c.name, c.push_name, c.pn, c.jid, n.name AS number FROM messages m JOIN chats c ON c.id = m.chat_id JOIN numb",
+    "tables": [
+      "messages",
+      "chats",
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/routes.js :: SELECT number_id FROM ai_alerts WHERE day=? AND level='stop'",
+    "tables": [
+      "ai_alerts"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/routes.js :: UPDATE numbers SET name = ? WHERE id = ?",
+    "tables": [
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/routes.js :: UPDATE chats SET pinned = ? WHERE id = ?",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/routes.js :: SELECT ts, from_me, body FROM messages WHERE chat_id = ? ORDER BY ts, id",
+    "tables": [
+      "messages"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/routes.js :: SELECT * FROM rules WHERE id = ?",
+    "tables": [
+      "rules"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/routes.js :: SELECT * FROM templates WHERE id = ?",
+    "tables": [
+      "templates"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/routes.js :: SELECT id FROM labels WHERE id = ?",
+    "tables": [
+      "labels"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/tenantScope.js :: SELECT 1 FROM tenant_members WHERE user_id=? LIMIT 1",
+    "tables": [
+      "tenant_members"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: INSERT OR IGNORE INTO ai_settings(number_id, stop_reply) VALUES (?, ?)",
+    "tables": [
+      "ai_settings"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: UPDATE ai_settings SET ${fields.map(f=>",
+    "tables": [
+      "ai_settings"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: SELECT level FROM ai_alerts WHERE number_id=? AND day=?",
+    "tables": [
+      "ai_alerts"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: SELECT * FROM ai_logs WHERE number_id=? ORDER BY id DESC LIMIT 50",
+    "tables": [
+      "ai_logs"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: DELETE FROM ai_notice WHERE number_id=? AND day=? AND kind='stop'",
+    "tables": [
+      "ai_notice"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: UPDATE ai_settings SET daily_tokens=? WHERE number_id=?",
+    "tables": [
+      "ai_settings"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: DELETE FROM ai_alerts WHERE number_id=? AND day=? AND level='stop'",
+    "tables": [
+      "ai_alerts"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: UPDATE chats SET state='active',ai_paused_until=NULL WHERE number_id=? AND state='pending'",
+    "tables": [
+      "chats"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: SELECT a.*,n.name FROM ai_alerts a JOIN numbers n ON n.id=a.number_id WHERE day=? ORDER BY a.id DESC",
+    "tables": [
+      "ai_alerts",
+      "numbers"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: SELECT * FROM products WHERE number_id=? ORDER BY name",
+    "tables": [
+      "products"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: INSERT INTO products(number_id,sku,name,price,stock,description,active) VALUES (@numberId,@sku,@name,@price,@stock,@description,@active)",
+    "tables": [
+      "products"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: SELECT * FROM products WHERE id=? AND number_id=?",
+    "tables": [
+      "products"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: UPDATE products SET sku=@sku,name=@name,price=@price,stock=@stock,description=@description,active=@active WHERE id=@id AND number_id=@numberId",
+    "tables": [
+      "products"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: DELETE FROM products WHERE id=? AND number_id=?",
+    "tables": [
+      "products"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: SELECT * FROM orders WHERE number_id IN (?) ? ORDER BY id DESC LIMIT 200",
+    "tables": [
+      "orders"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: SELECT * FROM orders WHERE id=?",
+    "tables": [
+      "orders"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  },
+  {
+    "id": "src/ai/routes.js :: UPDATE orders SET status=? WHERE id=?",
+    "tables": [
+      "orders"
+    ],
+    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
+  }
+]

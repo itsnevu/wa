@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { db, q, schemaStatus } from './db.js';
+import { readiness } from './readiness.js';
 import { acceptOwnerInvitation, login, logout, setCookie, clearCookie, requireAuth, requireAdmin, canAccessNumber } from './auth.js';
 import { hashPassword, verifyPassword } from './passwords.js';
 import * as guard from './loginGuard.js';
@@ -27,6 +28,8 @@ export const api = Router();
 api.get('/health', (_req, res) => res.json({
   ok: true, schema_version: schemaStatus.version, schema_ddl_hash: schemaStatus.hash,
 }));
+// H3: readiness is separate from liveness; 503 until the database is open and migrated.
+api.get('/ready', (_req, res) => { const r = readiness(db, schemaStatus); res.status(r.status).json(r.body); });
 
 api.post('/login', (req, res) => {
   const { username, password, invitation_token } = req.body || {};

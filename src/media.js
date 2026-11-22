@@ -61,8 +61,16 @@ function authorize(row, user, scope) {
     .get(row.storage_path, row.number_id)) throw fail(403, 'Kepemilikan lampiran perlu diperiksa pengelola.');
   return row;
 }
-const signature = (uuid, user, exp, tenant) => createHmac('sha256', config.mediaSigningKey)
+const signature = (uuid, user, exp, tenant, key = config.mediaSigningKey) => createHmac('sha256', key)
   .update(JSON.stringify(tenant ? [uuid,user,exp,tenant] : [uuid,user,exp])).digest('hex');
+// H3 key rotation: new URLs are signed with the current key; the previous key is still accepted until
+// MEDIA_SIGNING_KEY_PREVIOUS_UNTIL (epoch ms), so rotating never breaks links already issued (TTL stays 5 min).
+export function mediaSignatureValid(sig, uuid, user, exp, tenant, now = Date.now()) {
+  const given = Buffer.from(sig, 'hex');
+  const keys = [config.mediaSigningKey];
+  if (config.mediaSigningKeyPrevious && now < (config.mediaSigningKeyPreviousUntil || 0)) keys.push(config.mediaSigningKeyPrevious);
+  return keys.some(key => timingSafeEqual(given, Buffer.from(signature(uuid, user, exp, tenant, key), 'hex')));
+}
 const register = db.prepare('INSERT OR IGNORE INTO media_records(uuid,message_id,number_id,storage_path,created_at) VALUES(?,?,?,?,?)');
 
 export function issueMediaUrl(chatId, name, user) {
@@ -125,7 +133,7 @@ mediaRouter.use((req, res, next) => {
     if (!/^\d+$/.test(user) || Number(user) !== req.user.id || !/^\d+$/.test(exp)
       || !Number.isSafeInteger(Number(exp)) || Number(exp) <= Date.now() || Number(exp) > Date.now() + TTL
       || !/^[0-9a-f]{64}$/.test(sig)
-      || !timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(signature(uuid, Number(user), Number(exp), tenant), 'hex'))) {
+      || !mediaSignatureValid(sig, uuid, Number(user), Number(exp), tenant)) {
       throw fail(403, 'Tautan lampiran tidak valid atau sudah kedaluwarsa.');
     }
     if (tenant === '') throw fail(403,'Tautan lampiran tidak valid.');

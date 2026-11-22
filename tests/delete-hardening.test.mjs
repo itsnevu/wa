@@ -161,7 +161,7 @@ test('2.5 handler error terpusat: JSON, code, request id, tanpa stack atau SQL',
   const server = app.listen(0,'127.0.0.1'); await new Promise(r=>server.once('listening',r));
   const errors = []; const original = console.error; console.error = (...a)=>errors.push(a.join(' '));
   try {
-    for (const [p,status,code] of [['/sqlite',409,'CONSTRAINT'],['/busy',400,'DATABASE'],['/crash',500,'INTERNAL']]) {
+    for (const [p,status,code] of [['/sqlite',409,'CONSTRAINT'],['/busy',503,'BUSY'],['/crash',500,'INTERNAL']]) {
       const r = await fetch(`http://127.0.0.1:${server.address().port}${p}`); const text = await r.text(); const j = JSON.parse(text);
       assert.equal(r.status,status,p); assert.equal(j.code,code,p); assert.ok(j.request_id,p);
       assert.doesNotMatch(text,/UNIQUE constraint|users\.username|database is locked|secret internal|\.js:\d/,p);
