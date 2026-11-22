@@ -30,14 +30,17 @@ Protokol:
 |---|---|---|
 | 1–7 | T01 … Deal review | — (sudah ada) |
 | 8 | Deal analytics — **BEKU** (22 Nov 2026, `docs/deal-analytics/V8-FREEZE.md`) | Claude |
-| 9 | Koreksi analytics (jadwal per hari, libur, bucket tak terjawab) | Claude (diklaim) |
+| 9 | Koreksi analytics (jadwal per hari, libur, tak terjawab 4 jam operasional, kas masuk) — **BEKU** (23 Nov 2026, `docs/deal-analytics/V9-FREEZE.md`) | Claude |
 | 10 | Grup: `chat_type`, pengirim, `groups`, `lid_map`, `buyer_jid` | Claude (diklaim) |
 
 - Klaim nomor di tabel ini **sebelum** menulis migrasi.
 - Satu versi = satu fungsi `migrateX(db)` + satu baris di `src/schemaMigrations.js` + fingerprint `vN`.
 - Migrasi versi yang sudah dipakai database operasional **tidak boleh diubah**. Perbaikan selalu versi baru.
-- **v1–v8 beku.** Setiap perubahan schema berikutnya wajib v9 atau lebih tinggi. Fingerprint hanya menjaga
-  tabel dan kolom; untuk trigger, indeks, dan CHECK gunakan hash DDL di manifest pembekuan (`V8-FREEZE.md`).
+- **v1–v9 beku.** Setiap perubahan schema berikutnya wajib v10 atau lebih tinggi. Fingerprint hanya menjaga
+  tabel dan kolom; trigger, indeks, dan CHECK dijaga **hash DDL** (`src/schemaDdlHash.js`, tabel `schema_ddl_hash`):
+  dicatat per database saat migrasi, dicek setiap startup. v8 `grandfathered` (hanya peringatan); sejak v9 hash
+  berbeda → startup ditolak. Generator menghitung `ddl.vN` sejak v9. `/api/health` memuat versi dan hash aktif.
+- Penulisan analytics hanya dari job latar (`startUnansweredJob`); request baca **tidak boleh menulis**.
 - Server dan migrasi memegang `data/app.db.lock`; jangan jalankan dua instance pada folder data yang sama.
 - Database operasional: backup → restore ke salinan → migrasi salinan + smoke → migrasi operasional + smoke. Tidak pernah migrasi langsung.
 
