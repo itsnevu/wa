@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
-import { childClose, stopFixtureChild } from './child-fixture.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { twoTenants } from './tenant-fixture.mjs';
-import { waitForEvent } from './lib/wait.mjs';
 
 // Tugas 5A gerbang 2: delete semantics for deals, evidence snapshots and verifier deletion (tests 1-10).
 const fixture = twoTenants();
@@ -79,17 +77,17 @@ test('5. disconnect gagal -> baris tetap terhapus, kegagalan tercatat', async ()
   db.prepare("INSERT INTO numbers(id,phone,name,owner_id,created_at,tenant_id) VALUES(12,'620005','A-number-5',10,0,'A')").run();
   const session = path.join(fixture.dir,'sessions','12');
   fs.mkdirSync(session,{ recursive:true }); fs.writeFileSync(path.join(session,'creds.json'),'{}');
-  // Another process holding the directory as its cwd makes the cleanup fail (EPERM/EBUSY on Windows).
-  const { spawn } = await import('node:child_process');
-  const holder = spawn(process.execPath,['-e','setTimeout(()=>{},10000)'],{ cwd:session,stdio:'ignore' });
-  const closed = childClose(holder);
-  // H1: wait for the holder process to exist (it holds the cwd from spawn) instead of a fixed 300 ms sleep.
-  await waitForEvent(holder,'spawn',{ deadline:5000 });
+  // H4: the cleanup failure is injected deterministically (it used to depend on another process holding
+  // the folder as cwd, which raced under load: 3/13 failures in the H4 run).
+  const { sessionIo } = await import('../src/wa.js');
+  const realRm = sessionIo.rm;
+  sessionIo.rm = () => { throw Object.assign(Error('EBUSY: resource busy or locked'),{ code:'EBUSY' }); };
   const logged = []; const original = console.error; console.error = (...a) => logged.push(a.join(' '));
   try {
     const r = await request('/numbers/12',{ cookie:owner,method:'DELETE' });
     assert.equal(r.status,200,r.text);
-  } finally { console.error = original; await stopFixtureChild(holder, closed); }
+  } finally { console.error = original; sessionIo.rm = realRm; }
+  assert.equal(fs.existsSync(session),true,'failed cleanup leaves the folder for the orphan-session job');
   assert.equal(Boolean(db.prepare('SELECT 1 FROM numbers WHERE id=12').get()),false);
   assert.ok(logged.some(line=>line.includes('[number.delete]') && line.includes('12')),logged.join('\n'));
 });

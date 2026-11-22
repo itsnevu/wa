@@ -684,8 +684,11 @@ export function disconnect(numberId, forget = false) {
 }
 
 // Removes stored WhatsApp credentials of a number; throws on filesystem errors so callers can log them.
+// H4: filesystem seam so tests can inject a cleanup failure (EBUSY/EPERM) deterministically instead of
+// relying on an OS directory lock. Production always uses fs.rmSync.
+export const sessionIo = { rm: (dir, options) => fs.rmSync(dir, options) };
 export function forgetSession(numberId) {
-  fs.rmSync(path.join(config.dataDir, 'sessions', String(numberId)), { recursive: true, force: true });
+  sessionIo.rm(path.join(config.dataDir, 'sessions', String(numberId)), { recursive: true, force: true });
 }
 
 // Set once restoreAll has finished; before that a folder may belong to a socket that is about to open.
