@@ -3,6 +3,14 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {assertStaticBoundary} from './staticBoundary.js';
 
+function positiveInteger(name, fallback) {
+  const value = Number(process.env[name] || fallback);
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new Error(`${name} harus berupa bilangan bulat positif`);
+  }
+  return value;
+}
+
 export const config = {
   platformGrantTtlMinutes:Math.max(1,Number.parseInt(process.env.PLATFORM_GRANT_TTL_MINUTES||'60',10)||60),
   platformGrantTtlMaxMinutes:Math.min(480,Math.max(1,Number.parseInt(process.env.PLATFORM_GRANT_TTL_MAX_MINUTES||'480',10)||480)),
@@ -20,8 +28,9 @@ export const config = {
   host: process.env.HOST || '127.0.0.1',
   trustProxy: process.env.TRUST_PROXY === '1',
   secureCookie: process.env.SECURE_COOKIE === '1',
-  loginMax: Number(process.env.LOGIN_MAX || 5),
-  loginLockMin: Number(process.env.LOGIN_LOCK_MIN || 15),
+  loginMax: positiveInteger('LOGIN_MAX', 5),
+  loginIpMax: positiveInteger('LOGIN_IP_MAX', 30),
+  loginLockMin: positiveInteger('LOGIN_LOCK_MIN', 15),
   passMin: Math.max(12, Number.parseInt(process.env.PASS_MIN || '12', 10) || 12),
   dataDir: process.env.DATA_DIR || path.resolve('data'),
   mediaSignedUrlsEnabled: process.env.MEDIA_SIGNED_URLS_ENABLED === '1',
@@ -29,7 +38,7 @@ export const config = {
   mediaSigningKeyPrevious: process.env.MEDIA_SIGNING_KEY_PREVIOUS || '',
   mediaSigningKeyPreviousUntil: Number(process.env.MEDIA_SIGNING_KEY_PREVIOUS_UNTIL || 0),
   adminUser: process.env.ADMIN_USER || 'admin',
-  adminPass: process.env.ADMIN_PASS || 'admin123',
+  adminPass: process.env.ADMIN_PASS,
   delayMin: Number(process.env.SEND_DELAY_MIN || 1200),
   delayMax: Number(process.env.SEND_DELAY_MAX || 3500),
   ratePerMinute: Number(process.env.RATE_PER_MINUTE || 8),

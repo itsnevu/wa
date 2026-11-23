@@ -208,8 +208,13 @@ if (!db.prepare("SELECT 1 FROM meta WHERE key = 'ai_stop_reply_default'").get())
 
 const count = db.prepare('SELECT COUNT(*) AS n FROM users').get().n;
 if (count === 0) {
+  const min = config.passMin ?? 12;
+  const password = config.adminPass;
+  if (typeof password !== 'string' || password.trim().length < min || password.length > 256) {
+    throw new Error(`ADMIN_PASS wajib diisi dengan password ${min}–256 karakter untuk membuat admin pertama`);
+  }
   db.prepare('INSERT INTO users (username, pass, role, created_at) VALUES (?, ?, ?, ?)')
-    .run(config.adminUser, hashPassword(config.adminPass), 'admin', Date.now());
+    .run(config.adminUser, hashPassword(password), 'admin', Date.now());
   console.log(`[db] admin dibuat: ${config.adminUser}`);
 }
 

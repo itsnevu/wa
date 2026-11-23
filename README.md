@@ -31,7 +31,11 @@ HOST default 127.0.0.1. Akses dari HP memerlukan HOST=0.0.0.0.
 TRUST_PROXY=1 hanya bila aplikasi berada di balik satu reverse proxy terpercaya.
 SECURE_COOKIE=1 menambahkan atribut Secure pada cookie sesi sehingga browser hanya
 mengirimnya melalui HTTPS; gunakan SECURE_COOKIE=0 untuk HTTP lokal.
-PASS_MIN default 12 (minimal 12) berlaku saat mengganti password dan membuat agen.
+PASS_MIN default 12 (minimal 12) berlaku saat membuat admin pertama, mengganti password, dan membuat agen.
+Isi ADMIN_PASS saat bootstrap database baru. Database yang sudah memiliki pengguna memakai kredensial yang tersimpan.
+LOGIN_MAX (default 5) membatasi kegagalan per pasangan username dan IP. LOGIN_IP_MAX (default 30)
+membatasi total kegagalan per IP. Keduanya kedaluwarsa setelah LOGIN_LOCK_MIN (default 15)
+menit sejak kegagalan terakhir yang dicatat untuk batas tersebut.
 Halaman Akun menyediakan ganti username, ganti password, dan keluar dari semua perangkat.
 Keluar dari semua perangkat membatalkan seluruh sesi login dashboard akun tersebut.
 
