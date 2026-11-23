@@ -13,6 +13,7 @@ import * as backup from './backup.js';
 import { aiApi } from './ai/routes.js';
 import { issueMediaUrl, mediaError } from './media.js';
 import {requireSessionScope,requireTenantScope} from './tenantScope.js';
+import {parseMessageCursor,readChatMessages,withTenantRead} from './chatMessageRead.js';
 import {mountSessionRoutes} from './sessionRoutes.js';
 import {mountSessionHealthRoutes} from './sessionHealthRoutes.js';
 import {appendAudit} from './platformAudit.js';
@@ -292,13 +293,18 @@ api.put('/chats/:chatId/name', (req, res) => {
   res.json({ ok: true });
 });
 
-api.get('/chats/:chatId/messages', (req, res) => {
-  const chat = q.chatById.get(Number(req.params.chatId));
-  if (!chat) return res.status(404).json({ error: 'chat tidak ada' });
-  if (!canAccessNumber(req.user, chat.number_id)) return res.status(403).json({ error: 'tidak punya akses' });
-  const before = Number(req.query.before) > 0 ? Number(req.query.before) : Date.now();
-  const messages = q.messagesByChat.all(chat.id, before);
-  res.json({ messages, labels: q.labelsForChat.all(chat.id), hasMore: messages.length === 500 });
+api.get('/chats/:chatId/messages', requireTenantScope, async (req, res) => {
+  let before;
+  try { before = parseMessageCursor(req.query.before); }
+  catch (error) {
+    if (error.status === 400) return res.status(400).json({error:error.message});
+    throw error;
+  }
+  const {tenantId,userId} = req.tenantScope;
+  const chatId = Number(req.params.chatId);
+  const page = await withTenantRead(tenantId,tx=>readChatMessages(tx,{tenantId,userId,chatId,before}));
+  if (page.status) return res.status(page.status).json({error:page.error});
+  res.json(page);
 });
 
 api.get('/chats/:chatId/export', (req, res) => {

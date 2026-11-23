@@ -18,3 +18,13 @@ jobs:
           INVENTORY_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
       - name: Verify session rotation and tenant status contracts
         run: npm run test:tenant:t03
+      - name: Verify chat message transaction and query plan
+        run: node --test tests/chat-message-read.test.mjs tests/user-provisioning.test.mjs tests/number-membership-migration.test.mjs
+      - name: Verify provisioned agent access to inbox and media
+        env:
+          ALLOW_AUTO_MIGRATE: '1'
+          MULTITENANT_ENABLED: '0'
+          MEDIA_TEST_BROWSER: /usr/bin/google-chrome
+        run: |
+          node --regexp-interpret-all scripts/verify-phase4.mjs
+          node --regexp-interpret-all scripts/verify-media-browser.mjs

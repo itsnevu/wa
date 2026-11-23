@@ -1,7 +1,7 @@
 {
   "pending": {
     "T03": 0,
-    "T05": 18,
+    "T05": 17,
     "T06": 32,
     "T08": 4,
     "T13": 5,
@@ -20,7 +20,6 @@
     "GET /api/backups",
     "GET /api/backups/:name",
     "GET /api/chats/:chatId/export",
-    "GET /api/chats/:chatId/messages",
     "GET /api/labels",
     "GET /api/monitor",
     "GET /api/notifications",
