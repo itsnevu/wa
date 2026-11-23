@@ -293,6 +293,11 @@ async function main() {
     return {forceRls:true, unscopedRows:0, scopedTenants:1};
   });
 
+  await check('chat read contract on SQLite and PostgreSQL staging',async()=>{
+    const {verifyChatReadContract}=await import('./chat-read-contract.mjs');
+    return verifyChatReadContract({admin,scoped:single,tenants});
+  });
+
   await check('mixed load', async () => {
     const started = performance.now();
     const until = started + 60000;

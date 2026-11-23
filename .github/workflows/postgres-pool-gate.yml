@@ -10,7 +10,10 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: tests/postgres-pool/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            tests/postgres-pool/package-lock.json
+      - run: npm ci
       - run: npm ci --prefix tests/postgres-pool --ignore-scripts
       - name: Exercise PgBouncer and run negative controls
         run: node tests/postgres-pool/gate.mjs

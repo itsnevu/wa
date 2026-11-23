@@ -25,7 +25,7 @@ export function instrumentedPool(options, report, {setScope = "SELECT set_config
     return broken.has(client) ? 'disconnected' : codes[client.getTransactionStatus()] ?? 'unknown';
   }
 
-  async function transaction(tenant, work) {
+  async function transaction(tenant, work, {readOnly=false} = {}) {
     const start = performance.now();
     const client = await pool.connect();
     const wait = performance.now() - start;
@@ -38,7 +38,7 @@ export function instrumentedPool(options, report, {setScope = "SELECT set_config
     try {
       await probe(client, 'checkout');
       discard = false;
-      await client.query('BEGIN');
+      await client.query(readOnly?'BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY':'BEGIN');
       begun = true;
       await probe(client, 'transaction entry');
       if (tenant !== null) {
