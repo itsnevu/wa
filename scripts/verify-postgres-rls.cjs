@@ -69,6 +69,8 @@ async function main() {
     } finally {
       await psql('postgres', 'ALTER TABLE fixture.messages ENABLE ROW LEVEL SECURITY;');
     }
+    const {verifyExpressRls} = await import('../tests/postgres-rls/express-fixture.mjs');
+    await verifyExpressRls({name, database, tenants});
   } finally {
     await docker(['rm', '-f', name]);
   }
