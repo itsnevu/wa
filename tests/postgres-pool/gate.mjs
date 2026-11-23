@@ -298,6 +298,11 @@ async function main() {
     return verifyChatReadContract({admin,scoped:single,tenants});
   });
 
+  await check('SQLite and PostgreSQL type and query parity',async()=>{
+    const {verifyQueryParity}=await import('./query-parity.mjs');
+    return verifyQueryParity({admin,scoped:single,tenants});
+  });
+
   await check('mixed load', async () => {
     const started = performance.now();
     const until = started + 60000;
