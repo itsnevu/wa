@@ -1,5 +1,5 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-media-browser.mjs
-SHA: b4694988e9d4c671e7e93f5c4fd93b3a6209ff6b
+SHA: e561c9e4454433db494812d72458168850e55b1f
 exit: 0
 Agen B: lampiran nomor B tampil dengan URL UUID bertanda tangan; viewport 1360x900.
 URL diperbarui ketika dibuka setelah expiry; preview tetap tampil.
