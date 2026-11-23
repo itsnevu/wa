@@ -854,17 +854,18 @@ async function loadChats() {
 async function openChat(id) {
   clearQuote();
   state.chatId = id;
+  const history = state.messageHistory = {cursor:null};
   state.activeChat = state.chats.find(c => c.id === id) || null;
   $('#msgs').innerHTML = skeleton();
   const data = await call('GET', `/chats/${id}/messages`);
-  if (state.chatId !== id) return;
+  if (state.chatId !== id || state.messageHistory !== history) return;
   $('#msgs').innerHTML = '';
   const chat = state.chats.find((c) => c.id === id);
   const unread = data.messages.filter(m => !m.from_me).slice(-(chat?.unread || 0));
   const firstUnread = chat?.unread ? unread[0] : null;
   data.messages.forEach((m) => append(m.body, m.from_me, m.media_path, m.kind, m.wa_id, m.ts, m === firstUnread));
   if (!data.messages.length) $('#msgs').innerHTML = '<div class="empty thread-empty">belum ada pesan</div>';
-  state.oldestTs = data.messages.length ? data.messages[0].ts : null;
+  history.cursor = data.nextCursor;
   renderLoadOlder(data.hasMore);
   $('#chips').innerHTML = data.labels.map((l) => {
     const color = /^#[0-9a-f]{6}$/i.test(l.color) ? l.color : '#64748b';
@@ -890,13 +891,16 @@ function renderLoadOlder(hasMore) {
 
 async function loadOlder() {
   const id = state.chatId;
-  const before = state.oldestTs;
-  if (!id || !before) return;
-  $('#loadOlder').disabled = true;
+  const history = state.messageHistory;
+  const before = history?.cursor;
+  if (!id) return;
+  if (!before) return openChat(id).catch(err => toast(err.message));
+  const button = $('#loadOlder');
+  button.disabled = true;
   let data;
   try { data = await call('GET', `/chats/${id}/messages?before=${before}`); }
-  catch (err) { $('#loadOlder').disabled = false; return toast(err.message); }
-  if (state.chatId !== id) return;
+  catch (err) { button.disabled = false; return toast(err.message); }
+  if (state.chatId !== id || state.messageHistory !== history) return;
   const thread = $('#msgs');
   const fromBottom = thread.scrollHeight - thread.scrollTop;
   $('#loadOlder')?.remove();
@@ -909,9 +913,16 @@ async function loadOlder() {
   const firstExisting = existing.find((n) => n.classList?.contains('b'));
   if (lastOlderDay && firstExisting?.dataset.day === lastOlderDay && existing[0]?.classList?.contains('message-date')) existing.shift();
   existing.forEach((n) => thread.appendChild(n));
-  if (data.messages.length) state.oldestTs = data.messages[0].ts;
+  history.cursor = data.nextCursor;
   renderLoadOlder(data.hasMore);
   thread.scrollTop = thread.scrollHeight - fromBottom;
+}
+
+function resetMessageCursor(chatId) {
+  if (state.chatId !== chatId) return;
+  const hasOlder = Boolean(state.messageHistory?.cursor || $('#loadOlder'));
+  state.messageHistory = {cursor:null};
+  renderLoadOlder(hasOlder);
 }
 
 function append(text, me, mediaPath, kind, waId, ts = Date.now(), unread = false) {
@@ -1024,7 +1035,10 @@ async function send() {
   $('#btnSend').textContent = 'mengirim…';
   $('#input').value = '';
   resizeComposer();
-  try { await call('POST', `/chats/${chatId}/send`, { text, quote_wa_id: state.quoteWaId || undefined }); if (state.chatId === chatId) clearQuote(); }
+  try {
+    await call('POST', `/chats/${chatId}/send`, { text, quote_wa_id: state.quoteWaId || undefined });
+    if (state.chatId === chatId) { clearQuote(); resetMessageCursor(chatId); }
+  }
   catch (e) { toast(e.message); if (state.chatId === chatId && !$('#input').value) $('#input').value = text; }
   finally { state.sending = false; $('#btnSend').textContent = 'Kirim'; updateComposer(); resizeComposer(); }
 }
@@ -1203,13 +1217,17 @@ $('#btnFile').onclick = () => $('#filePick').click();
 $('#filePick').onchange = async () => {
   const f = $('#filePick').files[0];
   if (!f || !state.chatId) return;
+  const chatId = state.chatId;
   const reader = new FileReader();
   reader.onload = async () => {
     try {
-      await call('POST', `/chats/${state.chatId}/media`, {
+      await call('POST', `/chats/${chatId}/media`, {
         base64: reader.result, mime: /\.webp$/i.test(f.name) ? 'image/webp' : f.type || 'application/octet-stream', caption: $('#input').value.trim(),
       });
-      $('#input').value = '';
+      if (state.chatId === chatId) {
+        $('#input').value = '';
+        resetMessageCursor(chatId);
+      }
     } catch (err) {
       notify(err.message);
     }
