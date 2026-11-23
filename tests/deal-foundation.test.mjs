@@ -29,7 +29,7 @@ const getRuns = id => db.prepare('SELECT * FROM classifier_runs WHERE chat_id=? 
 
 test('current fingerprint, foundation tables and backup', () => {
   const current = db.prepare('SELECT * FROM schema_migrations ORDER BY version DESC LIMIT 1').get();
-  assert.equal(current.version, 10);
+  assert.equal(current.version, 11);
   assert.equal(current.fingerprint, schemaFingerprint(db));
   assert.equal(db.prepare('SELECT count(*) AS n FROM schema_migrations WHERE version=5').get().n, 1);
   for (const table of ['deals','deal_events','deal_evidence','deal_verifications','dp_payments','classifier_runs']) {
@@ -52,6 +52,7 @@ test('v5 database upgrades with a v5 backup and existing messages intact', async
       DROP TRIGGER deal_analytics_insert; DROP TRIGGER deal_analytics_dimensions; DROP TRIGGER deal_analytics_answered;
       DROP INDEX deal_analytics_opened; DROP INDEX deal_verification_by_decision; DROP INDEX deal_analytics_messages;
       ALTER TABLE messages DROP COLUMN analytics_source;
+      ALTER TABLE numbers DROP COLUMN owner_assignment;
       DROP TABLE deal_event_types;
       ALTER TABLE tenants DROP COLUMN analytics_timezone; DROP TABLE deal_job_notices; DROP INDEX deals_review_queue; DROP INDEX deal_events_history;
       DROP TABLE deal_verifications; DROP TABLE dp_payments; DROP TABLE deal_events;

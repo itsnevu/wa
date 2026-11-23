@@ -142,7 +142,7 @@ test('26 migration v1 -> v2 refuses implicit startup and invalidates every legac
     await ensureSchema(copy,{...settings,allowAutoMigrate:true});
     assert.equal(copy.prepare('SELECT count(*) n FROM sessions').get().n,0);
     assert.equal(copy.prepare('PRAGMA table_info(sessions)').all().some(c=>c.name==='token'),false);
-    assert.equal(copy.prepare('SELECT MAX(version) v FROM schema_migrations').get().v,10);
+    assert.equal(copy.prepare('SELECT MAX(version) v FROM schema_migrations').get().v,11);
     assert.deepEqual(copy.pragma('foreign_key_check'),[]);
   }finally{copy.close();}
 });

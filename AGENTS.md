@@ -32,9 +32,10 @@ Protokol:
 | 8 | Deal analytics — **BEKU** (22 Nov 2026, `docs/deal-analytics/V8-FREEZE.md`) | Claude |
 | 9 | Koreksi analytics (jadwal per hari, libur, tak terjawab 4 jam operasional, kas masuk) — **BEKU** (23 Nov 2026, `docs/deal-analytics/V9-FREEZE.md`) | Claude |
 | 10 | Backfill membership pemilik nomor | Codex |
-| 11+ | Grup: `chat_type`, pengirim, `groups`, `lid_map`, `buyer_jid` | Claude |
+| 11 | Provenance pemilik nomor dan penetapan terverifikasi nomor 4 | Codex |
 
 - Klaim nomor di tabel ini **sebelum** menulis migrasi.
+- Gunakan satu nomor bebas berikutnya untuk setiap migrasi. Dukungan grup mengikuti aturan yang sama.
 - Satu versi = satu fungsi `migrateX(db)` + satu baris di `src/schemaMigrations.js` + fingerprint `vN`.
 - Migrasi versi yang sudah dipakai database operasional **tidak boleh diubah**. Perbaikan selalu versi baru.
 - **v1–v9 beku.** Setiap perubahan schema berikutnya wajib v10 atau lebih tinggi. Fingerprint hanya menjaga
