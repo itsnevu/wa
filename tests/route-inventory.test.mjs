@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import express from 'express';
+import {WebSocket} from 'ws';
 import {execFileSync} from 'node:child_process';
 import {observeRegistrations,inventory,validate,monotonicErrors,renderInventory,key} from './route-inventory-tools.mjs';
 import {scoped} from '../src/routeScopeMarker.js';
@@ -14,6 +15,7 @@ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'t02-inventory-'));
 Object.assign(process.env,{DATA_DIR:dir,ALLOW_AUTO_MIGRATE:'1',MULTITENANT_ENABLED:'0',ADMIN_USER:'inventory-fixture',ADMIN_PASS:'fixture-password-123'});
 const {createHttpSurface}=await import('../src/httpSurface.js');
 const {requireAuth}=await import('../src/auth.js');
+const {config}=await import('../src/config.js');
 const {db,schemaStatus}=await import('../src/db.js');
 const baseline=JSON.parse(fs.readFileSync(new URL('./route-inventory.baseline.json',import.meta.url),'utf8'));
 const surface=createHttpSurface();
@@ -61,6 +63,46 @@ test('HTTP construction preserves public static, login, health and auth response
     const html=await fetch(base+'/');assert.equal(html.status,200);assert.match(await html.text(),/<html/i);
     const sw=await fetch(base+'/sw.js');assert.equal(sw.headers.get('cache-control'),'no-cache');
   }finally{h.wss.close();h.server.closeAllConnections();await new Promise(resolve=>h.server.close(resolve));}
+});
+
+test('WebSocket upgrade validates browser origin and the current session',async()=>{
+  for(const trustProxy of [false,true]){
+    const previous=config.trustProxy;
+    config.trustProxy=trustProxy;
+    let h;
+    try{h=createHttpSurface();}finally{config.trustProxy=previous;}
+    await new Promise(resolve=>h.server.listen(0,'127.0.0.1',resolve));
+    const authority=`127.0.0.1:${h.server.address().port}`;
+    const base=`http://${authority}`;
+    const handshake=headers=>new Promise((resolve,reject)=>{
+      const socket=new WebSocket(`ws://${authority}/ws`,{headers,handshakeTimeout:3000});
+      socket.on('error',reject);
+      socket.once('open',()=>{socket.terminate();resolve(101);});
+      socket.once('unexpected-response',(_req,res)=>{
+        res.resume();
+        socket.terminate();
+        resolve(res.statusCode);
+      });
+    });
+    try{
+      assert.equal(await handshake({}),401);
+      const login=await fetch(base+'/api/login',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({username:'inventory-fixture',password:'fixture-password-123'}),
+      });
+      assert.equal(login.status,200);
+      const cookie=login.headers.get('set-cookie').split(';')[0];
+      assert.equal(await handshake({cookie}),101);
+      assert.equal(await handshake({cookie,origin:base}),101);
+      assert.equal(await handshake({cookie,origin:'null'}),403);
+      assert.equal(await handshake({cookie,origin:'http://other.invalid'}),403);
+      assert.equal(await handshake({cookie,origin:`https://${authority}`,'x-forwarded-proto':'https'}),trustProxy?101:403);
+      const logout=await fetch(base+'/api/logout',{method:'POST',headers:{cookie}});
+      assert.equal(logout.status,200);
+      assert.equal(await handshake({cookie,origin:base}),401);
+    }finally{h.wss.close();h.server.closeAllConnections();await new Promise(resolve=>h.server.close(resolve));}
+  }
 });
 
 test('marker identity, method-specific scope, sibling prefixes and late middleware',()=>{

@@ -22,9 +22,6 @@ const dealSweepTimer = startDealSweep();
 const {server,wss} = createHttpSurface();
 
 wss.on('connection', (socket, req) => {
-  const user = currentUser(req);
-  if (!user) return socket.close();
-  socket.user = user;
   socket.sessionReq = req;
 });
 
