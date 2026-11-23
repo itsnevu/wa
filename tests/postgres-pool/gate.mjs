@@ -303,6 +303,11 @@ async function main() {
     return verifyQueryParity({admin,scoped:single,tenants});
   });
 
+  await check('least privilege PostgreSQL auth, session and quota contract',async()=>{
+    const {verifyTenantAuth}=await import('./tenant-auth-contract.mjs');
+    return verifyTenantAuth({admin,proxy,tenants});
+  });
+
   await check('mixed load', async () => {
     const started = performance.now();
     const until = started + 60000;
