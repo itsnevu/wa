@@ -512,7 +512,15 @@ api.post('/users',requireTenantScope, requireAdmin, (req, res) => {
   if (!username || !password) return res.status(400).json({ error: 'username dan password wajib' });
   if (typeof password !== 'string' || password.length < config.passMin) return res.status(400).json({ error: `password minimal ${config.passMin} karakter` });
   try {
-    q.insertUser.run(username, hashPassword(password), role, Date.now());
+    const passwordHash = hashPassword(password);
+    const now = Date.now();
+    const {tenantId} = req.tenantScope;
+    db.transaction(() => {
+      const {lastInsertRowid} = q.insertUser.run(username, passwordHash, role, now);
+      db.prepare(`INSERT INTO tenant_members(tenant_id,user_id,role,created_at)
+        VALUES (?,?,CASE WHEN EXISTS(SELECT 1 FROM tenant_members WHERE tenant_id=? AND role='owner')
+          THEN 'agent' ELSE 'owner' END,?)`).run(tenantId,lastInsertRowid,tenantId,now);
+    }).immediate();
     res.json({ ok: true });
   } catch { res.status(400).json({ error: 'username sudah dipakai' }); }
 });
