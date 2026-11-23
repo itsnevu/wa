@@ -18,7 +18,8 @@ export async function verifyTenantAuth({admin,proxy,tenants}) {
   const [a,b,c,d]=tenants;
   await admin.query("INSERT INTO tenant_data.tenants(id) SELECT unnest($1::uuid[])",[[a,b,c,d]]);
   await admin.query(`INSERT INTO tenant_auth.tenant_members VALUES
-    (101,$1::uuid,'agent'),(101,$2::uuid,'agent'),(102,$2::uuid,'agent'),(102,$3::uuid,'agent'),(102,$4::uuid,'agent')`,[a,b,c,d]);
+    (101,$1::uuid,'agent'),(103,$1::uuid,'agent'),(101,$2::uuid,'agent'),(102,$2::uuid,'agent'),
+    (102,$3::uuid,'agent'),(102,$4::uuid,'agent')`,[a,b,c,d]);
   const issue=(token,user,tenant)=>admin.query(`INSERT INTO tenant_auth.sessions(token_hash,user_id,tenant_id,expires_at)
     VALUES($1::text,$2::bigint,$3::uuid,clock_timestamp()+interval '1 hour')`,[sessionTokenHash(token),user,tenant]);
   for(const session of [['alpha',101,a],['beta',102,b],['none',101,null],['race',101,a],['switch',101,a],
@@ -86,10 +87,16 @@ export async function verifyTenantAuth({admin,proxy,tenants}) {
     await assert.rejects(auth.withTenantRead(cookie('alpha'),a,({client})=>client.query('SELECT token_hash FROM tenant_auth.sessions')),denied);
     await assert.rejects(auth.withAuth(db=>lookupMembership(db,101,null)),/requires user_id and tenant_id/);
     await assert.rejects(auth.withAuth(db=>lookupMembership(db,undefined,a)),/requires user_id and tenant_id/);
+    assert.equal(await auth.withAuth(db=>lookupMembership(db,102,a)),undefined);
     assert.equal(await status('none'),401);
     assert.equal(await status('alpha','beta.fixture.test'),404);
     assert.equal(await status('alpha'),200);
     assert.equal(await status('missing'),401);
+    const disallowed=await request('beta','beta.fixture.test','/auth/switch',{
+      method:'POST',body:JSON.stringify({host:'alpha.fixture.test'}),
+    });
+    assert.equal(disallowed.status,401);
+    assert.equal(await status('beta','beta.fixture.test'),200);
 
     const raced=await Promise.allSettled([auth.rotate(cookie('race'),a),auth.rotate(cookie('race'),a)]);
     const winners=raced.filter(x=>x.status==='fulfilled');
