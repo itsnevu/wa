@@ -70,7 +70,7 @@ Melanjutkan draft Codex.
   - Tes AI menguji kedua jalur.
   - **Tidak ada database apa pun** di draft v8, jadi koreksi fingerprint tidak berdampak.
   - Bagian saya di `index.html` terbukti +10 / −1 baris.
-- ✅ **0.3** `AGENTS.md`: kepemilikan file, protokol file bersama, nomor migrasi (v9 dan v10 diklaim), aturan commit, larangan.
+- ✅ **0.3** `AGENTS.md`: kepemilikan file, protokol file bersama, nomor migrasi (v9 dan v11+ diklaim), aturan commit, larangan.
 - ⏸️ **0.4 Commit:** hanya commit dokumen audit (`eb79821`). Commit Tugas 3 dan tes AI **tidak bisa berdiri sendiri**, karena HEAD masih di schema v3 dan pekerjaan Codex v4–v7 belum di-commit.
 - ⏸️ **0.5 dan 0.6:** belum dikerjakan (menunggu commit Codex).
 - Laporan: `docs/group-support/PART-0-REPORT.md`.
@@ -167,7 +167,7 @@ Pertanyaan produk dari Tugas 3 (batas waktu "tak terjawab", definisi bruto, jadw
 2. Commit terpisah: tes AI, Tugas 3, hotfix pengingat DP, pengokohan v8.
 3. **Tugas 5A Gerbang 3:** salin database operasional → migrasi v4 → v8 di salinan → idempotensi → smoke → drill rollback → manifest pembekuan → migrasi produksi → restart :3100.
 4. **0.6:** koreksi Tugas 3 sebagai migrasi v9 (ambang 4 jam operasional, kas masuk vs bruto, jadwal per hari dan hari libur, job "tak terjawab" 5 menit).
-5. **Tugas 5 Fase B:** deteksi dan perekaman chat grup (v10).
+5. **Tugas 5 Fase B:** deteksi dan perekaman chat grup (v11+).
 
 ---
 

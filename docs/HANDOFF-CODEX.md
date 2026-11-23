@@ -82,7 +82,7 @@ Migrasi v9, commit terpisah, `docs/deal-analytics/V9-FREEZE.md` dengan protokol 
 2. Pendapatan: bruto = `sum(amount)` pada `verified_lunas`; kas masuk = `sum(paid_amount)`. Dua kolom berdampingan; tandai `amount_mismatch` bila kas masuk < tagihan. Jangan menurunkan pendapatan dari OCR.
 3. Jadwal operasional per hari (7 baris, default disalin dari hari kerja) + tabel pengecualian hari libur. v8 hanya menyimpan `tenants.analytics_timezone`; jam buka/tutup saat ini dari `config.businessStart/End`.
 4. Pencatatan "tak terjawab" pindah dari saat dashboard dibuka (`sweepUnanswered` di `src/dealAnalytics.js`, dipanggil dari `scopedFacts`) ke job 5 menit, idempoten lewat unique `(deal_id, bucket)`. Setelah ini **tidak boleh ada jalur tulis yang dipicu request baca.**
-5. Pengingat DP yang dilewati (`dp_reminder_skipped`, hotfix grup): **catatan konflik.** "Terbitkan ke DM pembeli" butuh `buyer_jid`, yang baru ada di v10 (dukungan grup). Usul: di v9 cukup sediakan antrean pemindaian ulang dan tandai "menunggu buyer_jid"; pengiriman sesungguhnya di v10. Laporkan keputusanmu sebelum mengerjakan.
+5. Pengingat DP yang dilewati (`dp_reminder_skipped`, hotfix grup): **catatan konflik.** "Terbitkan ke DM pembeli" butuh `buyer_jid`, yang baru ada di v11+ (dukungan grup). Usul: di v9 cukup sediakan antrean pemindaian ulang dan tandai "menunggu buyer_jid"; pengiriman sesungguhnya di v11+. Laporkan keputusanmu sebelum mengerjakan.
 
 Tes wajib: ambang hanya menghitung state yang ditentukan; chat di luar jadwal tidak menurunkan rate; jadwal per hari dan hari libur terbaca; job idempoten; **membuka dashboard tidak menulis apa pun**; bruto vs kas masuk dan `amount_mismatch`; perilaku item 5 sesuai keputusan.
 
@@ -99,7 +99,7 @@ Setelah v9 beku dan termigrasi, dashboard boleh dibuka ke pengguna. UI analytics
 ---
 
 ## Backlog (catat; kerjakan hanya bila diminta)
-- **Dukungan chat grup (Tugas 5 Fase B, v10):** `chat_type`, atribusi pengirim (`participant`/`participantAlt`, bukan `participantPn`), `lid_map`, `groups`, `buyer_jid`, UI grup, feature flag `group_support_enabled`. Audit dan keputusan: `docs/group-support/GATE-1-AUDIT.md`. Grup **tidak** dilayani AI; guard 11 alasan tidak berubah.
+- **Dukungan chat grup (Tugas 5 Fase B, v11+):** `chat_type`, atribusi pengirim (`participant`/`participantAlt`, bukan `participantPn`), `lid_map`, `groups`, `buyer_jid`, UI grup, feature flag `group_support_enabled`. Audit dan keputusan: `docs/group-support/GATE-1-AUDIT.md`. Grup **tidak** dilayani AI; guard 11 alasan tidak berubah.
 - **Tugas 6:** `group_settings` (mode off/mention/all), guard grup sebelum alasan ke-2, bucket per chat dengan batas grup, takeover per pengirim, deteksi deal per `buyer_jid`, pengingat DP ke DM pembeli, perbaikan deal `needs_repair`.
 - **Kritik terbuka dari G2/G3:**
   - `SQLITE_BUSY`/`LOCKED` sebaiknya 503 + `Retry-After`, bukan 400 (`src/apiErrors.js`).

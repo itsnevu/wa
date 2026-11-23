@@ -8,7 +8,7 @@ Status: **BEKU** sejak 23 Nov 2026. Perubahan skema berikutnya wajib v10 atau le
 | `tenant_business_hours` | Jadwal per hari (0 = Senin … 6 = Minggu), `open_min`/`close_min` (0–1440), `closed`. Default disalin dari `config.businessStart/End` (sama → 00:00–24:00). |
 | `tenant_holidays` | Pengecualian hari libur `YYYY-MM-DD` per tenant. |
 | `deal_unanswered_marks` | Kunci idempoten `(deal_id, bucket)`; bucket = `inbound:<message_id>`. Diisi ulang dari event `analytics_unanswered` lama. |
-| `dp_reminder_rescan` | Antrean pengingat DP yang dilewati di grup, status `awaiting_buyer_jid`. Pengiriman ke DM pembeli menunggu `buyer_jid` (v10). Diisi ulang dari event `dp_reminder_skipped` lama. |
+| `dp_reminder_rescan` | Antrean pengingat DP yang dilewati di grup, status `awaiting_buyer_jid`. Pengiriman ke DM pembeli menunggu `buyer_jid` (v11+). Diisi ulang dari event `dp_reminder_skipped` lama. |
 
 ## Perilaku
 - **Tak terjawab:** pesan masuk *di dalam* jam operasional (bukan hari libur), tanpa balasan selama **4 jam operasional**, hanya untuk state `candidate`, `awaiting_proof`, `dp_aktif`. Waktu operasional dihitung dengan sampel 5 menit (presisi ±5 menit). 24 jam bukan lagi kriteria hitung.

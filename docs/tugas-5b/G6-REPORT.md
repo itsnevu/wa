@@ -32,7 +32,7 @@ node scripts/check-t04-browser.mjs           → T04 UI verified at desktop and 
 ## Keputusan
 - Ledger `schema_ddl_hash` tanpa foreign key ke `schema_migrations` (menghambat downgrade/restore) dan memakai upsert (migrasi ulang menggantikan catatan basi).
 - v8 dicatat `grandfathered` juga saat upgrade langsung v8→v9, supaya jejak audit v8 tetap ada.
-- Item 5 (pengingat DP grup): v9 hanya mengantrekan (`dp_reminder_rescan`, `awaiting_buyer_jid`); pengiriman ke DM di v10.
+- Item 5 (pengingat DP grup): v9 hanya mengantrekan (`dp_reminder_rescan`, `awaiting_buyer_jid`); pengiriman ke DM di v11+.
 - Waktu operasional dihitung dengan sampel 5 menit (±5 menit) demi biaya job; cukup untuk ambang 4 jam.
 
 ## Belum dikerjakan / kritik
@@ -41,4 +41,4 @@ node scripts/check-t04-browser.mjs           → T04 UI verified at desktop and 
 - File milik Codex yang disentuh: `src/dealReviewJobs.js` (+2 baris, antrean rescan), angka versi di `tests/deal-foundation.test.mjs`, `tests/session-health.test.mjs`.
 
 ## Backlog (tidak berubah)
-Lihat `docs/HANDOFF-CODEX.md` bagian Backlog: dukungan grup v10, Tugas 6, dan kritik terbuka G2/G3.
+Lihat `docs/HANDOFF-CODEX.md` bagian Backlog: dukungan grup v11+, Tugas 6, dan kritik terbuka G2/G3.

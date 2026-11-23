@@ -72,7 +72,7 @@ Tidak ada perubahan kode. File bukti yang ditambahkan (`docs/deal-analytics/v8-a
 |---|---|
 | 1. Kolom dipakai vs dibuat | 49/49 statement valid, 0 gagal; semua trigger menyala |
 | 2. `NOT NULL` tanpa default | Tidak ada. Satu-satunya `NOT NULL` baru punya `DEFAULT 'Asia/Jakarta'` |
-| 3. CHECK dua arah | `analytics_source`: kode menulis `'ai'`/`'human'`/NULL ✓. `open/close_min` 0..1439 sama dengan validasi API `<1440` ✓. State yang ditulis kode (`no_signal, candidate, awaiting_proof, proof_submitted, verified_lunas, dp_aktif, rejected, dp_hangus, expired`) semuanya diterima ✓. `origin` direct/dp ✓. `reason_code` dari taksonomi ✓. `sender_role` tidak ada di v8 (milik v10) ✓. Kebalikannya lihat K-1. |
+| 3. CHECK dua arah | `analytics_source`: kode menulis `'ai'`/`'human'`/NULL ✓. `open/close_min` 0..1439 sama dengan validasi API `<1440` ✓. State yang ditulis kode (`no_signal, candidate, awaiting_proof, proof_submitted, verified_lunas, dp_aktif, rejected, dp_hangus, expired`) semuanya diterima ✓. `origin` direct/dp ✓. `reason_code` dari taksonomi ✓. `sender_role` tidak ada di v8 (milik v11+) ✓. Kebalikannya lihat K-1. |
 | 5. Indeks | Ketujuh query analytics memakai indeks; tidak ada full scan; ketiga indeks v8 terpakai |
 | 6. Backfill | **Tidak ada `UPDATE`**. Hanya `INSERT` event per deal yang sudah ada (append-only), sehingga baris lama tidak diubah |
 | 7. Transaksi | Seluruh v8 berjalan di dalam satu transaksi `immediate` runner (`schemaMigrations.js:39-55`) dengan `foreign_key_check` sebelum commit |

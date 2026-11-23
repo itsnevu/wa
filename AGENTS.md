@@ -31,7 +31,8 @@ Protokol:
 | 1–7 | T01 … Deal review | — (sudah ada) |
 | 8 | Deal analytics — **BEKU** (22 Nov 2026, `docs/deal-analytics/V8-FREEZE.md`) | Claude |
 | 9 | Koreksi analytics (jadwal per hari, libur, tak terjawab 4 jam operasional, kas masuk) — **BEKU** (23 Nov 2026, `docs/deal-analytics/V9-FREEZE.md`) | Claude |
-| 10 | Grup: `chat_type`, pengirim, `groups`, `lid_map`, `buyer_jid` | Claude (diklaim) |
+| 10 | Backfill membership pemilik nomor | Codex |
+| 11+ | Grup: `chat_type`, pengirim, `groups`, `lid_map`, `buyer_jid` | Claude |
 
 - Klaim nomor di tabel ini **sebelum** menulis migrasi.
 - Satu versi = satu fungsi `migrateX(db)` + satu baris di `src/schemaMigrations.js` + fingerprint `vN`.
@@ -42,6 +43,8 @@ Protokol:
   berbeda → startup ditolak. Generator menghitung `ddl.vN` sejak v9. `/api/health` memuat versi dan hash aktif.
 - Penulisan analytics hanya dari job latar (`startUnansweredJob`); request baca **tidak boleh menulis**.
 - Server dan migrasi memegang `data/app.db.lock`; jangan jalankan dua instance pada folder data yang sama.
+- `messages.id` tetap `INTEGER PRIMARY KEY` berbasis rowid. Setiap migrasi yang membangun ulang `messages` wajib menjalankan tes query plan baca pesan.
+- B1/B2 grup wajib aditif pada `messages`: kolom baru nullable atau `NOT NULL DEFAULT` konstanta. Review migrasi menjaga `tenant_id`, `chat_id`, `ts`, dan `id` tetap sama tanpa rebuild. Ukur ulang throughput insert setelah B1/B2 masuk.
 - Database operasional: backup → restore ke salinan → migrasi salinan + smoke → migrasi operasional + smoke. Tidak pernah migrasi langsung.
 
 ## 4. Commit

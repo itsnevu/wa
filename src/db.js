@@ -7,6 +7,7 @@ import { configureTenantScope } from './tenantScope.js';
 import {configureSessionStore} from './sessionStore.js';
 import { randomUUID } from 'node:crypto';
 import { acquireInstanceLock } from './instanceLock.js';
+import { numberMembershipGaps, unresolvedNumberMemberships } from './numberMembershipMigration.js';
 
 fs.mkdirSync(config.dataDir, { recursive: true });
 // Single instance per data directory, taken before the database is opened or migrated.
@@ -25,6 +26,9 @@ export const schemaStatus = await ensureSchema(db, config).catch(error => {
   throw error;
 });
 configureSessionStore(db);
+const membershipGaps = numberMembershipGaps(db);
+if(membershipGaps.missing)console.warn('[schema] number owner membership gaps',
+  JSON.stringify({...membershipGaps,unresolvedNumbers:unresolvedNumberMemberships(db)}));
 fs.mkdirSync(path.join(config.dataDir, 'media'), { recursive: true });
 fs.mkdirSync(path.join(config.dataDir, 'sessions'), { recursive: true });
 configureTenantScope(db, () => config.multitenantEnabled);

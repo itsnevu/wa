@@ -15,7 +15,7 @@
 | `src/dealReviewJobs.js:24-25` | `export const isGroupChat` memakai `chat_type === 'group'`, dengan fallback sufiks `@g.us` | 0.1 |
 | `src/dealReviewJobs.js:68-75` | Pengingat untuk chat grup dilewati. Notice ditandai terkirim (supaya tidak dicoba ulang) dan dicatat sebagai event `dp_reminder_skipped {kind, reason:'group_chat'}` | 0.1: mencegah sisa tagihan diumumkan ke grup |
 | `tests/dp-reminder-group.test.mjs` (baru) | 2 tes: grup dilewati, dicatat, dan tidak dicoba ulang; DM tetap terkirim; unit `isGroupChat` | Tes wajib 13 |
-| `AGENTS.md` (baru) | Kepemilikan file, protokol file bersama, klaim migrasi v9/v10, aturan commit, larangan, format laporan | 0.3 |
+| `AGENTS.md` (baru) | Kepemilikan file, protokol file bersama, klaim migrasi v9/v11+, aturan commit, larangan, format laporan | 0.3 |
 | commit `eb79821` | `docs/group-support/GATE-1-AUDIT.md` + `evidence/` (5 file, hanya dokumen) | 0.4 (c) |
 
 **Solusi permanen pengingat DP** adalah mengirim ke DM pembeli (`buyer_jid`). Itu ada di Tugas 6 dan sudah dicatat sebagai backlog.
@@ -39,7 +39,7 @@ Tidak ada.
 |---|---|---|
 | Pengingat grup yang dilewati ditandai `delivered_at` + event `dp_reminder_skipped` | Biarkan notice tetap pending | Job berjalan berulang; notice pending akan dicek terus tanpa akhir dan menyembunyikan bahwa pengingat sengaja tidak dikirim |
 | Hotfix diletakkan di `dealReviewJobs.js` (file milik Codex) | Membungkus `sendReminder` di `src/index.js` | Tugas meminta perbaikan di titik kirim; di sini `jid` dan `chat_type` sudah tersedia dari query |
-| Nomor migrasi v9 (koreksi analytics) dan v10 (grup) diklaim di `AGENTS.md` | Menentukan nomor saat menulis migrasi | Mencegah Codex dan Claude memakai nomor yang sama |
+| Nomor migrasi v9 (koreksi analytics) dan v11+ (grup) diklaim di `AGENTS.md` | Menentukan nomor saat menulis migrasi | Mencegah Codex dan Claude memakai nomor yang sama |
 | **Berhenti sebelum commit (a)/(b) dan 0.5** | Commit apa adanya atau ikut meng-commit file Codex | Lihat bagian 6 |
 
 ## 5. Sudah diverifikasi vs masih asumsi
@@ -136,7 +136,7 @@ eb79821 docs(groups): add gate 1 audit for group chat support
    - (iii) Saya commit hanya file saya. HEAD tidak bisa dijalankan (import hilang, migrasi v8 tanpa v4–v7), dan tes (a) merah di HEAD.
 2. **0.5 sebaiknya dijalankan setelah v4–v8 di-commit dan dibekukan.** Fingerprint v4–v7 berasal dari kode yang belum di-commit. Kalau Codex mengubah salah satu migrasi itu, database operasional yang sudah di v8 akan ditolak saat startup (`Schema fingerprint mismatch`), dan jalan keluarnya hanya restore backup. Urutan yang saya usulkan: commit Codex v4–v7 → commit (a)(b) → 0.5. Ini tetap "tidak dijadwalkan nanti", hanya menunggu satu commit.
 3. **0.5 butuh server lokal di :3100 dihentikan.** Server itu memegang `data/app.db` dan menjalankan kode lama. Migrasi di bawah proses yang masih hidup tidak aman. Saya butuh konfirmasi bahwa server tersebut boleh dihentikan lalu dijalankan ulang.
-4. **0.6 dan B1 akan menjadi migrasi v9 dan v10, bukan perubahan di v8.** Begitu v8 dipakai database operasional, isinya tidak boleh diubah lagi. Nomor ini sudah diklaim di `AGENTS.md`.
+4. **0.6 dan B1 akan menjadi migrasi v9 dan v11+, bukan perubahan di v8.** Begitu v8 dipakai database operasional, isinya tidak boleh diubah lagi. Nomor ini sudah diklaim di `AGENTS.md`.
 5. **Commit hotfix 0.1 tidak ada di daftar 0.4.** Hotfix mengubah `src/dealReviewJobs.js`, yang **seluruhnya** belum di-commit (milik Codex). Hotfix hanya bisa di-commit bersama atau sesudah commit Codex. Usulan: commit keempat `fix(deals): skip DP reminders in group chats` setelah commit Codex.
 
 ## 7. Risiko sisa
@@ -152,4 +152,4 @@ eb79821 docs(groups): add gate 1 audit for group chat support
 2. Saya commit (a) tes AI, (b) Tugas 3, dan (d) hotfix 0.1, masing-masing terpisah, di atas commit Codex.
 3. **0.5:** hentikan server :3100, backup, uji di salinan, migrasi operasional ke v8, smoke, lalu siapkan rollback.
 4. **0.6** sebagai migrasi v9, dengan commit sendiri.
-5. Lanjut B1 + B2 (v10), lalu Gerbang 2.
+5. Lanjut B1 + B2 (v11+), lalu Gerbang 2.

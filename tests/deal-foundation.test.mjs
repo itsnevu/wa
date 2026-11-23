@@ -29,7 +29,7 @@ const getRuns = id => db.prepare('SELECT * FROM classifier_runs WHERE chat_id=? 
 
 test('current fingerprint, foundation tables and backup', () => {
   const current = db.prepare('SELECT * FROM schema_migrations ORDER BY version DESC LIMIT 1').get();
-  assert.equal(current.version, 9);
+  assert.equal(current.version, 10);
   assert.equal(current.fingerprint, schemaFingerprint(db));
   assert.equal(db.prepare('SELECT count(*) AS n FROM schema_migrations WHERE version=5').get().n, 1);
   for (const table of ['deals','deal_events','deal_evidence','deal_verifications','dp_payments','classifier_runs']) {
