@@ -16,12 +16,17 @@ try {
     'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].find(p => p && fs.existsSync(p));
   assert.ok(executable, 'Set MEDIA_TEST_BROWSER bila Chrome/Edge tidak ditemukan');
   const profile = path.join(h.temp, 'browser-profile');
+  const ciFlags = process.platform === 'linux' && process.env.GITHUB_ACTIONS === 'true'
+    ? ['--no-sandbox', '--disable-dev-shm-usage'] : [];
   browser = spawn(executable, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-    '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'], { windowsHide: true, stdio: 'ignore' });
+    ...ciFlags, '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'],
+  { windowsHide: true, stdio: ['ignore', 'ignore', 'pipe'] });
   browserClosed = childClose(browser);
+  let browserDiagnostic = '';
+  browser.stderr.on('data', data => { browserDiagnostic = (browserDiagnostic + data).slice(-3000); });
   const portFile = path.join(profile, 'DevToolsActivePort');
-  for (let i = 0; i < 150 && !fs.existsSync(portFile); i++) await new Promise(r => setTimeout(r, 100));
-  assert.ok(fs.existsSync(portFile), 'Port browser tersedia');
+  for (let i = 0; i < 150 && browser.exitCode === null && !fs.existsSync(portFile); i++) await new Promise(r => setTimeout(r, 100));
+  assert.ok(fs.existsSync(portFile), `Port browser tersedia. Exit: ${browser.exitCode}. ${browserDiagnostic}`);
   const port = fs.readFileSync(portFile, 'utf8').split('\n')[0];
   const target = await (await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT' })).json();
   ws = new WebSocket(target.webSocketDebuggerUrl); await once(ws, 'open');
