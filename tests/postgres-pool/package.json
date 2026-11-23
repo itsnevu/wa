@@ -1,0 +1,8 @@
+{
+  "name": "wa-suite-postgres-pool-fixture",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "pg": "8.23.1"
+  }
+}

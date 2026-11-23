@@ -1,0 +1,16 @@
+name: PostgreSQL tenant pool gate
+on: [push, pull_request]
+jobs:
+  postgres-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: tests/postgres-pool/package-lock.json
+      - run: npm ci --prefix tests/postgres-pool --ignore-scripts
+      - name: Exercise PgBouncer and run negative controls
+        run: node tests/postgres-pool/gate.mjs
