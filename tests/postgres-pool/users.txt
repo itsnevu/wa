@@ -1,2 +1,3 @@
 "fixture_app" "fixture-only-password"
 "app_login" "fixture-only-password"
+"control_login" "fixture-only-password"

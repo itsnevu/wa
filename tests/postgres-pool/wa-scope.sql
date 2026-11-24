@@ -19,7 +19,7 @@ CREATE TABLE tenant_data.wa_rules(
 CREATE INDEX wa_rules_active ON tenant_data.wa_rules(tenant_id,number_id,priority,id) WHERE enabled;
 CREATE TABLE tenant_data.wa_media(
   tenant_id uuid,id uuid,number_id bigint NOT NULL,message_id bigint NOT NULL,storage_key text NOT NULL,
-  PRIMARY KEY(tenant_id,id),FOREIGN KEY(tenant_id,number_id,message_id) REFERENCES tenant_data.wa_messages,
+  PRIMARY KEY(tenant_id,id),FOREIGN KEY(tenant_id,number_id,message_id) REFERENCES tenant_data.wa_messages ON DELETE CASCADE,
   CHECK(storage_key=tenant_id::text||'/'||id::text)
 );
 DO $$

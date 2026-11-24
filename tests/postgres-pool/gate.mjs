@@ -311,6 +311,10 @@ async function main() {
     const {verifyWaScope}=await import('./wa-scope-contract.mjs');
     return verifyWaScope({admin,proxy,tenants});
   });
+  await check('PostgreSQL control projection, AI history, deal claim and retention',async()=>{
+    const {verifyTenantJobs}=await import('./tenant-jobs-contract.mjs');
+    return verifyTenantJobs({admin,proxy,tenants});
+  });
 
   await check('mixed load', async () => {
     const started = performance.now();
