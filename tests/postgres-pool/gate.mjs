@@ -320,6 +320,24 @@ async function main() {
     return verifyOperationPolicy({proxy,tenants});
   });
 
+  await check('restore across PostgreSQL clusters preserves roles, grants and FORCE RLS', async () => {
+    const {verifyClusterRestore} = await import('./cluster-restore.mjs');
+    const target = prefix + '-restore';
+    const user = 'postgres';
+    await docker('run', '--rm', '-d', '--name', target, '-p', '127.0.0.1::5432',
+      '-e', 'POSTGRES_DB=' + database, '-e', 'POSTGRES_USER=' + user,
+      '-e', 'POSTGRES_PASSWORD=' + password, 'postgres:16');
+    cleanup.push(['rm', '-f', target]);
+    const options = {host:'127.0.0.1', port:await port(target,5432), database, user, password};
+    await retryReady(options);
+    return verifyClusterRestore({docker,source:pgName,admin,target,options,tenant:tenants[1]});
+  });
+
+  await check('SQLite fixture row transfer reconciles per table and tenant before rollback', async () => {
+    const {verifySqliteTransfer} = await import('./sqlite-transfer.mjs');
+    return verifySqliteTransfer(admin);
+  });
+
   await check('2x worker saturation',async()=>{
     const startWait=report.waitTotalMs;
     const start=performance.now();
