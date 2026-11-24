@@ -2,6 +2,7 @@ import { randomInt } from 'node:crypto';
 import { db } from './db.js';
 import { dealReasons } from './dealReasons.js';
 import { dealProofAvailable } from './media.js';
+import { classifyMessages } from './dealClassifier.js';
 
 export const DAY = 86400000;
 export const OPEN_REVIEW = "'candidate','awaiting_proof','proof_submitted'";
@@ -89,14 +90,17 @@ function card(row, now) {
   const proof = eventGet.get(row.tenant_id,row.id,'proof_recorded');
   const decision = eventGet.get(row.tenant_id,row.id,'decision');
   const parsed = proof && JSON.parse(proof.payload_json);
+  const messages = relevant.all(row).sort((a,b) => a.id - b.id);
+  const method = row.method === 'dana' && row.classifier_version === 'deal-rules-v1' && !row.decided_at
+    ? classifyMessages(messages).method : row.method;
   return {
     id: row.id, session_name: row.session_name, state: row.state, origin: row.origin,
     amount: row.amount, paid_amount: row.paid_amount, amount_due: row.amount_due, due_at: row.due_at,
-    method: row.method, qty: row.qty, confidence: row.confidence, created_at: row.created_at, due_sla_at: row.due_sla_at,
+    method, qty: row.qty, confidence: row.confidence, created_at: row.created_at, due_sla_at: row.due_sla_at,
     age_ms: Math.max(0, now - row.created_at), overdue: now >= (row.due_sla_at ?? row.created_at + DAY),
     product: row.product_name || (output ? JSON.parse(output.output_json).product : null),
     model_reason: output ? JSON.parse(output.output_json).reason : null,
-    messages: relevant.all(row).sort((a,b) => a.id - b.id),
+    messages,
     recorded_proof: parsed ? { message_id: parsed.message_id, amount: parsed.amount } : null,
     amount_mismatch: Boolean(parsed && parsed.amount !== row.amount || decision && JSON.parse(decision.payload_json).amount_mismatch),
   };

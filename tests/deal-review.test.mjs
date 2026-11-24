@@ -235,6 +235,14 @@ test('Chrome desktop and 360px render card, SLA, reason grid, proof and DP form'
       await cdp('Emulation.setDeviceMetricsOverride',{width,height:width===360?780:900,deviceScaleFactor:1,mobile:width===360});
       // The resize re-renders the review list; the card is briefly absent (flake seen in H0 follow-up run).
       await wait(()=>evalJs(`!!${card}?.querySelector('[data-action=paid]')`),`deal card rendered at ${width}px`);
+      if (width === 360) {
+        const entry = `document.querySelector('[data-select-deal="${id}"]')`;
+        await evalJs(`${entry}.click()`);
+        assert.equal(await evalJs(`${card}.getClientRects().length > 0`),true);
+        await evalJs(`${card}.querySelector('.deal-back').click()`);
+        assert.equal(await evalJs(`${entry}.getClientRects().length > 0`),true);
+        await evalJs(`${entry}.click()`);
+      }
       assert.equal(await evalJs(`${card}.querySelector('[data-action=paid]').disabled`),true);
       assert.equal(await evalJs(`${card}.querySelector('.deal-sla').textContent.includes('Lewat SLA')`),true);
       assert.equal(await evalJs(`${card}.querySelectorAll('.deal-messages li').length<=6`),true);

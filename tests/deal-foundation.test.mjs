@@ -17,6 +17,14 @@ const { classifyMessages } = await import('../src/dealClassifier.js');
 const { runDealClassifier, classifierDropCounts, testPatterns, shutdown } = await import('../src/regexRunner.js');
 test.after(() => { shutdown(); db.close(); fixture.close(); });
 
+test('classifier distinguishes payment methods from mentions of funds', () => {
+  const method = body => classifyMessages([{ body }]).method;
+  assert.equal(method('tf 100jt dana pensiun'), 'transfer');
+  assert.equal(method('Rp 100.000 dari dana pensiun'), null);
+  assert.equal(method('bayar cash Rp 100.000'), 'tunai');
+  assert.equal(method('transfer via DANA'), 'dana');
+});
+
 function message(chat, session, tenant, body, kind = 'text') {
   return Number(db.prepare('INSERT INTO messages(chat_id,number_id,tenant_id,body,kind,ts) VALUES(?,?,?,?,?,?)')
     .run(chat, session, tenant, body, kind, Date.now()).lastInsertRowid);

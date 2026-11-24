@@ -1,6 +1,7 @@
-export const CLASSIFIER_VERSION = 'deal-rules-v1';
+export const CLASSIFIER_VERSION = 'deal-rules-v2';
 const amountPattern = /(?:rp\s*)(\d+(?:[.,]\d+)*)(?:\s*(rb|ribu|jt|juta))?\b|\b(\d+(?:[.,]\d+)*)\s*(rb|ribu|jt|juta)\b/i;
-const methodPattern = /\b(qris|transfer|tunai|cod|gopay|dana|ovo|shopeepay)\b/i;
+const methodPattern = /\b(qris|transfer|tf|tunai|cash|cod|gopay|ovo|shopeepay)\b/i;
+const danaMethod = /\b(?:via|pakai|lewat|melalui|ke\s+akun)\s+dana\b(?!\s+pensiun\b)/i;
 const proofText = /\b(bukti|struk|resi)\s+(transfer|bayar|pembayaran)\b/i;
 
 export function classifyMessages(messages) {
@@ -17,8 +18,9 @@ export function classifyMessages(messages) {
         : (match[1] || match[3]).replace(',', '.')) * scale;
       if (Number.isSafeInteger(value) && value > 0) nominal = value;
     }
-    const payment = body.match(methodPattern)?.[1];
-    if (payment) method = payment.toLowerCase();
+    const payment = body.match(methodPattern)?.[1].toLowerCase();
+    if (danaMethod.test(body)) method = 'dana';
+    else if (payment) method = { tf: 'transfer', cash: 'tunai' }[payment] ?? payment;
     const item = body.match(/\bproduk\s*:\s*([^\n,;]{1,80})/i)?.[1]?.trim();
     if (item) product = item;
     const quantity = Number(body.match(/\b(\d{1,5})\s*(?:pcs|unit|buah)\b/i)?.[1]);

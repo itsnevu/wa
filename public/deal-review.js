@@ -4,6 +4,7 @@
   const time = n => n ? new Date(n).toLocaleString('id-ID') : 'Belum ditentukan';
   const age = n => n == null ? '—' : n >= 3600000 ? Math.floor(n/3600000) + ' jam' : Math.floor(n/60000) + ' menit';
   const label = s => String(s).replaceAll('_',' ').replace(/^./,c => c.toUpperCase());
+  const methodLabel = method => ({dana:'DANA',tunai:'Tunai',transfer:'Transfer',qris:'QRIS',cod:'COD',gopay:'GoPay',ovo:'OVO',shopeepay:'ShopeePay'})[String(method).toLowerCase()] ?? method ?? 'Belum diketahui';
   const paymentInputs = (card, initial) => `
     ${initial ? `<label>Total tagihan (Rp)<input name="amount" type="number" min="1" required value="${esc(card.amount)}"></label>` : ''}
     <label>${initial ? 'DP diterima' : 'Cicilan diterima'} (Rp)<input name="paid_amount" type="number" min="1" required></label>
@@ -12,7 +13,7 @@
 
   window.renderDealReview = async (root, call, active) => {
     let tab = 'review', offset = 0;
-    let generation = 0;
+    let generation = 0, selectedId = null, detailOpen = false;
     async function load() {
       const token = ++generation;
       let data;
@@ -23,42 +24,50 @@
         <nav class="deal-tabs" aria-label="Antrean deal">${[['review','Verifikasi'],['dp','Penagihan DP'],...(data.owner ? [['audit','Audit sampel']] : [])].map(([key,title]) =>
           `<button data-tab="${key}" aria-pressed="${key===tab}">${title}</button>`).join('')}</nav>
         <p class="deal-feedback" role="status"></p>
-        ${data.can_decide ? `<details class="card" data-proof-settings><summary>Pengaturan</summary>
+        <div class="deal-tools">
+        ${data.can_decide ? `<details data-proof-settings><summary>Pengaturan</summary>
           <p>Lampiran bukti pembayaran <strong>${data.proof_enabled ? 'Aktif' : 'Nonaktif'}</strong></p>
           <button type="button" data-toggle-proof>${data.proof_enabled ? 'Nonaktifkan lampiran' : 'Aktifkan lampiran'}</button>
         </details>` : ''}
         ${tab === 'audit' ? `<div class="card"><button data-sample>Ambil sampel 5% hari ini</button>
           ${data.audit_stats.length ? `<ul>${data.audit_stats.map(r=>`<li>Admin ${esc(r.admin_id)} · ${esc(r.classifier_version || 'Tanpa classifier')} · ${Number(r.false_positive)}/${Number(r.audited)} false positive</li>`).join('')}</ul>` : ''}</div>` : ''}
-        ${data.notices.length && tab === 'review' ? `<details class="card"><summary>Digest dan eskalasi pemilik</summary><ul>
+        ${data.notices.length && tab === 'review' ? `<details><summary>Digest dan eskalasi</summary><ul>
           ${data.notices.map(n=> n.kind==='digest'
             ? `<li>${esc(time(n.at))} · ${Number(n.payload.review_count)} menunggu · tertua ${esc(age(n.payload.oldest_age_ms))}
               ${n.payload.reasons.length ? `<ul>${n.payload.reasons.map(r=>`<li>Admin ${esc(r.admin_id)} · ${esc(label(r.reason_code))} · ${Number(r.total)}</li>`).join('')}</ul>` : ''}</li>`
             : `<li>${esc(time(n.at))} · Deal #${Number(n.payload.deal_id)} dieskalasi ke pemilik.</li>`).join('')}</ul></details>` : ''}
+        </div>
+        <div class="${tab === 'review' && data.cards.length ? 'deal-workspace' : ''}">
+        ${tab === 'review' && data.cards.length ? `<nav class="deal-queue" aria-label="Antrean verifikasi">${data.cards.map(card =>
+          `<button type="button" data-select-deal="${card.id}"><strong>#${card.id} · ${esc(card.session_name)}</strong><span>${amount(card.amount)}</span><small class="${card.overdue ? 'is-overdue' : ''}">${card.overdue ? 'Lewat SLA · ' : ''}${age(card.age_ms)}</small></button>`).join('')}</nav>` : ''}
         <div class="deal-cards">${data.cards.map(card => {
           const proofs = card.messages.filter(m => !m.from_me && m.has_media && ['image','doc'].includes(m.kind));
+          const canMarkPaid = card.state==='proof_submitted' && !!card.recorded_proof;
           return `<article class="card deal-card" data-deal="${card.id}">
+            ${tab==='review' ? '<button type="button" class="deal-back">Kembali ke antrean</button>' : ''}
             <header><h3>#${card.id} · ${esc(card.session_name)}</h3><span class="deal-sla ${card.overdue && tab==='review' ? 'is-overdue' : ''}">${tab==='review' ? (card.overdue ? 'Lewat SLA' : 'Dalam SLA') : esc(label(card.state))} · ${age(card.age_ms)}</span></header>
-            <dl><dt>Nominal</dt><dd>${amount(card.amount)}</dd><dt>Metode</dt><dd>${esc(card.method || 'Belum diketahui')}</dd>
+            <div class="deal-amount"><strong>${amount(card.amount)}</strong><span>${esc(methodLabel(card.method))}</span></div>
+            <details class="deal-metadata" ${tab==='review' ? '' : 'open'}><summary>Detail</summary><dl>
               <dt>Produk / jumlah</dt><dd>${esc(card.product || '—')} / ${esc(card.qty ?? '—')}</dd>
               <dt>Bukti gambar</dt><dd>${proofs.some(m=>m.kind==='image' && m.is_evidence) ? 'Ada' : proofs.some(m=>m.kind==='image') ? 'Ada lampiran untuk diperiksa' : 'Belum ada'}</dd>
               <dt>Keyakinan</dt><dd>${card.confidence==null ? '—' : Math.round(card.confidence*100)+'%'}</dd>
               <dt>Alasan model</dt><dd>${esc(card.model_reason || '—')}</dd>
               ${card.recorded_proof ? `<dt>Nominal bukti</dt><dd>${amount(card.recorded_proof.amount)} ${card.recorded_proof.amount!==card.amount ? '<strong>· Selisih</strong>' : ''}</dd>` : ''}
               ${tab==='dp' ? `<dt>Terbayar / sisa</dt><dd>${amount(card.paid_amount)} / ${amount(card.amount_due)}</dd><dt>Jatuh tempo</dt><dd>${esc(time(card.due_at))}</dd>` : ''}
-            </dl>
+            </dl></details>
             <ol class="deal-messages" aria-label="Potongan pesan relevan">${card.messages.map(m=>`<li><small>${m.from_me ? 'Tim' : 'Klien'}</small>
               <span>${esc(m.body || label(m.kind))}</span>
               ${proofs.includes(m) ? data.proof_enabled
                 ? `<button type="button" data-proof-view="${m.id}">Buka bukti #${m.id}</button>`
                 : '<small>Lampiran bukti nonaktif</small>' : ''}</li>`).join('')}</ol>
             ${data.can_decide ? `<div class="deal-actions">${tab==='review' ? `
-              <button class="primary" data-action="paid" ${card.state!=='proof_submitted' || !card.recorded_proof ? 'disabled' : ''}>Lunas</button>
+              <button ${canMarkPaid ? 'class="primary"' : 'disabled'} data-action="paid">Tandai lunas</button>
+              ${proofs.length ? `<button ${canMarkPaid ? '' : 'class="primary"'} data-action="proof">Catat bukti</button>` : ''}
               <button data-action="dp">DP</button><button data-action="reject">Bukan closing</button><button data-action="info">Butuh info</button>
-              ${proofs.length ? '<button data-action="proof">Catat bukti</button>' : ''}
             ` : tab==='dp' ? '<button class="primary" data-action="installment">Catat cicilan</button>' :
               '<button data-action="audit_confirm">Tepat</button><button data-action="audit_false">False positive</button>'}</div>` : ''}
             </article>`;
-        }).join('') || '<p class="empty">Antrean ini kosong.</p>'}</div>
+        }).join('') || '<p class="empty">Antrean ini kosong.</p>'}</div></div>
         <nav class="deal-tabs" aria-label="Halaman antrean">${offset ? '<button data-prev>Sebelumnya</button>' : ''}${data.has_more ? '<button data-next>Berikutnya</button>' : ''}</nav>
         <dialog class="deal-dialog"><header><h3></h3><form method="dialog"><button>Tutup</button></form></header><div data-evidence-view hidden></div><form data-decision-form></form></dialog>
       </section>`;
@@ -67,6 +76,30 @@
       const form = dialog.querySelector('[data-decision-form]');
       const preview = dialog.querySelector('[data-evidence-view]');
       const heading = dialog.querySelector('h3');
+      const workspace = root.querySelector('.deal-workspace');
+      if (workspace) {
+        const rows = [...workspace.querySelectorAll('[data-select-deal]')];
+        const cards = workspace.querySelectorAll('[data-deal]');
+        const select = () => {
+          workspace.classList.toggle('is-detail-open',detailOpen);
+          rows.forEach(row => row.setAttribute('aria-pressed',String(Number(row.dataset.selectDeal) === selectedId)));
+          cards.forEach(card => { card.hidden = Number(card.dataset.deal) !== selectedId; });
+        };
+        if (!data.cards.some(card => card.id === selectedId)) selectedId = data.cards[0].id;
+        rows.forEach(row => row.onclick = () => {
+          selectedId = Number(row.dataset.selectDeal);
+          detailOpen = true;
+          select();
+          const back = workspace.querySelector('[data-deal]:not([hidden]) .deal-back');
+          if (back?.getClientRects().length) back.focus();
+        });
+        workspace.querySelectorAll('.deal-back').forEach(button => button.onclick = () => {
+          detailOpen = false;
+          select();
+          workspace.querySelector('[aria-pressed="true"]')?.focus();
+        });
+        select();
+      }
       const refresh = async (path, body, button, after) => {
         if (button.disabled) return;
         button.disabled = true;
@@ -81,7 +114,7 @@
           status.textContent = err.message;
         } finally { button.disabled = false; }
       };
-      root.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { tab=b.dataset.tab; offset=0; load(); });
+      root.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { tab=b.dataset.tab; offset=0; detailOpen=false; load(); });
       root.querySelector('[data-toggle-proof]')?.addEventListener('click',e =>
         refresh('/deals/review/settings',{proof_enabled:!data.proof_enabled},e.currentTarget,r => {
           const settings = root.querySelector('[data-proof-settings]');
