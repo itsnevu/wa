@@ -23,7 +23,12 @@
       root.innerHTML = `<section class="deal-review">
         <div class="deal-toolbar"><nav class="deal-tabs" aria-label="Antrean deal">${[['review','Verifikasi'],['dp','Penagihan DP'],...(data.owner ? [['audit','Audit sampel']] : [])].map(([key,title]) =>
           `<button data-tab="${key}" aria-pressed="${key===tab}">${title}</button>`).join('')}</nav>
-          ${data.can_decide ? '<button type="button" data-open-settings aria-haspopup="dialog">Pengaturan</button>' : ''}
+          ${data.can_decide ? `<button type="button" data-open-settings aria-haspopup="dialog" aria-label="Pengaturan deal" title="Pengaturan deal">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9.5 3h5l.6 2.5 2 .9 2.3-1 2.5 4.3-1.8 1.7v2.2l1.8 1.7-2.5 4.3-2.3-1-2 .9-.6 2.5h-5l-.6-2.5-2-.9-2.3 1-2.5-4.3 1.8-1.7v-2.2L2.1 9.7l2.5-4.3 2.3 1 2-.9z"/>
+              <circle cx="12" cy="12.5" r="3"/>
+            </svg>
+          </button>` : ''}
         </div>
         <p class="deal-feedback" role="status"></p>
         <div class="deal-tools">

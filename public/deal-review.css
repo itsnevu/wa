@@ -26,6 +26,7 @@
 .deal-dialog [hidden] { display:none !important; }
 .deal-tools { display:flex; flex-wrap:wrap; gap:8px 20px; color:#475569; font-size:.875rem; }
 .deal-toolbar,.deal-setting-row { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+.deal-toolbar [data-open-settings] { display:grid; place-items:center; min-width:44px; min-height:44px; padding:0; }
 .deal-settings { width:min(26rem,calc(100vw - 24px)); }
 .deal-setting-row { margin-top:16px; }
 .deal-setting-row [aria-checked="true"] { background:#ecfdf5; border-color:#0f766e; color:#134e4a; }
