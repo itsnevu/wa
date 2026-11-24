@@ -9,7 +9,10 @@
   const label = s => String(s).replaceAll('_',' ').replace(/^./,c => c.toUpperCase());
   const HANDLER = { ai:'AI', human:'Manusia', mixed:'AI + manusia', unknown:'Belum diketahui' };
   const EMPTY = '<span class="da-empty">Data belum tersedia</span>';
-  const low = m => m.n > 0 && m.low_sample ? '<span class="da-low" title="Sampel kecil, angka belum stabil">Sampel kecil</span>' : '';
+  const low = m => m.n > 0 && m.low_sample ? '<span class="da-low" title="Deal yang selesai belum sampai 10, jadi persennya masih mudah naik turun">Data masih sedikit</span>' : '';
+  const MONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const dayMonth = iso => { const [,m,d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]}`; };
+  const ask = (question,term) => `${question}<em>${term}</em>`;
 
   const rate = (title,m,help) => `<article class="card da-kpi"><h3>${title}</h3>
     <strong>${pct(m) ?? '—'}</strong><div class="da-caption"><small>${m.numerator} dari ${m.n} ${help}</small>${low(m)}</div></article>`;
@@ -17,7 +20,7 @@
     <strong>${Number(value).toLocaleString('id-ID')}</strong><small>${help}</small></article>`;
   const compact = n => 'Rp ' + Number(n).toLocaleString('id-ID',{ notation:'compact',maximumFractionDigits:1 });
   const money = (title,value,n,help) => `<article class="card da-kpi"><h3>${title}</h3>
-    <strong ${!n || value == null ? 'class="da-no-value"' : `title="${rupiah(value)}"`}>${!n || value == null ? '—' : compact(value)}</strong><small>${!n || value == null ? 'Belum ada transaksi' : help}</small></article>`;
+    <strong ${!n || value == null ? 'class="da-no-value"' : `title="${rupiah(value)}"`}>${!n || value == null ? '—' : compact(value)}</strong><small>${!n || value == null ? 'Belum ada deal lunas' : help}</small></article>`;
   const bars = (rows,max) => `<ul class="da-bars">${rows.map(([name,value,text]) => `<li><span title="${esc(name)}">${esc(name)}</span>
     <span class="da-bar" aria-hidden="true"><i style="width:${max ? Math.round(value / max * 100) : 0}%"></i></span><b>${esc(text ?? value)}</b></li>`).join('')}</ul>`;
   const aging = (title,d) => `<tr><td>${title}</td><td>${d.n}</td><td>${dur(d.average)}</td><td>${dur(d.p90)}</td></tr>`;
@@ -53,16 +56,18 @@
         <defs>${parts.map(p => `<radialGradient id="da-ring-${p.slot}" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="100"><stop offset=".35" stop-color="var(--da-ring-inner-${p.slot})"/><stop offset="1" stop-color="var(--da-ring-outer-${p.slot})"/></radialGradient>`).join('')}</defs>
         ${total ? '' : '<circle r="67.5" fill="none" stroke="#262626" opacity=".5" stroke-width="65"/>'}
         ${slices.map(p => outcomeSlice(p,slices.length === 1)).join('')}
-      </svg><span class="da-ring-hole" aria-hidden="true"></span>
+      </svg><span class="da-ring-hole" aria-hidden="true">${total ? `<strong>${parts[0].value}/${total}</strong><small>lunas</small>` : '<small>kosong</small>'}</span>
       </div>` :
       `<div class="da-segbar" role="img" aria-label="${description}">
         ${shown.map(p => `<span class="da-seg-${p.slot}" style="flex-grow:${p.value}" title="${esc(describe(p))}">${share(p.value,total) >= 12 ? share(p.value,total) + '%' : ''}</span>`).join('')}
       </div>`;
-    return `<article class="da-seg ${donut ? 'da-chart-panel da-outcome-card' : 'card'}"><h3>${title}${donut ? ' <button type="button" class="da-info" aria-label="Bagian lunas menunjukkan closing rate dari deal yang sudah selesai." title="Bagian lunas menunjukkan closing rate dari deal yang sudah selesai.">ⓘ</button>' : ''}</h3>
+    return `<article class="da-seg ${donut ? 'da-chart-panel da-outcome-card' : 'card'}"><h3>${title}${donut ? ' <button type="button" class="da-info" aria-label="Penjelasan lingkaran" aria-expanded="false" aria-controls="da-info-text"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5h.01"/></svg></button>' : ''}</h3>
+      ${donut ? `<p id="da-info-text" class="da-info-text" hidden>Warna oranye adalah deal yang lunas. Makin besar bagian oranye, makin tinggi closing rate. Deal yang masih berjalan tidak ikut dihitung.</p>` : ''}
+      ${donut ? `<p class="da-hint">${total ? `Satu lingkaran penuh = ${total} deal yang sudah selesai.` : 'Belum ada deal yang selesai.'}</p>` : ''}
       ${chart}
       ${donut && total ? `<div class="da-outcome-chips" aria-hidden="true">${slices.map(p => `<span data-outcome-chip="${p.slot}" class="da-glass da-outcome-chip ${p.value === largest ? 'is-largest' : ''}"><strong>${share(p.value,total)}%</strong><small>${esc(p.label)}</small></span>`).join('')}</div>` : ''}
       <ul class="da-legend${donut && !total ? ' da-legend-empty' : ''}">${parts.map(p => `<li class="${p.value ? '' : 'da-zero'}"><i class="da-seg-${p.slot}" aria-hidden="true"></i><span>${esc(p.label)}</span>
-        <b>${p.value}</b><small>${share(p.value,total)}%</small></li>`).join('')}</ul>${donut ? '' : note}</article>`;
+        <b>${p.value}${donut ? ' deal' : ''}</b><small>${share(p.value,total)}%</small></li>`).join('')}</ul>${donut ? '' : note}</article>`;
   }
 
   // Plain-language reading of the numbers, for people who do not want to interpret rates.
@@ -70,22 +75,36 @@
     const c = s.counts, done = s.closing_rate.n;
     const lines = [];
     if (done) {
-      lines.push(`Dari <b>${done}</b> deal yang sudah ada hasilnya, <b>${c.verified_lunas} lunas (${share(c.verified_lunas,done)}%)</b>.`
-        + ` Sisanya ${[[c.rejected,'ditolak'],[c.qualified_unanswered,'tidak terjawab'],[c.dp_hangus,'DP hangus']].filter(([n]) => n).map(([n,t]) => `${n} ${t}`).join(', ') || 'tidak ada'}.`);
-    } else lines.push('Belum ada deal yang selesai di periode ini, jadi closing rate belum bisa dihitung.');
+      lines.push(`Dari <b>${done}</b> deal yang sudah selesai, <b>${c.verified_lunas} lunas (${share(c.verified_lunas,done)}%)</b>.`
+        + ` Yang tidak jadi: ${[[c.rejected,'ditolak'],[c.qualified_unanswered,'tidak terjawab'],[c.dp_hangus,'DP hangus']].filter(([n]) => n).map(([n,t]) => `${n} ${t}`).join(', ') || 'tidak ada'}.`);
+    } else lines.push('Belum ada deal yang selesai di periode ini. Nanti kalau sudah ada, hasilnya muncul di sini.');
     const open = s.open_deals.value + s.pending_verification.value;
-    if (open) lines.push(`Masih berjalan: <b>${open}</b> deal (${s.open_deals.dp_aktif} DP aktif, ${s.open_deals.awaiting_proof} menunggu bukti, ${s.pending_verification.value} menunggu verifikasi tim).`);
-    if (s.revenue.n) lines.push(`Uang masuk dari deal lunas: <b>${rupiah(s.revenue.net)}</b>${s.revenue.refund ? ` setelah refund ${rupiah(s.revenue.refund)}` : ''}, rata-rata ${rupiah(s.aov.gross)} per deal.`);
-    if (done && done < 10) lines.push('<span class="da-low">Sampel masih kecil</span> Angka persen bisa berubah banyak saat deal bertambah.');
-    return `<article class="card da-story" aria-label="Ringkasan"><h3>Ringkasan</h3>${lines.map(l => `<p>${l}</p>`).join('')}</article>`;
+    if (open) lines.push(`Masih berjalan: <b>${open}</b> deal (${s.open_deals.dp_aktif} sudah DP, ${s.open_deals.awaiting_proof} menunggu bukti bayar, ${s.pending_verification.value} menunggu dicek tim).`);
+    if (s.revenue.n) lines.push(`Hasil penjualan dari deal lunas: <b>${rupiah(s.revenue.net)}</b>${s.revenue.refund ? ` setelah refund ${rupiah(s.revenue.refund)}` : ''}, rata-rata ${rupiah(s.aov.gross)} per deal.`);
+    if (done && done < 10) lines.push('<span class="da-low">Data masih sedikit</span> Jangan buru-buru menyimpulkan. Persennya bisa berubah banyak saat deal bertambah.');
+    const shown = Math.min(done,10), won = done > 10 ? Math.round(c.verified_lunas / done * 10) : c.verified_lunas;
+    const people = done ? `<div class="da-people"><div class="da-people-dots" aria-hidden="true">${
+      Array.from({ length:shown },(_,n) => `<i class="${n < won ? 'is-won' : ''}">${n < won ? '✓' : ''}</i>`).join('')}</div>
+      <span>${done > 10 ? `Kira-kira ${won} dari setiap 10 deal yang selesai jadi beli` : `${won} dari ${shown} deal yang selesai jadi beli`}</span></div>` : '';
+    return `<article class="card da-story" aria-label="Ringkasan"><h3>Jadi, bagaimana hasilnya?</h3>${people}${lines.map(l => `<p>${l}</p>`).join('')}
+      <details class="da-howto"><summary>Baru pertama lihat? Cara membaca halaman ini</summary>
+        <ol><li><b>Pilih waktunya.</b> Tekan 4, 12, 26, atau 52 minggu di atas grafik.</li>
+          <li><b>Lihat kotak angka.</b> Setiap kotak menjawab satu pertanyaan.</li>
+          <li><b>Lihat gambarnya.</b> Batang tinggi berarti lebih banyak yang lunas. Lingkaran menunjukkan hasil akhirnya.</li>
+          <li><b>Cari tahu dari mana.</b> Di Rincian deal, bandingkan produk, nomor, dan agen.</li></ol>
+        <dl>${[['Deal','Pembeli yang sedang dalam proses membeli.'],['Lunas','Pembayaran sudah dicek dan selesai.'],
+          ['DP','Uang muka. Baru dibayar sebagian.'],['DP hangus','Sudah bayar uang muka, tetapi tidak jadi dilunasi.'],
+          ['Ditolak','Tim memutuskan deal ini tidak jadi.'],['Tidak terjawab','Chat pembeli tidak dibalas selama 4 jam operasional.'],
+          ['Closing rate','Dari semua deal yang selesai, berapa persen yang lunas.'],['Neto','Nilai penjualan dikurangi uang yang dikembalikan.'],
+          ['Kas masuk','Pembayaran yang tercatat dari deal lunas.']].map(([t,d]) => `<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl></details></article>`;
   }
 
   function groupTable(rows,field) {
     const name = g => field === 'handler' ? HANDLER[g.key] || g.label : g.label;
     return `<div class="da-scroll"><table><thead><tr><th scope="col">${{ product:'Produk',number:'Nomor',agent:'Agen',handler:'Penangan' }[field]}</th>
-      <th scope="col">Jumlah deal</th><th scope="col">Lunas</th><th scope="col">Closing</th><th scope="col">Bruto</th><th scope="col">Neto</th></tr></thead><tbody>${rows.length ? rows.map(g => `<tr>
+      <th scope="col">Jumlah deal</th><th scope="col">Lunas</th><th scope="col">% lunas</th><th scope="col" title="Sebelum dikurangi uang yang dikembalikan">Penjualan</th><th scope="col" title="Setelah dikurangi uang yang dikembalikan">Bersih</th></tr></thead><tbody>${rows.length ? rows.map(g => `<tr>
       <td>${esc(name(g))}</td><td>${g.n}</td><td>${g.counts.verified_lunas}</td>
-      <td>${pct(g.closing_rate) ?? 'Belum ada'}${g.closing_rate.n && g.closing_rate.low_sample ? ' <span class="da-low">Sampel kecil</span>' : ''}</td>
+      <td>${pct(g.closing_rate) ?? 'Belum ada'}${g.closing_rate.n && g.closing_rate.low_sample ? ' <span class="da-low" title="Data masih sedikit">Sedikit</span>' : ''}</td>
       <td>${rupiah(g.revenue.gross)}</td><td>${rupiah(g.revenue.net)}</td></tr>`).join('') : Array.from({length:3}, () => '<tr aria-hidden="true" class="da-skeleton">' + '<td><i></i></td>'.repeat(6) + '</tr>').join('')}</tbody></table></div>`;
   }
 
@@ -119,7 +138,7 @@
       const toMin = v => { const [hh,mm] = String(v).split(':').map(Number); return hh*60 + mm; };
       const reasonRows = Object.entries(s.reasons).sort((a,b) => b[1] - a[1]);
       const periodPicker = `<div class="da-period" role="group" aria-label="Periode analitik">${[4,12,26,52].map(w =>
-        `<button type="button" data-weeks="${w}" aria-pressed="${w===weeks}" aria-label="${w} minggu">${w} mgg</button>`).join('')}</div>`;
+        `<button type="button" data-weeks="${w}" aria-pressed="${w===weeks}" aria-label="${w} minggu">${w} minggu</button>`).join('')}</div>`;
       const exportLink = `<a class="btn da-export" href="/api/deals/analytics/export?from=${from}&to=${to}" download>Ekspor CSV</a>`;
       const header = root.closest('#workspace')?.querySelector('header');
       if (header) {
@@ -130,30 +149,32 @@
       }
       root.innerHTML = `<section class="deal-analytics" aria-label="Analytics closing dan DP">
         ${header ? '' : exportLink}
+        ${story(s)}
         <div class="da-kpis da-kpis-primary" aria-label="Metrik utama">
-          ${rate('Closing rate',s.closing_rate,'deal selesai berakhir lunas')}
-          ${count('Deal terbuka',s.open_deals.value,`${s.open_deals.dp_aktif} DP aktif + ${s.open_deals.awaiting_proof} menunggu bukti`)}
-          ${money('Pendapatan neto',s.revenue.net,s.revenue.n,`refund ${rupiah(s.revenue.refund)}`)}
-          ${money('Kas masuk',s.revenue.cash_in,s.revenue.n,s.revenue.amount_mismatch ? `${s.revenue.amount_mismatch} deal kas masuk < tagihan` : 'sesuai tagihan')}
+          ${rate(ask('Berapa yang jadi beli?','Closing rate'),s.closing_rate,'deal selesai berakhir lunas')}
+          ${count(ask('Berapa yang masih ditunggu?','Deal terbuka'),s.open_deals.value,`${s.open_deals.dp_aktif} sudah DP, ${s.open_deals.awaiting_proof} menunggu bukti bayar`)}
+          ${money(ask('Berapa hasil penjualannya?','Pendapatan neto'),s.revenue.net,s.revenue.n,s.revenue.refund ? `Sudah dikurangi refund ${rupiah(s.revenue.refund)}` : 'Tidak ada refund')}
+          ${money(ask('Berapa uang yang tercatat masuk?','Kas masuk'),s.revenue.cash_in,s.revenue.n,s.revenue.amount_mismatch ? `${s.revenue.amount_mismatch} deal: uang masuk kurang dari nilai deal` : 'Tidak ada deal yang kurang bayar')}
         </div>
         <section class="card da-overview-charts" aria-label="Grafik closing dan DP">
           <article class="da-chart-panel da-trend-card"><div class="da-panel-heading"><h3>Deal lunas per minggu</h3>${periodPicker}</div>
+            <p class="da-hint">Makin tinggi batangnya, makin banyak yang lunas. Dihitung dari minggu deal dibuka.</p>
             ${data.weekly.some(w => w.counts.verified_lunas > 0) ? `
             <div class="da-trend-plot">
               <div class="da-trend-axis" aria-hidden="true">${[4,3,2,1,0].map(tick => `<span>${tick * tickStep}</span>`).join('')}</div>
               <div class="da-trend" aria-label="Jumlah deal lunas per minggu">${data.weekly.map((w,i) => {
-                const description = `Minggu ${w.week}: ${w.counts.verified_lunas} lunas, closing ${pct(w.closing_rate) ?? 'belum tersedia'}`;
+                const description = `Minggu ${dayMonth(w.week)}: ${w.counts.verified_lunas} lunas, closing ${pct(w.closing_rate) ?? 'belum tersedia'}`;
                 return `<div class="da-trend-week" role="button" tabindex="0" aria-pressed="${i === latestPaidWeek}" aria-label="${esc(description)}" style="--da-height:${w.counts.verified_lunas / trendCeiling * 100}%">
-                  <i aria-hidden="true"></i><small aria-hidden="true">${i % labelEvery === 0 ? esc(w.week.slice(5)) : ''}</small>
-                  <span class="da-trend-value da-glass" aria-hidden="true"><strong>${w.counts.verified_lunas} lunas</strong><small>${esc(w.week)}</small></span></div>`;
+                  <i aria-hidden="true"></i><small aria-hidden="true">${i % labelEvery === 0 ? esc(dayMonth(w.week)) : ''}</small>
+                  <span class="da-trend-value da-glass" aria-hidden="true"><strong>${w.counts.verified_lunas} lunas</strong><small>Minggu ${esc(dayMonth(w.week))}</small></span></div>`;
               }).join('')}</div>
-            </div>` : `<div class="da-trend-empty"><p>Belum ada deal lunas di periode ini</p><div class="da-empty-bars" aria-hidden="true">${data.weekly.slice(-7).map(w => `<span><i></i>${esc(w.week.slice(5))}</span>`).join('')}</div></div>`}</article>
-          ${segmented('Hasil deal yang sudah selesai',[
+            </div>` : `<div class="da-trend-empty"><p>Belum ada deal lunas di periode ini.<br>Batang akan muncul setelah ada yang lunas.</p><div class="da-empty-bars" aria-hidden="true">${data.weekly.slice(-7).map(w => `<span><i></i>${esc(dayMonth(w.week))}</span>`).join('')}</div></div>`}</article>
+          ${segmented('Akhirnya jadi apa?',[
             { label:'Lunas',value:s.counts.verified_lunas,slot:1 },{ label:'Ditolak',value:s.counts.rejected,slot:2 },
             { label:'Tidak terjawab',value:s.counts.qualified_unanswered,slot:3 },{ label:'DP hangus',value:s.counts.dp_hangus,slot:4 }],
             { donut:true, note:`<p class="da-note">Bagian <b>Lunas</b> inilah closing rate. Deal yang masih berjalan tidak dihitung di sini.</p>`,empty:'Belum ada deal yang selesai.' })}
         </section>
-        <article class="card da-detail-card"><div class="da-panel-heading"><h3 class="da-title">Rincian deal</h3></div>
+        <article class="card da-detail-card"><div class="da-panel-heading"><div><h3 class="da-title">Rincian deal</h3><p class="da-hint">Pilih tab untuk melihat dari mana deal lunas berasal.</p></div></div>
           <div class="da-detail-controls">
             <input type="search" data-detail-search aria-label="Cari rincian deal" placeholder="Cari di rincian…">
             <select data-detail-sort aria-label="Urutkan rincian deal"><option value="">Urutan awal</option><option value="name">Nama A–Z</option><option value="count">Deal terbanyak</option></select>
@@ -161,35 +182,34 @@
           <nav class="da-tabs" aria-label="Rincian per dimensi">${[['product','Produk'],['number','Nomor'],['agent','Agen'],['handler','AI vs manusia']].map(([k,t]) =>
             `<button data-field="${k}" aria-pressed="${k===field}">${t}</button>`).join('')}</nav>
           ${groupTable(data.groups[field],field)}
-          <p class="da-note">Atribusi yang tidak tercatat tampil sebagai “Belum tercatat” / “Belum diketahui”.</p></article>
-        ${s.n ? `${story(s)}
-        <details class="card da-more-metrics">
-          <summary>Metrik tambahan</summary>
+          <p class="da-note">“Belum tercatat” atau “Belum diketahui” berarti datanya belum diisi.</p></article>
+        ${s.n ? `<details class="card da-more-metrics">
+          <summary>Angka tambahan</summary>
           <div class="da-kpis">
-          ${rate('Porsi DP',s.dp_share,'deal berbayar memakai DP')}
-          ${rate('DP terlunasi',s.dp_settle,'DP berakhir lunas')}
-          ${count('Pending verifikasi',s.pending_verification.value,'di luar closing rate')}
-          ${money('AOV bruto',s.aov.gross,s.aov.n,'per deal lunas')}
-          ${money('Pendapatan bruto',s.revenue.gross,s.revenue.n,'sebelum refund')}
+          ${rate(ask('Berapa yang pakai uang muka?','Porsi DP'),s.dp_share,'deal berbayar memakai DP')}
+          ${rate(ask('Berapa DP yang akhirnya lunas?','DP terlunasi'),s.dp_settle,'DP berakhir lunas')}
+          ${count(ask('Berapa yang menunggu dicek?','Pending verifikasi'),s.pending_verification.value,'Belum diputuskan tim')}
+          ${money(ask('Rata-rata satu deal berapa?','AOV bruto'),s.aov.gross,s.aov.n,'Per deal lunas')}
+          ${money(ask('Berapa sebelum refund?','Pendapatan bruto'),s.revenue.gross,s.revenue.n,'Belum dikurangi uang yang dikembalikan')}
           </div>
         </details>
         <div class="da-grid da-grid-seg">
           ${segmented('Deal yang masih berjalan',[
-            { label:'DP aktif',value:s.open_deals.dp_aktif,slot:1 },{ label:'Menunggu bukti',value:s.open_deals.awaiting_proof,slot:2 },
-            { label:'Menunggu verifikasi tim',value:s.pending_verification.value,slot:3 }],{ empty:'Tidak ada deal yang sedang berjalan.' })}
+            { label:'Sudah DP',value:s.open_deals.dp_aktif,slot:1 },{ label:'Menunggu bukti bayar',value:s.open_deals.awaiting_proof,slot:2 },
+            { label:'Menunggu dicek tim',value:s.pending_verification.value,slot:3 }],{ empty:'Tidak ada deal yang sedang berjalan.' })}
           ${segmented('Cara pelanggan melunasi',[
             { label:'Langsung lunas',value:s.counts.settled_direct,slot:1 },{ label:'Lewat DP dulu',value:s.counts.settled_dp,slot:2 }],{ empty:'Belum ada deal lunas.' })}
         </div>
         <div class="da-grid">
-          <article class="card"><h3>Funnel</h3>
-            ${bars([['Inquiry',f.inquiry],['Qualified',f.qualified],['Kandidat',f.candidate],['Bukti / DP',f.proof],['Lunas',f.lunas]],f.inquiry)}
+          <article class="card"><h3>Perjalanan pembeli</h3><p class="da-hint">Dari bertanya sampai lunas. Batang mengecil saat ada yang berhenti di jalan.</p>
+            ${bars([['Bertanya',f.inquiry],['Berminat',f.qualified],['Calon beli',f.candidate],['Bukti / DP',f.proof],['Lunas',f.lunas]],f.inquiry)}
             <p class="da-note">${esc(s.funnel_note)}</p></article>
-          <article class="card"><h3>Waktu & aging</h3><div class="da-scroll"><table>
-            <thead><tr><th>Ukuran</th><th>Jumlah deal</th><th>Rata-rata</th><th>p90</th></tr></thead><tbody>
-            ${aging('Time-to-close',s.time_to_close)}${aging('Antrean verifikasi',s.aging.review)}
-            ${aging('DP aktif (umur)',s.aging.dp_active)}${aging('DP hangus (DP → hangus)',s.aging.dp_hangus)}
+          <article class="card"><h3>Berapa lama prosesnya?</h3><p class="da-hint">Kolom terakhir: sekitar 9 dari 10 deal paling lama segini.</p><div class="da-scroll"><table>
+            <thead><tr><th>Ukuran</th><th>Jumlah deal</th><th>Rata-rata</th><th>9 dari 10</th></tr></thead><tbody>
+            ${aging('Dari dibuka sampai lunas',s.time_to_close)}${aging('Menunggu diputuskan',s.aging.review)}
+            ${aging('DP yang belum lunas',s.aging.dp_active)}${aging('Dari DP sampai hangus',s.aging.dp_hangus)}
             </tbody></table></div></article>
-          <article class="card"><h3>Alasan drop-off</h3>
+          <article class="card"><h3>Kenapa tidak jadi?</h3>
             ${reasonRows.length ? bars(reasonRows.map(([code,n]) => [code === 'unknown' ? 'Belum diketahui' : label(code),n]),reasonRows[0][1]) : `<p>${EMPTY}</p>`}
             <p class="da-note">${s.counts.rejected} deal ditolak${s.counts.unverified_legacy ? ` · ${s.counts.unverified_legacy} status lama tanpa bukti keputusan tidak dihitung` : ''}.</p></article>
         </div>` : ''}
@@ -212,8 +232,12 @@
         const next = Number(button.dataset.weeks);
         if (next !== weeks) { weeks = next; load(); }
       });
-      root.querySelectorAll('[data-field]').forEach(b => b.onclick = () => { field = b.dataset.field; load(); });
+      root.querySelectorAll('[data-field]').forEach(b => b.onclick = () => { if (field !== b.dataset.field) { field = b.dataset.field; load(); } });
       const outcome = root.querySelector('.da-outcome-card');
+      const info = root.querySelector('.da-info'), infoText = root.querySelector('#da-info-text');
+      const toggleInfo = open => { info.setAttribute('aria-expanded',String(open)); infoText.hidden = !open; };
+      info.onclick = () => toggleInfo(infoText.hidden);
+      info.onkeydown = e => { if (e.key === 'Escape') toggleInfo(false); };
       outcome?.querySelectorAll('[data-outcome-slice]').forEach(slice => {
         const show = () => { outcome.dataset.highlight = slice.dataset.outcomeSlice; };
         const hide = () => {

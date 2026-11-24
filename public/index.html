@@ -307,7 +307,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 <link rel="stylesheet" href="/session-health.css">
 <link rel="stylesheet" href="/deal-review.css">
 <link rel="stylesheet" href="/deal-analytics.css">
-<link rel="stylesheet" href="/raqio-workspace.css?v=inbox-filters-1">
+<link rel="stylesheet" href="/raqio-workspace.css?v=bubble-1">
 </head>
 <body>
 <div id="sessionNotice" class="hidden" role="alert"></div>
@@ -383,7 +383,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
   </aside>
 
   <main id="main">
-    <div id="head" class="card"><div class="contact-heading"><span id="title">pilih chat</span></div>
+    <div id="head" class="card"><div class="contact-heading"><span id="title">Pilih chat</span></div>
       <select id="conversationStatus" aria-label="Status percakapan" disabled><option value="new">Baru</option><option value="in_progress">Diproses</option><option value="resolved">Selesai</option></select>
       <span id="chips"></span>
       <span id="wsDown" class="chip hidden" role="status" title="Koneksi realtime terputus, mencoba menyambung ulang">terputus</span>
@@ -399,7 +399,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
       <button id="tplPick" class="ghost" title="Pilih template" aria-label="Pilih template" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M5 3h9l5 5v13H5ZM14 3v6h5M8 13h8M8 17h6"/></svg></button>
       <input type="file" id="filePick" accept="image/*,audio/*,video/*,application/pdf" class="hidden" />
       <button id="btnFile" class="ghost" title="Lampirkan" aria-label="Lampirkan"><svg viewBox="0 0 24 24"><path d="m8 13 7-7a3 3 0 0 1 4 4L9 20a5 5 0 0 1-7-7L12 3M5 16l10-10"/></svg></button>
-      <textarea id="input" placeholder="tulis pesan" enterkeyhint="send" autocapitalize="sentences"></textarea>
+      <textarea id="input" placeholder="Tulis pesan" enterkeyhint="send" autocapitalize="sentences"></textarea>
       <button class="primary" id="btnSend" type="button" aria-label="Kirim pesan" title="Kirim pesan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 4 18 8-18 8 4-8-4-8Zm4 8h14"/></svg></button>
     </div>
     </div>
@@ -470,7 +470,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 </dialog>
 <script src="/session-health.js"></script>
 <script src="/deal-review.js"></script>
-<script src="/deal-analytics.js?v=analytics-10"></script>
+<script src="/deal-analytics.js?v=analytics-14"></script>
 <script src="/platform.js"></script>
 <script src="/media.js"></script>
 <script>
@@ -861,7 +861,7 @@ function editNumberName(number, trigger) {
 async function pickNumber(id) {
   clearQuote();
   state.numberId = id; state.chatId = null;
-  $('#msgs').innerHTML = ''; $('#title').textContent = 'pilih chat';
+  $('#msgs').innerHTML = ''; $('#title').textContent = 'Pilih chat';
   await loadNumbers(); await loadChats();
   updateHeader(); updateComposer();
 }
@@ -1144,7 +1144,7 @@ function resizeComposer() {
 
 function updateComposer() {
   const active = Boolean(state.chatId);
-  $('#input').placeholder = active ? 'tulis pesan' : 'pilih chat dulu';
+  $('#input').placeholder = active ? 'Tulis pesan' : 'Pilih chat dulu';
   $('#input').disabled = !active;
   $('#btnSend').disabled = !active || Boolean(state.sending) || !$('#input').value.trim();
   $('#btnFile').disabled = !active;
@@ -1513,7 +1513,7 @@ pages.dashboard = { title: 'Ringkasan', render: async (root) => {
   if (currentPage !== 'dashboard' || version !== pageVersion) return;
   const online = numbers.filter(n => n.status === 'online').length;
   const connectedShare = numbers.length ? Math.round(online / numbers.length * 100) : 0;
-  root.innerHTML = `<div class="dashboard-welcome"><div><span class="eyebrow">WORKSPACE BISNIS ANDA</span><h2>Halo, ${esc(state.me.username)}</h2><p>Semua percakapan, satu tempat. Siap terhubung dengan pelanggan hari ini?</p></div><span class="dashboard-date">${esc(new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }))}</span></div>
+  root.innerHTML = `<div class="dashboard-welcome"><div><span class="eyebrow">Workspace bisnis Anda</span><h2>Halo, ${esc(state.me.username)}</h2><p>Semua percakapan, satu tempat. Siap terhubung dengan pelanggan hari ini?</p></div><span class="dashboard-date">${esc(new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }))}</span></div>
   <div class="stat-grid"><article class="card stat"><span>Total nomor</span><strong>${numbers.length}</strong><small>Nomor di workspace Anda</small></article><article class="card stat"><span>Nomor online</span><strong class="status-online">${online}</strong><small>Terhubung dan siap digunakan</small></article><article class="card stat"><span>Belum online</span><strong>${numbers.length - online}</strong><small>Periksa koneksi nomor Anda</small></article></div>
   <div class="dashboard-grid"><article class="card dashboard-inbox"><h3>Kesiapan koneksi WhatsApp</h3><p>${online} dari ${numbers.length} nomor sedang online.</p><button class="primary" id="dashboardChat">Buka kotak masuk ↗</button><figure class="connection-chart" aria-label="${connectedShare}% nomor online"><div class="connection-chart-ring" style="--connected:${connectedShare}%"><strong aria-hidden="true">${connectedShare}%</strong></div></figure></article><article class="card quick-actions"><h3>Akses cepat</h3><button data-go="numbers"><span>Kelola nomor<small>Hubungkan akun WhatsApp bisnis</small></span><span>↗</span></button><button data-go="templates"><span>Template pesan<small>Respons lebih cepat dan konsisten</small></span><span>↗</span></button><button data-go="labels"><span>Label pelanggan<small>Rapikan dan kelompokkan percakapan</small></span><span>↗</span></button></article></div>
   <article class="card"><div class="panel-head"><div><h3 style="margin:0">Status koneksi</h3><p class="section-description">Pantau kesiapan nomor WhatsApp Anda.</p></div><button id="dashboardRefresh">Perbarui</button></div><table><thead><tr><th>Nama nomor</th><th>WhatsApp</th><th>Status</th></tr></thead><tbody>${numbers.map(n => `<tr><td><strong>${esc(n.name)}</strong></td><td>${esc(n.phone)}</td><td><span class="connection-badge ${n.status === 'online' ? 'connected' : ''}">${esc(n.status)}</span></td></tr>`).join('') || '<tr><td colspan="3"><div class="dashboard-empty"><strong>Mulai dengan nomor pertama Anda</strong><p>Hubungkan WhatsApp untuk mengelola pesan dari workspace ini.</p><button id="dashboardAdd" class="primary">+ Hubungkan nomor</button></div></td></tr>'}</tbody></table></article>`;
@@ -1906,7 +1906,7 @@ function updateHeader() {
   $('#conversationStatus').value = chat?.status || 'new';
   const editor = $('#contactNameEditor');
   if (editor && !editor.closest('dialog') && Number(editor.dataset.chatId) !== state.chatId) editor.remove();
-  $('#title').textContent = chat ? chatLabel(chat) : 'pilih chat';
+  $('#title').textContent = chat ? chatLabel(chat) : 'Pilih chat';
   $('#title').setAttribute('role', 'button');
   $('#title').tabIndex = chat ? 0 : -1;
   $('#title').title = 'Ubah nama kontak';
@@ -1967,8 +1967,9 @@ function editContactName(chat) {
 }
 
 function chatEmpty() {
+  if (!state.numberId) return '<div class="empty chat-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg><strong>Pilih nomor dulu</strong><small>Percakapan nomor itu akan tampil di sini.</small></div>';
   if (state.numberId && ($('#inboxStatus').value || $('#mineOnly').checked || (state.inboxQueue && state.inboxQueue !== 'all'))) return '<div class="empty chat-empty"><strong>Tidak ada percakapan yang cocok</strong><small>Coba antrean atau status yang lain.</small></div>';
-  return '<div class="empty chat-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><strong>belum ada chat</strong><small>kirim pesan dari HP untuk memulai</small></div>';
+  return '<div class="empty chat-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><strong>Belum ada chat</strong><small>Kirim pesan dari HP untuk memulai.</small></div>';
 }
 
 function addModuleFilter(table) {

@@ -18,7 +18,7 @@ const context = vm.createContext({
 });
 new vm.Script(source).runInContext(context);
 const names = vm.runInContext('Object.keys(moduleGuides)',context);
-assert.deepEqual(Array.from(names),['ai','dashboard','chats','numbers','rules','templates','labels','agents','notifications','search','monitor','account','backups']);
+assert.deepEqual(Array.from(names),['ai','dashboard','chats','numbers','rules','templates','labels','agents','notifications','search','monitor','analytics','account','backups']);
 for (const name of names) {
   const steps = vm.runInContext(`moduleGuideSteps('${name}')`,context);
   assert.ok(steps.length >= 2,name);

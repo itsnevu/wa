@@ -97,6 +97,16 @@ const moduleGuides = {
     ['#page table', 'Status nomor', 'Periksa status, waktu terakhir terlihat, dan percobaan koneksi untuk menemukan nomor yang perlu ditangani.'],
     ['#page .card:last-child', 'Log aktivitas', 'Lihat waktu, pengguna, nomor, dan detail tindakan yang tercatat.'],
   ],
+  analytics: [
+    [null, 'Baca hasil penjualan', 'Halaman ini menjawab: berapa yang jadi beli, berapa uangnya, dan kenapa ada yang tidak jadi.'],
+    ['.da-story', 'Mulai dari sini', 'Bagian ini menceritakan hasil dengan kalimat biasa. Bulatan bertanda centang berarti lunas.'],
+    ['.da-kpis-primary', 'Empat angka utama', 'Setiap kotak menjawab satu pertanyaan. Tanda Data masih sedikit berarti persennya masih mudah berubah.'],
+    ['.da-period', 'Pilih waktu', 'Tekan jumlah minggu yang ingin dilihat. Semua angka ikut berubah.'],
+    ['.da-trend-card', 'Grafik batang', 'Batang yang lebih tinggi berarti lebih banyak deal lunas. Tekan satu batang untuk melihat jumlahnya.'],
+    ['.da-outcome-card', 'Lingkaran hasil', 'Lingkaran membagi semua deal yang sudah selesai. Nama, jumlah, dan persennya ada di bawah lingkaran.'],
+    ['.da-detail-card', 'Bandingkan', 'Pilih Produk, Nomor, Agen, atau AI vs manusia untuk melihat dari mana deal lunas berasal.'],
+    ['.da-export', 'Simpan data', 'Unduh data periode ini sebagai CSV untuk dibuka di Excel atau Google Sheets.'],
+  ],
   account: [
     [null, 'Pengaturan akun', 'Kelola username, password, dan sesi login akun Anda.'],
     ['#usernameForm', 'Ganti username', 'Isi username baru lalu klik Simpan username. Nama ini digunakan saat login berikutnya.'],
