@@ -50,6 +50,7 @@
             ${tab==='review' ? '<button type="button" class="deal-back">Kembali ke antrean</button>' : ''}
             <header><h3>#${card.id} · ${esc(card.session_name)}</h3><span class="deal-sla ${card.overdue && tab==='review' ? 'is-overdue' : ''}">${tab==='review' ? (card.overdue ? 'Lewat SLA' : 'Dalam SLA') : esc(label(card.state))} · ${age(card.age_ms)}</span></header>
             <div class="deal-amount"><strong>${amount(card.amount)}</strong><span>${esc(methodLabel(card.method))}</span></div>
+            ${card.needs_info ? '<span class="deal-needs-info">Butuh info</span>' : ''}
             <details class="deal-metadata" ${tab==='review' ? '' : 'open'}><summary>Detail</summary><dl>
               <dt>Produk / jumlah</dt><dd>${esc(card.product || '—')} / ${esc(card.qty ?? '—')}</dd>
               <dt>Bukti gambar</dt><dd>${proofs.some(m=>m.kind==='image' && m.is_evidence) ? 'Ada' : proofs.some(m=>m.kind==='image') ? 'Ada lampiran untuk diperiksa' : 'Belum ada'}</dd>
@@ -62,13 +63,13 @@
               <span>${esc(m.body || label(m.kind))}</span>
               ${proofs.includes(m) ? data.proof_enabled
                 ? `<button type="button" data-proof-view="${m.id}">Buka bukti #${m.id}</button>`
-                : '<small>Lampiran bukti nonaktif</small>' : ''}</li>`).join('')}</ol>
+                : '<small class="deal-proof-status">Lampiran nonaktif</small>' : ''}</li>`).join('')}</ol>
             ${data.can_decide ? `<div class="deal-actions">${tab==='review' ? `
-              <button ${canMarkPaid ? 'class="primary"' : 'disabled'} data-action="paid">Tandai lunas</button>
+              <button ${canMarkPaid ? 'class="primary"' : 'disabled title="Catat bukti pembayaran terlebih dahulu"'} data-action="paid">Tandai lunas</button>
               ${proofs.length ? `<button ${canMarkPaid ? '' : 'class="primary"'} data-action="proof">Catat bukti</button>` : ''}
               <button data-action="dp">DP</button><button data-action="reject">Bukan closing</button><button data-action="info">Butuh info</button>
             ` : tab==='dp' ? '<button class="primary" data-action="installment">Catat cicilan</button>' :
-              '<button data-action="audit_confirm">Tepat</button><button data-action="audit_false">False positive</button>'}</div>` : ''}
+              '<button data-action="audit_confirm">Tepat</button><button data-action="audit_false">False positive</button>'}</div><p class="deal-feedback" data-card-feedback role="status"></p>` : ''}
             </article>`;
         }).join('') || '<p class="empty">Antrean ini kosong.</p>'}</div></div>
         <nav class="deal-tabs" aria-label="Halaman antrean">${offset ? '<button data-prev>Sebelumnya</button>' : ''}${data.has_more ? '<button data-next>Berikutnya</button>' : ''}</nav>
@@ -118,7 +119,7 @@
           const status = root.querySelector('.deal-feedback');
           if (status) status.textContent = after?.(result) || 'Keputusan tersimpan.';
         } catch (err) {
-          const status = dialog.open ? form.querySelector('[data-error]') || feedback : feedback;
+          const status = (dialog.open ? form.querySelector('[data-error]') : button.closest('[data-deal]')?.querySelector('[data-card-feedback]')) || feedback;
           status.textContent = err.message;
         } finally { button.disabled = false; }
       };
@@ -171,7 +172,7 @@
         });
         el.querySelectorAll('[data-action]').forEach(b => b.onclick = () => {
           const action = b.dataset.action;
-          if (action === 'info' || (action === 'paid' && card.amount===card.recorded_proof.amount)) {
+          if (action === 'paid' && card.amount===card.recorded_proof.amount) {
             refresh(endpoint,{action},b);
             return;
           }
@@ -205,7 +206,8 @@
             const fields = action === 'proof' ? `${proofSelect(true)}<label>Nominal tagihan (Rp)<input name="amount" required type="number" min="1" value="${esc(card.amount)}"></label><label>Nominal pada bukti (Rp)<input name="proof_amount" required type="number" min="1"></label>`
               : ['dp','installment'].includes(action) ? paymentInputs(card,action==='dp')+proofSelect(false)+(action==='installment'?note():'')
               : action === 'paid' ? `<p>Nominal tagihan ${amount(card.amount)} berbeda dari bukti ${amount(card.recorded_proof.amount)}. Jelaskan alasan override.</p>${note(1)}`
-              : action === 'audit_false' ? note(10) : '<p>Konfirmasi keputusan awal sesuai dengan bukti.</p>';
+              : action === 'audit_false' ? note(10)
+              : action === 'info' ? note() : '<p>Konfirmasi keputusan awal sesuai dengan bukti.</p>';
             form.insertAdjacentHTML('beforeend',fields+'<button class="primary" type="submit">Simpan</button>');
           }
           const requestId = action==='installment' ? Array.from(crypto.getRandomValues(new Uint8Array(16)), value=>value.toString(16).padStart(2,'0')).join('') : undefined;

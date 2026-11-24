@@ -229,6 +229,7 @@ test('Chrome desktop and 360px render card, SLA, reason grid, proof and DP form'
     const settings = "document.querySelector('[data-proof-settings]')";
     await evalJs(`document.querySelector('[data-open-settings]').click();${settings}.querySelector('[data-toggle-proof]').click()`);
     await wait(()=>evalJs(`${settings}?.open && ${settings}.querySelector('[role=switch]').getAttribute('aria-checked')==='false' && !${card}?.querySelector('[data-proof-view]')`));
+    assert.equal(await evalJs(`getComputedStyle(${card}.querySelector('.deal-proof-status')).gridColumnStart`),'2');
     await evalJs(`${settings}.querySelector('[data-toggle-proof]').click()`);
     await wait(()=>evalJs(`${settings}?.open && ${settings}.querySelector('[role=switch]').getAttribute('aria-checked')==='true' && !!${card}?.querySelector('[data-proof-view]')`));
     await evalJs(`${settings}.querySelector('form button').click()`);
@@ -261,6 +262,10 @@ test('Chrome desktop and 360px render card, SLA, reason grid, proof and DP form'
       await wait(()=>evalJs(`!!${dialog}.querySelector('img')`));
       await evalJs(`${dialog}.close()`);
     }
+    await evalJs(`${card}.querySelector('[data-action=info]').click()`);
+    assert.equal(await evalJs(`${dialog}.open && !!${dialog}.querySelector('[name=note]')`),true);
+    await evalJs(`${dialog}.querySelector('[data-decision-form]').requestSubmit()`);
+    await wait(()=>evalJs(`!${dialog}.open && !!${card}?.querySelector('.deal-needs-info')`));
     await evalJs(`${card}.querySelector('[data-action=proof]').click()`);
     await evalJs(`(()=>{const form=${dialog}.querySelector('[data-decision-form]');
       form.elements.message_id.value='${proof}'; form.elements.proof_amount.value='500000'; form.requestSubmit();})()`);

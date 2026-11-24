@@ -88,7 +88,7 @@ export function getDealEvidence(scope, id, messageId) {
 function card(row, now) {
   const output = row.classifier_version ? reasonFor.get(row.tenant_id,row.chat_id,row.classifier_version) : null;
   const proof = eventGet.get(row.tenant_id,row.id,'proof_recorded');
-  const decision = eventGet.get(row.tenant_id,row.id,'decision');
+  const decision = JSON.parse(eventGet.get(row.tenant_id,row.id,'decision')?.payload_json ?? 'null');
   const parsed = proof && JSON.parse(proof.payload_json);
   const messages = relevant.all(row).sort((a,b) => a.id - b.id);
   const method = row.method === 'dana' && row.classifier_version === 'deal-rules-v1' && !row.decided_at
@@ -102,7 +102,8 @@ function card(row, now) {
     model_reason: output ? JSON.parse(output.output_json).reason : null,
     messages,
     recorded_proof: parsed ? { message_id: parsed.message_id, amount: parsed.amount } : null,
-    amount_mismatch: Boolean(parsed && parsed.amount !== row.amount || decision && JSON.parse(decision.payload_json).amount_mismatch),
+    needs_info: row.state === 'awaiting_proof' && decision?.action === 'info',
+    amount_mismatch: Boolean(parsed && parsed.amount !== row.amount || decision?.amount_mismatch),
   };
 }
 
