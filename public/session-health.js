@@ -63,7 +63,7 @@
       const count = result.new_messages;
       const message = count === 0
         ? history?.observation_completed
-          ? '0 pesan baru — server WhatsApp tidak mengirim riwayat tambahan yang belum tersimpan selama pemeriksaan.'
+          ? '0 pesan baru. Server WhatsApp tidak mengirim riwayat tambahan yang belum tersimpan selama pemeriksaan.'
           : '0 pesan baru tercatat. Pemeriksaan riwayat belum selesai.'
         : `${Number(count)} pesan baru masuk saat sinkronisasi.`;
       const descriptions = result.steps.map(item => {
@@ -71,7 +71,7 @@
         if (item.step === 'drain' && item.attempted != null) detail = `${Number(item.attempted)} dicoba, ${Number(item.failed)} gagal`;
         if (item.step === 'history' && item.received != null) detail = `${Number(item.received)} pesan diterima dalam respons`;
         if (item.step === 'evaluate' && item.state) detail = states[item.state];
-        return `<li>${steps[item.step]} · ${outcomes[item.status]}${detail ? ` — ${escape(detail)}` : ''}</li>`;
+        return `<li>${steps[item.step]} · ${outcomes[item.status]}${detail ? ` · ${escape(detail)}` : ''}</li>`;
       });
       summary.innerHTML = `<h3>Hasil sinkronisasi</h3><p>${message}</p><ul>${descriptions.join('')}</ul>`;
     }

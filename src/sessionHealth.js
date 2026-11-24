@@ -14,7 +14,7 @@ export function sessionHealthRow(id, tenantId) {
 
 // The JSON column also holds bounded health counters that need to survive a restart.
 function counters(row) {
-  return { drops: {}, disconnects: [], queueIncreases: 0, ...JSON.parse(row.drop_count_json) };
+  return { drops: {}, disconnects: [], lastFailureAt: null, queueIncreases: 0, ...JSON.parse(row.drop_count_json) };
 }
 
 export function recordHealth(id, event, value, now = Date.now()) {
@@ -34,6 +34,7 @@ export function recordHealth(id, event, value, now = Date.now()) {
   }
   if (event === 'drop') {
     stats.drops[value] = (stats.drops[value] || 0) + 1;
+    if (value === 'media_download_failed' || value === 'message_processing_failed') stats.lastFailureAt = now;
     console.warn(JSON.stringify({ event: 'session.drop', numberId: id, reason: value }));
   }
   if (event === 'queue') {
@@ -52,7 +53,8 @@ export function deriveSessionHealth(row, wsOpen, syncing, now = Date.now()) {
   let state = 'unknown';
   if (syncing) state = 'syncing';
   else if (!wsOpen) state = 'stale';
-  else if (disconnectsLastHour || Object.values(stats.drops).some(n => n > 0)) state = 'degraded';
+  else if (disconnectsLastHour >= 2 || stats.queueIncreases >= 3 ||
+    stats.lastFailureAt > now - HOUR) state = 'degraded';
   else if (row.last_inbound_at) state = now - row.last_inbound_at < 600000 ? 'healthy' : 'idle';
   else if (row.last_connect_at && now - row.last_connect_at >= 600000) state = 'idle';
   return {

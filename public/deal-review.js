@@ -2,7 +2,7 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const amount = n => n == null ? 'Belum diketahui' : 'Rp ' + Number(n).toLocaleString('id-ID');
   const time = n => n ? new Date(n).toLocaleString('id-ID') : 'Belum ditentukan';
-  const age = n => n == null ? '—' : n >= 3600000 ? Math.floor(n/3600000) + ' jam' : Math.floor(n/60000) + ' menit';
+  const age = n => n == null ? 'Belum diketahui' : n >= 3600000 ? Math.floor(n/3600000) + ' jam' : Math.floor(n/60000) + ' menit';
   const label = s => String(s).replaceAll('_',' ').replace(/^./,c => c.toUpperCase());
   const methodLabel = method => ({dana:'DANA',tunai:'Tunai',transfer:'Transfer',qris:'QRIS',cod:'COD',gopay:'GoPay',ovo:'OVO',shopeepay:'ShopeePay'})[String(method).toLowerCase()] ?? method ?? 'Belum diketahui';
   const paymentInputs = (card, initial) => `
@@ -52,10 +52,10 @@
             <div class="deal-amount"><strong>${amount(card.amount)}</strong><span>${esc(methodLabel(card.method))}</span></div>
             ${card.needs_info ? '<span class="deal-needs-info">Butuh info</span>' : ''}
             <details class="deal-metadata" ${tab==='review' ? '' : 'open'}><summary>Detail</summary><dl>
-              <dt>Produk / jumlah</dt><dd>${esc(card.product || '—')} / ${esc(card.qty ?? '—')}</dd>
+              <dt>Produk / jumlah</dt><dd>${esc(card.product || 'Belum diketahui')} / ${esc(card.qty ?? 'Belum diketahui')}</dd>
               <dt>Bukti gambar</dt><dd>${proofs.some(m=>m.kind==='image' && m.is_evidence) ? 'Ada' : proofs.some(m=>m.kind==='image') ? 'Ada lampiran untuk diperiksa' : 'Belum ada'}</dd>
-              <dt>Keyakinan</dt><dd>${card.confidence==null ? '—' : Math.round(card.confidence*100)+'%'}</dd>
-              <dt>Alasan model</dt><dd>${esc(card.model_reason || '—')}</dd>
+              <dt>Keyakinan</dt><dd>${card.confidence==null ? 'Belum diketahui' : Math.round(card.confidence*100)+'%'}</dd>
+              <dt>Alasan model</dt><dd>${esc(card.model_reason || 'Belum diketahui')}</dd>
               ${card.recorded_proof ? `<dt>Nominal bukti</dt><dd>${amount(card.recorded_proof.amount)} ${card.recorded_proof.amount!==card.amount ? '<strong>· Selisih</strong>' : ''}</dd>` : ''}
               ${tab==='dp' ? `<dt>Terbayar / sisa</dt><dd>${amount(card.paid_amount)} / ${amount(card.amount_due)}</dd><dt>Jatuh tempo</dt><dd>${esc(time(card.due_at))}</dd>` : ''}
             </dl></details>

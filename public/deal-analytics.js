@@ -1,9 +1,9 @@
 (() => {
   const esc = value => String(value ?? '').replace(/[&<>"']/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const DAY = 86400000;
-  const rupiah = n => n == null ? '—' : 'Rp ' + Math.round(n).toLocaleString('id-ID');
+  const rupiah = n => n == null ? 'Belum ada' : 'Rp ' + Math.round(n).toLocaleString('id-ID');
   const pct = m => m.value == null ? null : (m.value * 100).toLocaleString('id-ID',{ maximumFractionDigits:1 }) + '%';
-  const dur = ms => ms == null ? '—' : ms >= DAY ? (ms / DAY).toLocaleString('id-ID',{ maximumFractionDigits:1 }) + ' hari'
+  const dur = ms => ms == null ? 'Belum ada' : ms >= DAY ? (ms / DAY).toLocaleString('id-ID',{ maximumFractionDigits:1 }) + ' hari'
     : ms >= 3600000 ? Math.round(ms / 3600000) + ' jam' : Math.round(ms / 60000) + ' menit';
   const hhmm = min => String(Math.floor(min / 60)).padStart(2,'0') + ':' + String(min % 60).padStart(2,'0');
   const label = s => String(s).replaceAll('_',' ').replace(/^./,c => c.toUpperCase());
@@ -31,7 +31,7 @@
     const shown = parts.filter(p => p.value > 0);
     const describe = p => `${p.label}: ${p.value} (${share(p.value,total)}%)`;
     return `<article class="card da-seg"><h3>${title}</h3>
-      <div class="da-segbar" role="img" aria-label="${esc(title + ' — ' + shown.map(describe).join(', '))}">
+      <div class="da-segbar" role="img" aria-label="${esc(title + ' · ' + shown.map(describe).join(', '))}">
         ${shown.map(p => `<span class="da-seg-${p.slot}" style="flex-grow:${p.value}" title="${esc(describe(p))}">${share(p.value,total) >= 12 ? share(p.value,total) + '%' : ''}</span>`).join('')}
       </div>
       <ul class="da-legend">${parts.map(p => `<li><i class="da-seg-${p.slot}" aria-hidden="true"></i><span>${esc(p.label)}</span>
@@ -59,7 +59,7 @@
     return `<div class="da-scroll"><table><thead><tr><th>${{ product:'Produk',number:'Nomor',agent:'Agen',handler:'Penangan' }[field]}</th>
       <th>n</th><th>Lunas</th><th>Closing</th><th>Bruto</th><th>Neto</th></tr></thead><tbody>${rows.map(g => `<tr>
       <td>${esc(name(g))}</td><td>${g.n}</td><td>${g.counts.verified_lunas}</td>
-      <td>${pct(g.closing_rate) ?? '—'} <small>(n=${g.closing_rate.n})</small>${g.closing_rate.n && g.closing_rate.low_sample ? ' <span class="da-low">n&lt;10</span>' : ''}</td>
+      <td>${pct(g.closing_rate) ?? 'Belum ada'} <small>(n=${g.closing_rate.n})</small>${g.closing_rate.n && g.closing_rate.low_sample ? ' <span class="da-low">n&lt;10</span>' : ''}</td>
       <td>${rupiah(g.revenue.gross)}</td><td>${rupiah(g.revenue.net)}</td></tr>`).join('')}</tbody></table></div>`;
   }
 
