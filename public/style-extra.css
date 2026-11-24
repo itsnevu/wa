@@ -68,3 +68,38 @@ td.action-col { white-space:normal; }
   #workspace { grid-column:1; grid-row:1 / 3; padding:8px; max-width:100%; }
   #phase345SearchResults { position:fixed; top:110px; left:12px; right:12px; max-height:220px; overflow:auto; background:var(--card); border:1px solid var(--line); border-radius:10px; z-index:18; }
 }
+
+.skeleton.loading-layout { padding:0; }
+.loading-content,.loading-columns,.loading-stats { display:grid; gap:16px; min-width:0; }
+.loading-stats { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.loading-columns { grid-template-columns:minmax(0,2fr) minmax(0,1fr); }
+.loading-panel {
+ display:grid; gap:16px; padding:20px; min-width:0;
+ border:1px solid var(--line); border-radius:12px; background:var(--card);
+}
+.loading-panel i {
+ display:block; height:10px; width:70%; border-radius:6px;
+ background:var(--text); opacity:.10; animation:loading-pulse 1.5s ease-in-out infinite alternate;
+}
+.loading-panel i:nth-child(even) { width:45%; }
+.loading-panel i:nth-child(3n) { width:85%; }
+.loading-metric { align-content:space-between; min-height:112px; }
+.loading-metric i:last-child { height:26px; }
+.loading-list i { margin-block:10px; }
+.loading-form i:nth-child(even) { width:100%; height:36px; }
+.loading-chart { grid-template-columns:repeat(7,minmax(0,1fr)); align-items:end; min-height:250px; }
+.loading-chart i:nth-child(n) { width:100%; height:100px; }
+.loading-chart i:nth-child(2n) { height:155px; }
+.loading-chart i:nth-child(3n) { height:72px; }
+.loading-summary { align-content:center; }
+.loading-summary i:first-child { width:94px; aspect-ratio:1; height:auto; border-radius:50%; justify-self:center; }
+.loading-inbox,.loading-thread { border:0; padding:10px 12px; background:transparent; }
+.loading-inbox i { height:32px; }
+.loading-thread i { height:38px; }
+.loading-thread i:nth-child(even) { justify-self:end; }
+@keyframes loading-pulse { to { opacity:.18; } }
+@media(max-width:760px) {
+ .loading-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .loading-columns { grid-template-columns:minmax(0,1fr); }
+}
+@media(prefers-reduced-motion:reduce) { .loading-panel i { animation:none; } }

@@ -1,6 +1,6 @@
 (function () {
   const states = {
-    healthy: 'Sehat', idle: 'Siaga', degraded: 'Terganggu',
+    healthy: 'Normal', idle: 'Tidak ada pesan baru', degraded: 'Terganggu',
     stale: 'Terputus', syncing: 'Menyinkronkan', unknown: 'Tidak diketahui',
   };
   const steps = {

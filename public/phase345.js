@@ -197,7 +197,7 @@
   railMore.innerHTML = icon(ICON.menu);
   $('#btnOut').before(railMore);
   railMore.onclick = () => {
-    const items = [...document.querySelectorAll('.rail > button')]
+    const items = [...document.querySelectorAll('.rail button')]
       .filter((b) => !b.classList.contains('m-slot') && !b.classList.contains('hidden'))
       .map((b) => ({
         label: b.getAttribute('aria-label') || b.title,

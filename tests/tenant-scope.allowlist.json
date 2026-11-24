@@ -581,29 +581,6 @@
     "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
   },
   {
-    "id": "src/media.js :: INSERT OR IGNORE INTO media_records(uuid,message_id,number_id,storage_path,created_at) VALUES(?,?,?,?,?)",
-    "tables": [
-      "media_records"
-    ],
-    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
-  },
-  {
-    "id": "src/media.js :: SELECT m.id,m.number_id,m.media_path,c.number_id AS chat_number,n.owner_id FROM messages m JOIN chats c ON c.id=m.chat_id JOIN numbers n ON n.id=c.number_id WHE",
-    "tables": [
-      "messages",
-      "chats",
-      "numbers"
-    ],
-    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
-  },
-  {
-    "id": "src/media.js :: SELECT uuid FROM media_records WHERE message_id=?",
-    "tables": [
-      "media_records"
-    ],
-    "alasan": "Sudah ada sebelum H3; ditinjau per route di route inventory (pending T05/T06 atau dibatasi lewat kunci yang sudah ber-tenant)."
-  },
-  {
     "id": "src/platformAudit.js :: UPDATE platform_grants SET revoked_at=? WHERE id=? AND revoked_at IS NULL",
     "tables": [
       "platform_grants"

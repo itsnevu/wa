@@ -87,10 +87,10 @@ api.patch('/me',requireSessionScope, (req, res) => {
 api.use(requireAuth);
 api.use(aiApi);
 
-api.post('/chats/:chatId/media-url', (req, res, next) => {
+api.post('/chats/:chatId/media-url', requireTenantScope, (req, res, next) => {
   res.setHeader('Cache-Control', 'private, no-store');
   try {
-    res.json(issueMediaUrl(Number(req.params.chatId), req.body?.media_path, req.user));
+    res.json(issueMediaUrl(Number(req.params.chatId), req.body?.media_path, req.tenantScope));
   } catch (err) { mediaError(err, req, res, next); }
 });
 

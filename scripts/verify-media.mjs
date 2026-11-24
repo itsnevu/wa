@@ -108,12 +108,32 @@ test('symlink di media menuju luar direktori tidak bisa diunduh', async () => {
   h.seed(h.na, h.ca, 'escape/private.pdf', 'application/pdf');
   assert.equal((await h.sign(h.ca, 'escape/private.pdf', h.a)).status, 403);
 });
-test('flag nonaktif menutup akses media, tidak menghidupkan static lama', async () => {
+test('stiker dan pesan suara bisa diunduh tanpa flag global dan tetap terikat sesi dan tenant', async () => {
   const { url } = await signed(h.cb, 'b.png', h.b);
   await h.restart('0');
   try {
-    assert.equal((await h.request(url, h.b)).status, 503);
-    assert.equal((await h.sign(h.cb, 'b.png', h.b)).status, 503);
+    assert.equal((await h.request(url, h.b)).status, 403);
+    h.seed(h.nb, h.cb, 'sticker.webp', 'image/webp');
+    const webp = Buffer.from('UklGRjgAAABXRUJQVlA4ICwAAACQAQCdASoCAAIAAgA0JaACdLoAA5gA/vjdX/+Rx/+Rx/+Rx/8jj9SMMXMgAA==','base64');
+    fs.writeFileSync(path.join(h.temp, 'media', 'sticker.webp'), webp);
+    const sticker = await signed(h.cb, 'sticker.webp', h.b);
+    const img = await h.request(sticker.url, h.b);
+    assert.equal(img.status,200);
+    assert.equal(img.headers.get('content-type'),'image/webp');
+    assert.deepEqual(Buffer.from(await img.arrayBuffer()),webp);
+    assert.equal((await h.request(sticker.url,h.a)).status,403);
+    const wrongTenant = new URL(sticker.url,h.base);
+    wrongTenant.searchParams.set('tenant','other');
+    assert.equal((await h.request(wrongTenant.pathname+wrongTenant.search,h.b)).status,403);
+    const opus = Buffer.from('T2dnUwACAAAAAAAAAADRfHcHAAAAAPtVc1sBE09wdXNIZWFkAQE4AYA+AAAAAABPZ2dTAAAAAAAAAAAAANF8dwcBAAAA0dI4IAE8T3B1c1RhZ3MMAAAATGF2ZjYzLjEuMTAxAQAAABwAAABlbmNvZGVyPUxhdmM2My4xLjEwMSBsaWJvcHVzT2dnUwAE+AQAAAAAAADRfHcHAgAAANyD0F0CAwO4//64//4=','base64');
+    h.seed(h.nb, h.cb, 'voice.ogg', 'audio/ogg');
+    fs.writeFileSync(path.join(h.temp,'media','voice.ogg'),opus);
+    const voice = await signed(h.cb,'voice.ogg',h.b);
+    const audio = await h.request(voice.url,h.b);
+    assert.equal(audio.status,200);
+    assert.equal(audio.headers.get('content-type'),'audio/ogg');
+    assert.deepEqual(Buffer.from(await audio.arrayBuffer()),opus);
+    assert.equal((await h.request(voice.url,h.a)).status,403);
     assert.equal((await h.request('/media/b.png', h.b)).status, 503);
   } finally { await h.restart(); }
 });

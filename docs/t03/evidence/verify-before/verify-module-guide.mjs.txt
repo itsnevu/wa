@@ -1,5 +1,5 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-module-guide.mjs
-SHA: e561c9e4454433db494812d72458168850e55b1f
+SHA: 4fb42cb3d88789e0168ee73be8a38e05f8625d69
 exit: 0
 ai: 8 steps, Indonesian copy, visible targets
 dashboard: 6 steps, Indonesian copy, visible targets

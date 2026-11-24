@@ -112,12 +112,6 @@ export const pending=[
     "alasan": "Rute legacy: scope tenant dikerjakan pada T06; perilaku tetap pada T02."
   },
   {
-    "method": "POST",
-    "path": "/api/chats/:chatId/media-url",
-    "pr": "T08",
-    "alasan": "Rute legacy: scope tenant dikerjakan pada T08; perilaku tetap pada T02."
-  },
-  {
     "method": "GET",
     "path": "/api/monitor",
     "pr": "T05",

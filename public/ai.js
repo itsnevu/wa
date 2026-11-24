@@ -79,9 +79,20 @@ async function loadAiNumber(id) {
   const generation=++aiLoadVersion;
   const root=$('#aiContent');
   if (!id) { root.className='empty'; root.textContent='Pilih nomor untuk mengatur AI.'; return; }
-  root.className=''; root.innerHTML=skeleton();
+  root.className=''; root.innerHTML=skeleton('ai','Pengaturan otomasi AI');
   const base=`/numbers/${id}`;
-  const [s,logs,products,orders]=await Promise.all([call('GET',base+'/ai'),call('GET',base+'/ai/logs'),call('GET',base+'/products'),call('GET',`/orders?number_id=${id}`)]);
+  let result;
+  try {
+    result=await Promise.all([call('GET',base+'/ai'),call('GET',base+'/ai/logs'),call('GET',base+'/products'),call('GET',`/orders?number_id=${id}`)]);
+  } catch (err) {
+    if (currentPage==='ai' && generation===aiLoadVersion && root.isConnected) {
+      root.className='empty';
+      root.textContent='Gagal memuat pengaturan otomasi AI.';
+      toast(err.message);
+    }
+    return;
+  }
+  const [s,logs,products,orders]=result;
   if (currentPage!=='ai' || generation!==aiLoadVersion) return;
   const numeric=(key,label,max='')=>`<label>${label}<input name="${key}" type="number" min="1" ${max ? `max="${max}"` : ''} step="1" value="${s[key]}" required /></label>`;
   root.innerHTML=`<div class="ai-grid"><form id="aiSettingsForm" class="card ai-settings"><div class="ai-section-heading"><h3>Pengaturan balasan</h3><label class="ai-toggle"><input name="enabled" type="checkbox" ${s.enabled ? 'checked' : ''} /> Aktifkan AI</label></div>

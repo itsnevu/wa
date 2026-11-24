@@ -10,6 +10,7 @@ import { validMediaName, containedPath } from './mediaPaths.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const TTL = 5 * 60 * 1000;
+const chatSigningKey = randomBytes(32);
 // Safe for inline viewing by extension only. MIME supplied by a sender is not trusted.
 // MIME sniffing of uploads is a separate PR; all other extensions download as octet-stream.
 const INLINE = new Map(Object.entries({
@@ -61,14 +62,17 @@ export function dealProofAvailable(name) {
   }
 }
 const lookup = db.prepare(`SELECT r.uuid,r.number_id AS media_number,r.storage_path,
+  r.tenant_id AS media_tenant,m.tenant_id AS message_tenant,c.tenant_id AS chat_tenant,
   m.number_id AS message_number,m.media_path,c.number_id AS chat_number,n.id AS number_id,n.owner_id,n.tenant_id
   FROM media_records r JOIN messages m ON m.id=r.message_id
   JOIN chats c ON c.id=m.chat_id JOIN numbers n ON n.id=c.number_id WHERE r.uuid=?`);
 function authorize(row, user, scope) {
   if (!row || row.media_number !== row.message_number || row.message_number !== row.chat_number
     || row.chat_number !== row.number_id || row.storage_path !== row.media_path
-    || (scope ? scope.grant || scope.tenantId !== row.tenant_id ||
-      (!['owner','tenant_admin'].includes(scope.role) && row.owner_id !== scope.userId)
+    || (scope ? scope.grant || scope.tenantId !== row.tenant_id || row.media_tenant !== scope.tenantId ||
+      row.message_tenant !== scope.tenantId || row.chat_tenant !== scope.tenantId ||
+      (!['owner','tenant_admin'].includes(scope.role) &&
+        !(!config.multitenantEnabled && user.role === 'admin') && row.owner_id !== scope.userId)
       : user.role !== 'admin' && row.owner_id !== user.id)) throw fail(403, 'Anda tidak memiliki akses ke lampiran ini.');
   // A legacy filename referenced by multiple numbers cannot establish a unique owner.
   // Quarantine instead of guessing or allowing an administrator bypass.
@@ -88,25 +92,24 @@ export function mediaSignatureValid(sig, uuid, user, exp, tenant, now = Date.now
   if (!setting && config.mediaSigningKeyPrevious && now < (config.mediaSigningKeyPreviousUntil || 0)) keys.push(config.mediaSigningKeyPrevious);
   return keys.some(key => timingSafeEqual(given, Buffer.from(signature(uuid, user, exp, tenant, key), 'hex')));
 }
-const register = db.prepare('INSERT OR IGNORE INTO media_records(uuid,message_id,number_id,storage_path,created_at) VALUES(?,?,?,?,?)');
-
-export function issueMediaUrl(chatId, name, user) {
-  available();
+export function issueMediaUrl(chatId, name, scope) {
   if (!validMediaName(name)) throw fail(403, 'Lokasi lampiran tidak diizinkan.');
   const uuid = db.transaction(() => {
-    const m = db.prepare(`SELECT m.id,m.number_id,m.media_path,c.number_id AS chat_number,n.owner_id
+    const m = db.prepare(`SELECT m.id
       FROM messages m JOIN chats c ON c.id=m.chat_id JOIN numbers n ON n.id=c.number_id
-      WHERE c.id=? AND m.media_path=? ORDER BY m.id DESC LIMIT 1`).get(chatId, name);
-    if (!m || m.number_id !== m.chat_number || (user.role !== 'admin' && m.owner_id !== user.id)) {
-      throw fail(403, 'Anda tidak memiliki akses ke lampiran ini.');
-    }
-    register.run(randomUUID(), m.id, m.number_id, m.media_path, Date.now());
-    return db.prepare('SELECT uuid FROM media_records WHERE message_id=?').get(m.id).uuid;
+      WHERE c.id=? AND m.media_path=? AND m.tenant_id=? AND c.tenant_id=m.tenant_id
+        AND n.tenant_id=m.tenant_id AND m.number_id=c.number_id ORDER BY m.id DESC LIMIT 1`).get(chatId, name, scope.tenantId);
+    if (!m) throw fail(403, 'Anda tidak memiliki akses ke lampiran ini.');
+    registerScoped.run(randomUUID(),Date.now(),m.id,scope.tenantId);
+    const record = findScoped.get(m.id,scope.tenantId);
+    if (!record) throw fail(403, 'Anda tidak memiliki akses ke lampiran ini.');
+    const row = authorize(lookup.get(record.uuid),scope.user,scope);
+    mediaPath(row.storage_path);
+    return record.uuid;
   }).immediate();
-  const row = authorize(lookup.get(uuid), user);
-  mediaPath(row.storage_path);
   const exp = Date.now() + TTL;
-  return { url: `/media/${uuid}?user=${user.id}&exp=${exp}&sig=${signature(uuid, user.id, exp)}`, expiresAt: exp };
+  const sig = signature(uuid,scope.userId,exp,scope.tenantId,chatSigningKey);
+  return { url: `/media/${uuid}?user=${scope.userId}&exp=${exp}&tenant=${encodeURIComponent(scope.tenantId)}&kind=chat&sig=${sig}`, expiresAt: exp };
 }
 
 const registerScoped = db.prepare(`INSERT OR IGNORE INTO media_records(uuid,message_id,number_id,storage_path,created_at,tenant_id)
@@ -144,17 +147,21 @@ mediaRouter.use((req, res, next) => {
     if (!['GET', 'HEAD'].includes(req.method)) throw fail(403, 'Permintaan lampiran tidak diizinkan.');
     const uuid = req.path.slice(1);
     const params = new URLSearchParams(req.originalUrl.slice(req.originalUrl.indexOf('?') + 1));
-    if (!params.has('tenant')) available();
+    const chatMedia = params.get('kind') === 'chat';
+    if (!params.has('tenant') && !chatMedia) available();
     if (!UUID.test(uuid) || ['user', 'exp', 'sig'].some(k => params.getAll(k).length !== 1)
-      || params.getAll('tenant').length > 1 || [...params.keys()].some(k => !['user', 'exp', 'sig', 'tenant'].includes(k))) throw fail(403, 'Tautan lampiran tidak valid.');
+      || params.getAll('tenant').length > 1 || (params.has('kind') && (!chatMedia || !params.get('tenant') || params.getAll('kind').length !== 1))
+      || [...params.keys()].some(k => !['user', 'exp', 'sig', 'tenant', 'kind'].includes(k))) throw fail(403, 'Tautan lampiran tidak valid.');
     const user = params.get('user'), exp = params.get('exp'), sig = params.get('sig'), tenant = params.get('tenant');
     const scope = tenant ? resolveTenantScope(req) : undefined;
     if (scope && scope.tenantId !== tenant) throw fail(403,'Akses lampiran tidak tersedia.');
-    if (scope) available(dealSetting.get(scope.tenantId));
+    if (scope && !chatMedia) available(dealSetting.get(scope.tenantId));
     if (!/^\d+$/.test(user) || Number(user) !== req.user.id || !/^\d+$/.test(exp)
       || !Number.isSafeInteger(Number(exp)) || Number(exp) <= Date.now() || Number(exp) > Date.now() + TTL
       || !/^[0-9a-f]{64}$/.test(sig)
-      || !mediaSignatureValid(sig, uuid, Number(user), Number(exp), tenant)) {
+      || !(chatMedia
+        ? timingSafeEqual(Buffer.from(sig,'hex'),Buffer.from(signature(uuid,Number(user),Number(exp),tenant,chatSigningKey),'hex'))
+        : mediaSignatureValid(sig, uuid, Number(user), Number(exp), tenant))) {
       throw fail(403, 'Tautan lampiran tidak valid atau sudah kedaluwarsa.');
     }
     if (tenant === '') throw fail(403,'Tautan lampiran tidak valid.');

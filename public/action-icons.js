@@ -24,7 +24,7 @@
     'QR':['qr','Tampilkan kode QR']
   };
   function enhance() {
-    document.querySelectorAll('#page button, #page a[download], #pageAction, #btnNum, #panel button').forEach(button => {
+    document.querySelectorAll('#page button, #page a[download], #btnNum, #panel button').forEach(button => {
       if (button.querySelector('svg') || button.classList.contains('empty-action')) return;
       const action = actions[button.textContent.trim()];
       if (!action) return;

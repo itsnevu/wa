@@ -97,6 +97,7 @@ label { display:grid; gap:5px; font-size:12px; color:var(--muted); }
 #qrImg { background:white; border:1px solid var(--line); width:300px; max-width:100%; justify-self:center; }
 #qrPlaceholder { display:grid; place-items:center; gap:12px; padding:28px; min-height:140px; color:var(--muted); background:var(--page); border-radius:12px; }
 #qrPlaceholder[hidden],#qrImg[hidden] { display:none; }
+.chat-attachment:not([hidden]) { display:block; }
 #qrPlaceholder svg { width:40px; height:40px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
 #qrPlaceholder[data-state=online] { color:#218754; }
 #qrPlaceholder[data-state=error] { color:var(--danger); }
@@ -119,7 +120,7 @@ label { display:grid; gap:5px; font-size:12px; color:var(--muted); }
 .rail { overflow-y:auto; }
 .rail button { flex-shrink:0; }
 </style>
-<link rel="stylesheet" href="/style-extra.css" />
+<link rel="stylesheet" href="/style-extra.css?v=loading-1" />
 <style id="thread-proportions">
 svg { width:18px; height:18px; }
 .chat-empty svg { width:18px; height:18px; }
@@ -207,11 +208,11 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 
   /* Rail bawah: 5 slot 56x56, ikon 22px, label 10px */
   .rail { position:fixed; left:0; right:0; bottom:0; height:calc(56px + env(safe-area-inset-bottom)); padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); flex-direction:row; justify-content:space-around; align-items:flex-start; gap:0; overflow:hidden; z-index:20; }
-  .rail > button:not(.m-slot) { display:none; }
-  .rail > button.m-slot { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; width:56px; height:56px; min-width:56px; min-height:56px; padding:0; margin:0; border-radius:10px; }
-  .rail > button.m-slot svg { width:22px; height:22px; }
-  .rail > button.m-slot::after { content:attr(data-label); font-size:10px; line-height:12px; white-space:nowrap; }
-  .rail > button.m-slot.active { background:transparent; color:#fff; }
+  .rail button:not(.m-slot) { display:none; }
+  .rail button.m-slot { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; width:56px; height:56px; min-width:56px; min-height:56px; padding:0; margin:0; border-radius:10px; }
+  .rail button.m-slot svg { width:22px; height:22px; }
+  .rail button.m-slot::after { content:attr(data-label); font-size:10px; line-height:12px; white-space:nowrap; }
+  .rail button.m-slot.active { background:transparent; color:#fff; }
   #notificationBadge:empty { display:none; }
   #notificationBadge { position:absolute; top:4px; right:6px; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:var(--danger); color:#fff; font-size:10px !important; line-height:16px; }
 
@@ -298,7 +299,6 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 }
 :root { --m-send:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E"); }
 </style>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" />
 <link rel="stylesheet" href="/dashboard.css?v=layout-18" />
 <link rel="stylesheet" href="/vendor/driver/driver.css" />
 <link rel="stylesheet" href="/module-guide.css" />
@@ -307,6 +307,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 <link rel="stylesheet" href="/session-health.css">
 <link rel="stylesheet" href="/deal-review.css">
 <link rel="stylesheet" href="/deal-analytics.css">
+<link rel="stylesheet" href="/raqio-workspace.css?v=inbox-filters-1">
 </head>
 <body>
 <div id="sessionNotice" class="hidden" role="alert"></div>
@@ -330,8 +331,10 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 
 <div id="app" class="hidden">
   <nav class="rail" aria-label="Navigasi">
-    <button id="railDashboard" title="Ringkasan" aria-label="Ringkasan"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></button>
     <div class="logo" title="Raqio" aria-label="Raqio"><img src="/brand-transparent.svg" alt="" width="32" height="32" /><span class="brand-word">raqio</span></div>
+    <div class="rail-menu">
+    <button id="railDashboard" title="Ringkasan" aria-label="Ringkasan"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></button>
+
     <button class="active" id="railChat" title="Chat" aria-label="Chat"><svg viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></button>
     <button id="railNumbers" title="Nomor" aria-label="Nomor"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg></button>
     <button id="btnRules" title="Rules" aria-label="Rules"><svg viewBox="0 0 24 24"><path d="M8 5h12M8 12h12M8 19h12M3 5h.01M3 12h.01M3 19h.01"/></svg></button>
@@ -345,23 +348,38 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
     <button id="railNotifications" title="Notifikasi" aria-label="Notifikasi"><svg viewBox="0 0 24 24"><path d="M5 17h14l-2-4V8a5 5 0 0 0-10 0v5ZM10 21h4"/></svg><span id="notificationBadge" style="font-size:10px"></span></button>
     <button id="railSearch" title="Cari pesan" aria-label="Cari pesan"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg></button>
     <button id="railMonitor" title="Monitor" aria-label="Monitor"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4M5 10h3l2-4 4 8 2-4h3"/></svg></button>
+    </div>
+    <div class="rail-account">
     <button id="railAccount" title="Akun" aria-label="Akun"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>
     <button id="btnOut" title="Keluar" aria-label="Keluar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg></button>
+    </div>
   </nav>
   <aside class="number-panel">
     <div class="section-head"><strong>Nomor</strong><button type="button" class="ghost module-guide-button" data-module-guide aria-label="Panduan modul Chat" title="Panduan Chat"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 17h.01"/></svg><span>Panduan</span></button></div>
-    <select aria-label="Filter nomor"><option>Semua nomor</option></select>
-    <button id="btnNum">+ Nomor</button>
-    <label class="mobile-number-picker" for="mobileNumber">Nomor WhatsApp<select id="mobileNumber"><option value="">Pilih nomor</option></select></label>
-    <div id="nums"></div>
+    <div class="inbox-number-controls">
+      <select id="mobileNumber" aria-label="Nomor WhatsApp"><option value="">Pilih nomor</option></select>
+      <button id="btnNum" type="button" aria-label="Hubungkan nomor" title="Hubungkan nomor">+</button>
+    </div>
+    <details class="inbox-number-manager"><summary>Kelola nomor</summary><div id="nums"></div></details>
     <div class="search-head">
-      <input id="search" placeholder="cari chat" />
+      <label class="inbox-search" for="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="search" aria-label="Cari chat atau nomor" placeholder="Cari chat atau nomor" /></label>
       <label class="hidden"><input id="mineOnly" type="checkbox" /> Chat saya</label>
-      <div class="inbox-filters" role="group" aria-label="Filter antrean"><button data-queue="all" aria-pressed="true">Semua</button><button data-queue="unread" aria-pressed="false">Belum dibaca</button><button data-queue="mine" aria-pressed="false">Milik saya</button><button data-queue="unassigned" aria-pressed="false">Belum ditugaskan</button></div>
+      <div class="inbox-filters" role="group" aria-label="Filter antrean">
+        <button type="button" data-queue="all" aria-pressed="true">Semua</button>
+        <button type="button" data-queue="unread" aria-pressed="false">Belum dibaca</button>
+        <details id="inboxFilterMore">
+          <summary aria-label="Filter lainnya" title="Filter lainnya"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary>
+          <div class="inbox-filter-menu">
+            <button type="button" data-queue="mine" aria-pressed="false">Milik saya</button>
+            <button type="button" data-queue="unassigned" aria-pressed="false">Belum ditugaskan</button>
+          </div>
+        </details>
+      </div>
       <div class="inbox-status-filter"><label for="inboxStatus">Status</label><select id="inboxStatus"><option value="">Semua status</option><option value="new">Baru</option><option value="in_progress">Diproses</option><option value="resolved">Selesai</option></select></div>
       <small id="inboxCount" aria-live="polite"></small>
     </div>
     <div id="chats"></div>
+    <div id="inboxResize" role="separator" aria-label="Lebar panel Nomor" aria-orientation="vertical" tabindex="0" title="Geser untuk mengubah lebar panel Nomor"></div>
   </aside>
 
   <main id="main">
@@ -382,7 +400,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
       <input type="file" id="filePick" accept="image/*,audio/*,video/*,application/pdf" class="hidden" />
       <button id="btnFile" class="ghost" title="Lampirkan" aria-label="Lampirkan"><svg viewBox="0 0 24 24"><path d="m8 13 7-7a3 3 0 0 1 4 4L9 20a5 5 0 0 1-7-7L12 3M5 16l10-10"/></svg></button>
       <textarea id="input" placeholder="tulis pesan" enterkeyhint="send" autocapitalize="sentences"></textarea>
-      <button class="primary" id="btnSend" style="width:auto">Kirim</button>
+      <button class="primary" id="btnSend" type="button" aria-label="Kirim pesan" title="Kirim pesan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 4 18 8-18 8 4-8-4-8Zm4 8h14"/></svg></button>
     </div>
     </div>
     <div class="card hidden" id="panel"></div>
@@ -452,7 +470,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 </dialog>
 <script src="/session-health.js"></script>
 <script src="/deal-review.js"></script>
-<script src="/deal-analytics.js"></script>
+<script src="/deal-analytics.js?v=analytics-10"></script>
 <script src="/platform.js"></script>
 <script src="/media.js"></script>
 <script>
@@ -472,13 +490,18 @@ function setPage(name) {
   document.querySelectorAll('[data-module-guide]').forEach(button => { button.disabled = true; });
   pageVersion++;
   document.querySelectorAll('.rail-btn').forEach((b) => b.classList.toggle('active', b.dataset.page === name));
+  $('#workspace').dataset.module = name;
   $('#pageTitle').textContent = pages[name].title;
   $('#pageAction').classList.toggle('hidden', ['dashboard', 'account', 'monitor', 'notifications', 'search', 'ai', 'deals', 'analytics'].includes(name));
   $('.number-panel').classList.toggle('hidden', name !== 'chats');
   $('#main').classList.toggle('hidden', name !== 'chats');
   $('#workspace').classList.toggle('hidden', name === 'chats');
-  $('#page').innerHTML = skeleton();
-  $('#pageAction').textContent = name === 'backups' ? 'Buat backup sekarang' : name === 'numbers' ? '+ Nomor' : 'Tambah';
+  const version = pageVersion;
+  const page = $('#page');
+  page.innerHTML = name === 'chats' ? '' : skeleton(name, pages[name].title);
+  page.setAttribute('aria-busy', String(name !== 'chats'));
+  $('#pageAction').textContent = ({backups:'Buat backup',numbers:'Hubungkan nomor',rules:'Buat aturan',
+    templates:'Buat template',agents:'Tambah agen',labels:'Buat label'})[name] || 'Tambah';
   $('#pageAction').onclick = name === 'backups' ? async () => {
     const button = $('#pageAction');
     button.disabled = true;
@@ -487,14 +510,23 @@ function setPage(name) {
       if (currentPage === 'backups') setPage('backups');
     } catch (err) { notify(err.message); }
     finally { button.disabled = false; }
-  } : () => name === 'numbers' ? $('#btnNum').onclick() : $('#page').querySelector('form input')?.focus();
-  Promise.resolve(pages[name].render($('#page'))).then(() => {
-    if (currentPage === name) {
+  } : () => {
+    if (name === 'numbers') { $('#btnNum').onclick(); return; }
+    const field = $('#page').querySelector('form input:not([type=hidden])');
+    const target = field || (name === 'rules' ? $('#rulesNumber')?.parentElement.querySelector('.select-trigger, select:not(.enhanced-select)') : null);
+    target?.focus();
+  };
+  Promise.resolve().then(() => {
+    if (version === pageVersion) return pages[name].render(page);
+  }).then(() => {
+    if (version === pageVersion) {
       enhanceTables();
       document.querySelectorAll('[data-module-guide]').forEach(button => { button.disabled = false; });
     }
   }).catch((err) => {
-    if (currentPage === name) $('#page').textContent = err.message;
+    if (version === pageVersion) page.textContent = err.message;
+  }).finally(() => {
+    if (version === pageVersion) page.removeAttribute('aria-busy');
   });
 }
 
@@ -676,14 +708,14 @@ async function boot(fromRaqio = false) {
       const button = document.createElement('button');
       button.id = 'btnTenantSwitch'; button.type = 'button'; button.textContent = 'Workspace';
       button.onclick = async () => { const session = await call('GET','/me'); state.tenants = session.tenants; showTenantPicker(state.tenants); };
-      $('#app .rail').append(button);
+      $('#app .rail-menu').append(button);
     }
     if (state.tenants.some(tenant => tenant.id === out.active_tenant_id && tenant.role === 'owner') && !$('#btnTenantAudit')) {
       const button = document.createElement('button');
       button.id = 'btnTenantAudit'; button.type = 'button'; button.textContent = 'Audit workspace';
       button.setAttribute('aria-label', 'Audit workspace');
       button.onclick = () => showOwnerAudit();
-      $('#app .rail').append(button);
+      $('#app .rail-menu').append(button);
     }
   } catch (error) {
     if (error.code === 'GRANT_EXPIRED') { await boot(fromRaqio); return; }
@@ -749,8 +781,14 @@ function openSocket() {
 }
 
 async function loadNumbers() {
-  if (!$('#nums').children.length) $('#nums').innerHTML = skeleton();
-  const rows = await call('GET', '/numbers');
+  const numbers = $('#nums');
+  if (!numbers.children.length) numbers.innerHTML = skeleton('inbox', 'Nomor');
+  let rows;
+  try { rows = await call('GET', '/numbers'); }
+  catch (err) {
+    numbers.querySelector('.skeleton')?.remove();
+    throw err;
+  }
   state.numbers = rows;
   const mobileNumber = $('#mobileNumber');
   mobileNumber.innerHTML = '<option value="">' + (rows.length ? `Pilih nomor (${rows.length})` : 'Belum ada nomor') + '</option>' + rows.map(n => `<option value="${n.id}">${esc(n.name)} · ${esc(n.phone || 'Belum terhubung')} · ${esc(n.status)}</option>`).join('');
@@ -845,7 +883,7 @@ async function loadChats() {
   document.querySelectorAll('[data-queue]').forEach(b => b.setAttribute('aria-pressed',String(b.dataset.queue === queue)));
   const status = $('#inboxStatus').value;
   const requestVersion = state.inboxVersion = (state.inboxVersion || 0) + 1;
-  if (!$('#chats').querySelector('.chat')) $('#chats').innerHTML = skeleton();
+  if (!$('#chats').querySelector('.chat')) $('#chats').innerHTML = skeleton('inbox', 'Percakapan');
   let rows;
   try { rows = await call('GET', `/numbers/${numberId}/chats?queue=${queue}&status=${status}`); }
   catch (err) { if (requestVersion === state.inboxVersion) { $('#chats').innerHTML = '<div class="chat-empty">Gagal memuat percakapan.<button id="retryInbox">Coba lagi</button></div>'; $('#retryInbox').onclick = loadChats; toast(err.message); } return; }
@@ -855,11 +893,11 @@ async function loadChats() {
   $('#inboxCount').textContent = rows.length === 200 ? '200 percakapan terbaru' : `${rows.length} percakapan`;
   const term = $('#search').value.toLowerCase();
   $('#chats').innerHTML = state.chats
-    .filter((c) => chatLabel(c).toLowerCase().includes(term))
+    .filter((c) => chatLabel(c).toLowerCase().includes(term) || formatPhone(c.pn || c.jid).includes(term))
     .map((c) => `<div class="chat ${c.id === state.chatId ? 'active' : ''}" data-id="${c.id}">
-      <span class="chat-avatar" aria-hidden="true">${esc(chatLabel(c).trim().slice(0,2).toUpperCase())}</span>
+      <span class="chat-avatar" data-tone="${[...chatLabel(c)].reduce((sum,char) => sum + char.codePointAt(0),0) % 4}" aria-hidden="true">${esc(chatLabel(c).trim().slice(0,2).toUpperCase())}</span>
       <div class="chat-info"><div class="chat-topline"><strong>${esc(chatListLabel(c))}</strong><time>${esc(inboxTime(c.last_at))}</time><button type="button" class="ghost chat-rename" data-rename-chat="${c.id}" aria-label="Ubah nama percakapan ${esc(chatLabel(c))}" title="Ubah nama percakapan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14Z"/></svg></button></div>
-      <div class="chat-preview">${esc((c.last_from_me ? 'Anda: ' : '') + (c.last_body || ({ image:'Foto', video:'Video', audio:'Pesan suara', document:'Dokumen', sticker:'Stiker' }[c.last_kind] || 'Belum ada pesan')))}</div>
+      <div class="chat-preview">${c.last_from_me ? '<span class="outbound-mark" aria-label="Pesan keluar">✓</span> ' : ''}${esc(c.last_body || ({ image:'Foto', video:'Video', audio:'Pesan suara', document:'Dokumen', sticker:'Stiker' }[c.last_kind] || 'Belum ada pesan'))}</div>
       <div class="chat-bottomline"><span class="conversation-tag">${esc(({new:'Baru',in_progress:'Diproses',resolved:'Selesai'})[c.status] || 'Baru')}</span><small>${esc(c.assignee_name || 'Belum ditugaskan')}</small>${c.unread ? `<span class="unread-count">${c.unread > 99 ? '99+' : c.unread}</span>` : ''}</div></div>
       <button class="ghost chat-pin" data-pin-chat="${c.id}" aria-label="${c.pinned ? 'Lepas pin' : 'Pin percakapan'}" title="${c.pinned ? 'Lepas pin' : 'Pin percakapan'}" aria-pressed="${Boolean(c.pinned)}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m16 3 5 5-4 1-4 4-1 4-5-5 4-1 4-4 1-4ZM7 17l-4 4"/>${c.pinned ? '<path d="m3 3 18 18"/>' : ''}</svg></button><button class="row-del ghost" data-chat="${c.id}" title="hapus chat" aria-label="Hapus chat">×</button></div>`).join('') || chatEmpty();
   $('#chats').querySelectorAll('.chat').forEach((el) => el.onclick = () => openChat(Number(el.dataset.id)));
@@ -897,8 +935,13 @@ async function openChat(id) {
   state.chatId = id;
   const history = state.messageHistory = {cursor:null};
   state.activeChat = state.chats.find(c => c.id === id) || null;
-  $('#msgs').innerHTML = skeleton();
-  const data = await call('GET', `/chats/${id}/messages`);
+  $('#msgs').innerHTML = skeleton('thread', 'Pesan');
+  let data;
+  try { data = await call('GET', `/chats/${id}/messages`); }
+  catch (err) {
+    if (state.messageHistory === history) $('#msgs').textContent = 'Gagal memuat pesan.';
+    throw err;
+  }
   if (state.chatId !== id || state.messageHistory !== history) return;
   $('#msgs').innerHTML = '';
   const chat = state.chats.find((c) => c.id === id);
@@ -997,7 +1040,7 @@ function append(text, me, mediaPath, kind, waId, ts = Date.now(), unread = false
     && Number(ts) >= Number(last.dataset.ts) && Number(ts) - Number(last.dataset.ts) <= 180000;
   if (contiguous) {
     d.classList.add('compact');
-    last.querySelector('.message-time')?.classList.add('hidden');
+    last.classList.add('joined-next');
   }
   if (waId) d.dataset.waId = waId;
   d.oncontextmenu = (e) => {
@@ -1033,7 +1076,7 @@ function append(text, me, mediaPath, kind, waId, ts = Date.now(), unread = false
     const el = document.createElement(kind === 'audio' ? 'audio' : kind === 'video' ? 'video' : kind === 'sticker' || kind === 'image' ? 'img' : 'a');
     if (kind === 'audio' || kind === 'video') el.controls = true;
     if (kind === 'audio' || kind === 'video' || kind === 'sticker' || kind === 'image') {
-      el.style.display = 'block';
+      el.classList.add('chat-attachment');
       if (kind === 'sticker') { el.style.width = '120px'; el.alt = 'Sticker'; }
       el.tabIndex = 0;
       el.setAttribute('aria-label', 'Buka pratinjau media');
@@ -1062,6 +1105,13 @@ function append(text, me, mediaPath, kind, waId, ts = Date.now(), unread = false
   time.className = 'message-time';
   time.dateTime = date.toISOString();
   time.textContent = date.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+  if (me) {
+    const mark = document.createElement('span');
+    mark.className = 'outbound-mark';
+    mark.setAttribute('aria-label','Pesan keluar');
+    mark.textContent = '✓';
+    time.append(' ',mark);
+  }
   d.appendChild(time);
   $('#msgs').appendChild(d);
   $('#msgs').scrollTop = $('#msgs').scrollHeight;
@@ -1073,7 +1123,7 @@ async function send() {
   const chatId = state.chatId;
   state.sending = true;
   $('#btnSend').disabled = true;
-  $('#btnSend').textContent = 'mengirim…';
+  $('#btnSend').setAttribute('aria-busy','true');
   $('#input').value = '';
   resizeComposer();
   try {
@@ -1081,7 +1131,7 @@ async function send() {
     if (state.chatId === chatId) { clearQuote(); resetMessageCursor(chatId); }
   }
   catch (e) { toast(e.message); if (state.chatId === chatId && !$('#input').value) $('#input').value = text; }
-  finally { state.sending = false; $('#btnSend').textContent = 'Kirim'; updateComposer(); resizeComposer(); }
+  finally { state.sending = false; $('#btnSend').removeAttribute('aria-busy'); updateComposer(); resizeComposer(); }
 }
 
 function resizeComposer() {
@@ -1096,13 +1146,13 @@ function updateComposer() {
   const active = Boolean(state.chatId);
   $('#input').placeholder = active ? 'tulis pesan' : 'pilih chat dulu';
   $('#input').disabled = !active;
-  $('#btnSend').disabled = !active || Boolean(state.sending);
+  $('#btnSend').disabled = !active || Boolean(state.sending) || !$('#input').value.trim();
   $('#btnFile').disabled = !active;
 }
 
 async function loadTemplates() {
   const rows = await call('GET', '/templates');
-  $('#tplPick').onclick = () => choiceMenu($('#tplPick'), rows.map(t => ({ label:t.title, choose:() => { $('#input').value = t.body; resizeComposer(); $('#input').focus(); } })));
+  $('#tplPick').onclick = () => choiceMenu($('#tplPick'), rows.map(t => ({ label:t.title, choose:() => { $('#input').value = t.body; resizeComposer(); updateComposer(); $('#input').focus(); } })));
 }
 
 async function loadLabels() {
@@ -1278,12 +1328,58 @@ $('#filePick').onchange = async () => {
 };
 $('#input').onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } };
 $('#input').addEventListener('input', resizeComposer);
+$('#input').addEventListener('input', updateComposer);
 const composerCard = $('#composer').parentElement;
 composerCard.classList.add('composer-card');
 new ResizeObserver(() => {
   document.documentElement.style.setProperty('--composer-height', composerCard.offsetHeight + 'px');
 }).observe(composerCard);
 window.addEventListener('resize', resizeComposer);
+const inboxResize = $('#inboxResize');
+const inboxApp = $('#app');
+const inboxPanel = $('.number-panel');
+let inboxDrag;
+
+function updateInboxWidth(requested) {
+  if (!inboxResize.getClientRects().length) return;
+  const sizes = getComputedStyle(inboxApp);
+  const min = parseFloat(sizes.getPropertyValue('--inbox-min'));
+  const max = Math.max(min, Math.min(
+    parseFloat(sizes.getPropertyValue('--inbox-max')),
+    inboxApp.clientWidth - parseFloat(sizes.getPropertyValue('--inbox-rail')) - parseFloat(sizes.getPropertyValue('--inbox-thread-min'))
+  ));
+  const width = Math.min(max, Math.max(min, Math.round(requested ?? inboxPanel.getBoundingClientRect().width)));
+  if (requested != null) inboxApp.style.setProperty('--inbox-width', width + 'px');
+  inboxResize.setAttribute('aria-valuemin', min);
+  inboxResize.setAttribute('aria-valuemax', max);
+  inboxResize.setAttribute('aria-valuenow', width);
+}
+
+inboxResize.addEventListener('pointerdown', event => {
+  if (event.button !== 0 || inboxDrag) return;
+  event.preventDefault();
+  inboxDrag = { id:event.pointerId, x:event.clientX, width:inboxPanel.getBoundingClientRect().width };
+  inboxResize.setPointerCapture(event.pointerId);
+  inboxApp.classList.add('resizing-inbox');
+});
+inboxResize.addEventListener('pointermove', event => {
+  if (inboxDrag?.id !== event.pointerId) return;
+  updateInboxWidth(inboxDrag.width + event.clientX - inboxDrag.x);
+});
+inboxResize.addEventListener('lostpointercapture', event => {
+  if (inboxDrag?.id !== event.pointerId) return;
+  inboxDrag = undefined;
+  inboxApp.classList.remove('resizing-inbox');
+});
+inboxResize.addEventListener('keydown', event => {
+  const width = inboxPanel.getBoundingClientRect().width;
+  const next = { ArrowLeft:width-24, ArrowRight:width+24, Home:0, End:Infinity }[event.key];
+  if (next === undefined) return;
+  event.preventDefault();
+  updateInboxWidth(next);
+});
+window.addEventListener('resize', () => updateInboxWidth());
+document.addEventListener('wa:pagechange', () => requestAnimationFrame(() => updateInboxWidth()));
 new MutationObserver(updateComposer).observe($('#title'), { childList:true, subtree:true });
 updateComposer();
 $('#search').oninput = loadChats;
@@ -1293,10 +1389,22 @@ function inboxTime(ts) {
   const date = new Date(ts);
   return date.toDateString() === new Date().toDateString() ? date.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) : date.toLocaleDateString('id-ID',{day:'numeric',month:'short'});
 }
+const inboxFilterMore = $('#inboxFilterMore');
+document.addEventListener('click', event => {
+  if (inboxFilterMore.open && !inboxFilterMore.contains(event.target)) inboxFilterMore.open = false;
+});
+inboxFilterMore.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && inboxFilterMore.open) {
+    inboxFilterMore.open = false;
+    inboxFilterMore.querySelector('summary').focus();
+  }
+});
 document.querySelectorAll('[data-queue]').forEach(button => button.onclick = () => {
   state.inboxQueue = button.dataset.queue;
   $('#mineOnly').checked = state.inboxQueue === 'mine';
   document.querySelectorAll('[data-queue]').forEach(b => b.setAttribute('aria-pressed',String(b === button)));
+  if (inboxFilterMore.contains(button)) inboxFilterMore.querySelector('summary').focus();
+  inboxFilterMore.open = false;
   loadChats();
 });
 $('#inboxStatus').onchange = loadChats;
@@ -1404,9 +1512,10 @@ pages.dashboard = { title: 'Ringkasan', render: async (root) => {
   const numbers = await call('GET', '/numbers');
   if (currentPage !== 'dashboard' || version !== pageVersion) return;
   const online = numbers.filter(n => n.status === 'online').length;
+  const connectedShare = numbers.length ? Math.round(online / numbers.length * 100) : 0;
   root.innerHTML = `<div class="dashboard-welcome"><div><span class="eyebrow">WORKSPACE BISNIS ANDA</span><h2>Halo, ${esc(state.me.username)}</h2><p>Semua percakapan, satu tempat. Siap terhubung dengan pelanggan hari ini?</p></div><span class="dashboard-date">${esc(new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }))}</span></div>
   <div class="stat-grid"><article class="card stat"><span>Total nomor</span><strong>${numbers.length}</strong><small>Nomor di workspace Anda</small></article><article class="card stat"><span>Nomor online</span><strong class="status-online">${online}</strong><small>Terhubung dan siap digunakan</small></article><article class="card stat"><span>Belum online</span><strong>${numbers.length - online}</strong><small>Periksa koneksi nomor Anda</small></article></div>
-  <div class="dashboard-grid"><article class="card dashboard-inbox"><span class="eyebrow">PERCAKAPAN PELANGGAN</span><h2>Bangun koneksi yang lebih dekat.</h2><p>Balas pesan, gunakan template, dan kelola percakapan bersama tim Anda.</p><button class="primary" id="dashboardChat">Buka kotak masuk ↗</button></article><article class="card quick-actions"><h3>Akses cepat</h3><p>Atur workspace sesuai kebutuhan bisnis.</p><button data-go="numbers"><span>Kelola nomor<small>Hubungkan akun WhatsApp bisnis</small></span><span>↗</span></button><button data-go="templates"><span>Template pesan<small>Respons lebih cepat dan konsisten</small></span><span>↗</span></button><button data-go="labels"><span>Label pelanggan<small>Rapikan dan kelompokkan percakapan</small></span><span>↗</span></button></article></div>
+  <div class="dashboard-grid"><article class="card dashboard-inbox"><h3>Kesiapan koneksi WhatsApp</h3><p>${online} dari ${numbers.length} nomor sedang online.</p><button class="primary" id="dashboardChat">Buka kotak masuk ↗</button><figure class="connection-chart" aria-label="${connectedShare}% nomor online"><div class="connection-chart-ring" style="--connected:${connectedShare}%"><strong aria-hidden="true">${connectedShare}%</strong></div></figure></article><article class="card quick-actions"><h3>Akses cepat</h3><button data-go="numbers"><span>Kelola nomor<small>Hubungkan akun WhatsApp bisnis</small></span><span>↗</span></button><button data-go="templates"><span>Template pesan<small>Respons lebih cepat dan konsisten</small></span><span>↗</span></button><button data-go="labels"><span>Label pelanggan<small>Rapikan dan kelompokkan percakapan</small></span><span>↗</span></button></article></div>
   <article class="card"><div class="panel-head"><div><h3 style="margin:0">Status koneksi</h3><p class="section-description">Pantau kesiapan nomor WhatsApp Anda.</p></div><button id="dashboardRefresh">Perbarui</button></div><table><thead><tr><th>Nama nomor</th><th>WhatsApp</th><th>Status</th></tr></thead><tbody>${numbers.map(n => `<tr><td><strong>${esc(n.name)}</strong></td><td>${esc(n.phone)}</td><td><span class="connection-badge ${n.status === 'online' ? 'connected' : ''}">${esc(n.status)}</span></td></tr>`).join('') || '<tr><td colspan="3"><div class="dashboard-empty"><strong>Mulai dengan nomor pertama Anda</strong><p>Hubungkan WhatsApp untuk mengelola pesan dari workspace ini.</p><button id="dashboardAdd" class="primary">+ Hubungkan nomor</button></div></td></tr>'}</tbody></table></article>`;
   $('#dashboardChat').onclick = () => setPage('chats');
   $('#dashboardRefresh').onclick = () => setPage('dashboard');
@@ -1420,17 +1529,16 @@ pages.numbers = { title: 'Nomor', render: async (root) => {
   const version = pageVersion;
   const rows = await call('GET', '/numbers');
   if (version !== pageVersion) return;
-  root.innerHTML = `<div class="card"><table><thead><tr><th>Nama</th><th>Nomor</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows.map((n) => `<tr><td>${esc(n.name)}</td><td>${esc(n.phone)}</td><td>${esc(n.status)} <button data-session-health="${n.id}" data-session-name="${esc(n.name)}" data-health-state="unknown">Tidak diketahui</button></td><td class="actions"><button data-qr="${n.id}">QR</button><button class="ghost danger" data-number-del="${n.id}" aria-label="Hapus nomor">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada nomor</td></tr>'}</tbody></table></div>`;
+  root.innerHTML = `<section class="card module-list"><h2>Nomor WhatsApp <small>${rows.length}</small></h2><table><thead><tr><th>Nama</th><th>Nomor</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows.map((n) => `<tr><td>${esc(n.name)}</td><td>${esc(n.phone)}</td><td><div class="number-status"><span class="number-connection${n.status === 'online' ? ' is-online' : ''}">${n.status === 'online' ? 'Terhubung' : n.status === 'offline' ? 'Terputus' : esc(n.status)}</span><button data-session-health="${n.id}" data-session-name="${esc(n.name)}" data-health-state="unknown">Tidak diketahui</button></div></td><td class="actions"><button data-qr="${n.id}">QR</button><button class="ghost danger" data-number-del="${n.id}" aria-label="Hapus nomor">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada nomor</td></tr>'}</tbody></table></section>`;
   window.mountSessionHealth(root, call);
   root.querySelectorAll('[data-qr]').forEach((b) => {
     const chip = document.createElement('span');
-    chip.className = 'chip';
-    chip.style.marginLeft = '8px';
+    chip.className = 'number-quota';
     chip.textContent = 'memuat kuota…';
-    b.closest('tr').children[2].appendChild(chip);
+    b.closest('tr').querySelector('.number-status').appendChild(chip);
     call('GET', `/numbers/${b.dataset.qr}/quota`).then((q) => {
       if (version !== pageVersion) return;
-      chip.textContent = `kuota ${q.used}/${q.cap}`;
+      chip.textContent = `Kuota ${q.used} / ${q.cap}`;
       chip.title = `Token tersedia: ${q.remaining}`;
     }).catch((err) => {
       if (version !== pageVersion) return;
@@ -1457,17 +1565,17 @@ pages.rules = { title: 'Rules', render: async (root) => {
   const version = pageVersion;
   const numbers = await call('GET', '/numbers');
   if (version !== pageVersion) return;
-  root.innerHTML = `<div class="card"><label class="page-filter">Nomor<select id="rulesNumber"><option value="">pilih nomor</option>${numbers.map((n) => `<option value="${n.id}">${esc(n.name)} · ${esc(n.phone)}</option>`).join('')}</select></label><div id="rulesTable" class="empty">pilih nomor untuk melihat rules</div></div>`;
+  root.innerHTML = `<div class="card"><label class="page-filter">Nomor WhatsApp<select id="rulesNumber"><option value="">pilih nomor</option>${numbers.map((n) => `<option value="${n.id}">${esc(n.name)} · ${esc(n.phone)}</option>`).join('')}</select></label></div><div id="rulesTable" class="card empty">Pilih nomor untuk melihat aturan balasan.</div>`;
   const select = $('#rulesNumber');
   const render = async () => {
     const numberId = Number(select.value);
     const area = root.querySelector('#rulesTable');
-    if (!numberId) { area.className = 'empty'; area.textContent = 'pilih nomor untuk melihat rules'; return; }
+    if (!numberId) { area.className = 'card empty'; area.textContent = 'Pilih nomor untuk melihat aturan balasan.'; return; }
     area.innerHTML = skeleton();
     const rows = await call('GET', `/numbers/${numberId}/rules`);
     if (version !== pageVersion || Number(select.value) !== numberId) return;
-    area.className = '';
-    area.innerHTML = `<table><thead><tr><th>Kata kunci</th><th>Balasan</th><th>Tipe</th><th>Aktif</th><th>Aksi</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${esc(r.pattern)}${r.slow ? ' <span class="chip rule-slow" title="Regex ini pernah melewati batas 50 ms">berat</span>' : ''}</td><td>${esc(r.reply)}</td><td>${esc(r.match_type)}</td><td><input type="checkbox" data-toggle="${r.id}" ${r.enabled ? 'checked' : ''} aria-label="Aktifkan rule" /></td><td><button class="ghost danger" data-rule-del="${r.id}" aria-label="Hapus rule">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada rule</td></tr>'}</tbody></table><form class="page-form" id="rulesForm"><input id="rp" placeholder="kata kunci" aria-label="Kata kunci" required /><input id="rr" placeholder="balasan" aria-label="Balasan" required /><select id="rm" aria-label="Tipe"><option value="contains">mengandung</option><option value="exact">persis</option><option value="regex">regex</option></select><button id="radd" class="primary">Tambah</button></form>`;
+    area.className = 'module-split';
+    area.innerHTML = `<section class="card module-list"><h2>Aturan balasan <small>${rows.length}</small></h2><table><thead><tr><th>Kata kunci</th><th>Balasan</th><th>Tipe</th><th>Aktif</th><th>Aksi</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${esc(r.pattern)}${r.slow ? ' <span class="chip rule-slow" title="Regex ini pernah melewati batas 50 ms">berat</span>' : ''}</td><td>${esc(r.reply)}</td><td>${esc(r.match_type)}</td><td><input type="checkbox" data-toggle="${r.id}" ${r.enabled ? 'checked' : ''} aria-label="Aktifkan rule" /></td><td><button class="ghost danger" data-rule-del="${r.id}" aria-label="Hapus rule">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada rule</td></tr>'}</tbody></table></section><form class="card module-editor" id="rulesForm"><h2>Buat aturan</h2><input id="rp" placeholder="kata kunci" aria-label="Kata kunci" required /><input id="rr" placeholder="balasan" aria-label="Balasan" required /><select id="rm" aria-label="Tipe"><option value="contains">mengandung</option><option value="exact">persis</option><option value="regex">regex</option></select><button id="radd" class="primary">Tambah</button></form>`;
     area.querySelectorAll('[data-rule-del]').forEach((b) => b.onclick = async () => {
       if (!await confirmDelete('Hapus rule ini?')) return;
       try { await call('DELETE', `/rules/${b.dataset.ruleDel}`); await render(); } catch (err) { notify(err.message); }
@@ -1479,6 +1587,7 @@ pages.rules = { title: 'Rules', render: async (root) => {
       e.preventDefault();
       try { await call('POST', `/numbers/${numberId}/rules`, { pattern: $('#rp').value.trim(), reply: $('#rr').value.trim(), match_type: $('#rm').value }); await render(); } catch (err) { notify(err.message); }
     };
+    enhanceTables();
   };
   select.onchange = () => render().catch((err) => notify(err.message));
   if (numbers.some((n) => n.id === state.numberId)) { select.value = state.numberId; await render(); }
@@ -1488,7 +1597,7 @@ pages.templates = { title: 'Template', render: async (root) => {
   const version = pageVersion;
   const rows = await call('GET', '/templates');
   if (version !== pageVersion) return;
-  root.innerHTML = `<div class="card"><table><thead><tr><th>Judul</th><th>Isi</th><th>Aksi</th></tr></thead><tbody>${rows.map((t) => `<tr><td>${esc(t.title)}</td><td>${esc(t.body)}</td><td><button class="ghost danger" data-template-del="${t.id}" aria-label="Hapus template">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="3" class="empty">belum ada template</td></tr>'}</tbody></table><form id="templateForm" class="page-form"><input id="templateTitle" placeholder="judul" aria-label="Judul template" required /><textarea id="templateBody" placeholder="isi" aria-label="Isi template" required></textarea><button class="primary">Tambah</button></form></div>`;
+  root.innerHTML = `<div class="module-split"><section class="card module-list"><h2>Template tersimpan <small>${rows.length}</small></h2><table><thead><tr><th>Judul</th><th>Isi</th><th>Aksi</th></tr></thead><tbody>${rows.map((t) => `<tr><td>${esc(t.title)}</td><td>${esc(t.body)}</td><td><button class="ghost danger" data-template-del="${t.id}" aria-label="Hapus template">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="3" class="empty">belum ada template</td></tr>'}</tbody></table></section><form id="templateForm" class="card module-editor"><h2>Buat template</h2><input id="templateTitle" placeholder="judul" aria-label="Judul template" required /><textarea id="templateBody" placeholder="isi" aria-label="Isi template" required></textarea><button class="primary">Tambah</button></form></div>`;
   const bodyField = $('#templateBody');
   const resizeTemplateBody = () => {
     bodyField.style.height = '44px';
@@ -1543,7 +1652,7 @@ pages.agents = { title: 'Agen', render: async (root) => {
     throw err;
   }
   if (version !== pageVersion) return;
-  root.innerHTML = `<div class="card"><table><thead><tr><th>Nama</th><th>Peran</th><th>Aksi</th></tr></thead><tbody>${rows.map((u) => `<tr><td>${esc(u.username)}</td><td>${esc(u.role)}</td><td><button class="ghost danger" data-agent-del="${u.id}" aria-label="Hapus agen">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="3" class="empty">belum ada agen</td></tr>'}</tbody></table><form id="agentsForm" class="page-form"><input id="nu" placeholder="nama" aria-label="Nama agen" required /><input id="np" type="password" placeholder="password" aria-label="Password agen" required /><button id="nadd" class="primary">Tambah</button></form></div>`;
+  root.innerHTML = `<div class="module-split"><section class="card module-list"><h2>Anggota tim <small>${rows.length}</small></h2><table><thead><tr><th>Nama</th><th>Peran</th><th>Aksi</th></tr></thead><tbody>${rows.map((u) => `<tr><td>${esc(u.username)}</td><td>${esc(u.role)}</td><td><button class="ghost danger" data-agent-del="${u.id}" aria-label="Hapus agen">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="3" class="empty">belum ada agen</td></tr>'}</tbody></table></section><form id="agentsForm" class="card module-editor"><h2>Tambah agen</h2><input id="nu" placeholder="nama" aria-label="Nama agen" required /><input id="np" type="password" placeholder="password" aria-label="Password agen" required /><button id="nadd" class="primary">Tambah</button></form></div>`;
   root.querySelectorAll('[data-agent-del]').forEach((b) => b.onclick = async () => {
     if (!await confirmDelete('Hapus agen ini?')) return;
     try { await call('DELETE', `/users/${b.dataset.agentDel}`); if (currentPage === 'agents') setPage('agents'); } catch (err) { notify(err.message); }
@@ -1567,7 +1676,7 @@ pages.notifications = { title: 'Notifikasi', render: async (root) => {
   if (version !== pageVersion) return;
   $('#pageAction').textContent = 'Tandai dibaca';
   $('#pageAction').onclick = async () => { await call('POST', '/notifications/read'); await loadNotificationCount(); if (currentPage === 'notifications') setPage('notifications'); };
-  root.innerHTML = `<div class="card">${rows.map((n) => `<button class="ghost" style="display:block;width:100%;text-align:left" data-notif="${n.id}" data-chat-id="${n.chat_id}" data-number-id="${n.number_id}">${esc(chatLabel(n))} · ${esc(new Date(n.created_at).toLocaleString('id-ID'))}${n.read_at ? '' : ' · baru'}</button>`).join('') || '<p class="empty">belum ada notifikasi</p>'}</div>`;
+  root.innerHTML = `<div class="card module-list"><h2>Aktivitas terkini <small>${rows.length}</small></h2>${rows.map((n) => `<button class="ghost module-notification" data-notif="${n.id}" data-chat-id="${n.chat_id}" data-number-id="${n.number_id}">${esc(chatLabel(n))} · ${esc(new Date(n.created_at).toLocaleString('id-ID'))}${n.read_at ? '' : ' · baru'}</button>`).join('') || '<p class="empty">belum ada notifikasi</p>'}</div>`;
   root.querySelectorAll('[data-notif]').forEach((b) => b.onclick = async () => {
     setPage('chats'); $('#mineOnly').checked = false;
     await pickNumber(Number(b.dataset.numberId)); await openChat(Number(b.dataset.chatId));
@@ -1576,7 +1685,7 @@ pages.notifications = { title: 'Notifikasi', render: async (root) => {
 
 pages.search = { title: 'Cari pesan', render: (root) => {
   const version = pageVersion;
-  root.innerHTML = '<div class="card"><form id="messageSearchForm" class="page-form" style="margin-top:0"><input id="messageSearchTerm" placeholder="Cari isi pesan" minlength="2" required aria-label="Cari isi pesan" /><button class="primary">Cari</button></form><div id="messageSearchResults"></div></div>';
+  root.innerHTML = '<div class="card"><form id="messageSearchForm" class="page-form" style="margin-top:0"><input type="search" id="messageSearchTerm" placeholder="Cari isi pesan" minlength="2" required aria-label="Cari isi pesan" /><button class="primary">Cari</button></form><div id="messageSearchResults"></div></div>';
   $('#pageAction').textContent = 'Cari';
   $('#pageAction').onclick = () => $('#messageSearchForm').requestSubmit();
   $('#messageSearchForm').onsubmit = async (e) => {
@@ -1602,13 +1711,13 @@ pages.monitor = { title: 'Monitor', render: async (root) => {
   if (version !== pageVersion) return;
   $('#pageAction').textContent = 'Perbarui';
   $('#pageAction').onclick = () => setPage('monitor');
-  root.innerHTML = `<div class="card"><table><thead><tr><th>Nomor</th><th>Status</th><th>Terakhir aktif</th><th>Percobaan</th></tr></thead><tbody>${numbers.map((n) => `<tr class="${['loggedout', 'error'].includes(n.status) ? 'monitor-problem' : ''}"><td>${esc(n.name)}<div><small>${esc(n.phone)}</small></div></td><td class="${['loggedout', 'error'].includes(n.status) ? 'status-danger' : n.status === 'online' ? 'status-online' : ''}">${esc(n.status)}</td><td>${n.last_seen ? esc(new Date(n.last_seen).toLocaleString('id-ID')) : 'belum terhubung'}</td><td>${Number(n.attempts)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada nomor</td></tr>'}</tbody></table></div><div class="card"><strong>Log aktivitas</strong><table><thead><tr><th>Waktu</th><th>Pengguna</th><th>Nomor</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>${activity.map((a) => `<tr><td>${esc(new Date(a.at).toLocaleString('id-ID'))}</td><td>${esc(a.username || 'sistem')}</td><td>${esc(a.number_name || a.number_id || '')}</td><td>${esc(a.action)}</td><td>${esc(a.detail || '')}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada aktivitas</td></tr>'}</tbody></table></div>`;
+  root.innerHTML = `<div class="card module-list"><h2>Koneksi nomor <small>${numbers.length}</small></h2><table><thead><tr><th>Nomor</th><th>Status</th><th>Terakhir aktif</th><th>Percobaan</th></tr></thead><tbody>${numbers.map((n) => `<tr class="${['loggedout', 'error'].includes(n.status) ? 'monitor-problem' : ''}"><td>${esc(n.name)}<div><small>${esc(n.phone)}</small></div></td><td class="${['loggedout', 'error'].includes(n.status) ? 'status-danger' : n.status === 'online' ? 'status-online' : ''}">${esc(n.status)}</td><td>${n.last_seen ? esc(new Date(n.last_seen).toLocaleString('id-ID')) : 'belum terhubung'}</td><td>${Number(n.attempts)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada nomor</td></tr>'}</tbody></table></div><div class="card module-list"><h2>Log aktivitas</h2><table><thead><tr><th>Waktu</th><th>Pengguna</th><th>Nomor</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>${activity.map((a) => `<tr><td>${esc(new Date(a.at).toLocaleString('id-ID'))}</td><td>${esc(a.username || 'sistem')}</td><td>${esc(a.number_name || a.number_id || '')}</td><td>${esc(a.action)}</td><td>${esc(a.detail || '')}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada aktivitas</td></tr>'}</tbody></table></div>`;
 } };
 
 pages.account = { title: 'Akun', render: (root) => {
   $('#pageAction').textContent = 'Simpan';
   $('#pageAction').onclick = () => $('#passwordForm').requestSubmit();
-  root.innerHTML = `<form id="usernameForm" class="card" style="display:grid;gap:12px;max-width:420px"><label>Username<input id="accountUsername" autocomplete="username" minlength="3" value="${esc(state.me.username)}" required /></label><button class="primary">Simpan username</button><p id="usernameResult" role="status" style="margin:0"></p></form><form id="passwordForm" class="card" style="display:grid;gap:12px;max-width:420px"><label>Password lama<input id="oldPassword" type="password" autocomplete="current-password" required /></label><label>Password baru<input id="nextPassword" type="password" autocomplete="new-password" minlength="${state.passMin || 12}" required /></label><small>Minimal ${state.passMin || 12} karakter</small><button class="primary">Simpan</button><p id="passwordResult" role="status" style="margin:0"></p></form><div class="card" style="max-width:420px"><button id="logoutAll" class="ghost danger">Keluar dari semua perangkat</button><p id="logoutAllResult" role="status"></p></div>`;
+  root.innerHTML = `<form id="usernameForm" class="card module-editor"><h2>Profil</h2><label>Username<input id="accountUsername" autocomplete="username" minlength="3" value="${esc(state.me.username)}" required /></label><button class="primary">Simpan username</button><p id="usernameResult" role="status" style="margin:0"></p></form><form id="passwordForm" class="card module-editor"><h2>Ubah password</h2><label>Password lama<input id="oldPassword" type="password" autocomplete="current-password" required /></label><label>Password baru<input id="nextPassword" type="password" autocomplete="new-password" minlength="${state.passMin || 12}" required /></label><small>Minimal ${state.passMin || 12} karakter</small><button class="primary">Simpan</button><p id="passwordResult" role="status" style="margin:0"></p></form><div class="card module-editor"><h2>Sesi perangkat</h2><button id="logoutAll" class="ghost danger">Keluar dari semua perangkat</button><p id="logoutAllResult" role="status"></p></div>`;
   $('#usernameForm').onsubmit = async (e) => {
     e.preventDefault();
     try {
@@ -1645,7 +1754,7 @@ pages.backups = { title: 'Backup', render: async (root) => {
   }
   if (version !== pageVersion) return;
   const size = (bytes) => bytes >= 1024 * 1024 ? (bytes / (1024 * 1024)).toFixed(1) + ' MB' : (bytes / 1024).toFixed(1) + ' KB';
-  root.innerHTML = `<div class="card"><table><thead><tr><th>Nama file</th><th>Ukuran</th><th>Tanggal</th><th>Aksi</th></tr></thead><tbody>${rows.map((b) => `<tr><td>${esc(b.name)}</td><td>${size(b.size)}</td><td>${esc(new Date(b.at).toLocaleString('id-ID'))}</td><td class="actions"><a href="/api/backups/${encodeURIComponent(b.name)}" download>Unduh</a><button class="ghost danger" data-backup-del="${esc(b.name)}" aria-label="Hapus backup">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada backup</td></tr>'}</tbody></table></div>`;
+  root.innerHTML = `<div class="card module-list"><h2>Riwayat backup <small>${rows.length}</small></h2><table><thead><tr><th>Nama file</th><th>Ukuran</th><th>Tanggal</th><th>Aksi</th></tr></thead><tbody>${rows.map((b) => `<tr><td>${esc(b.name)}</td><td>${size(b.size)}</td><td>${esc(new Date(b.at).toLocaleString('id-ID'))}</td><td class="actions"><a href="/api/backups/${encodeURIComponent(b.name)}" download>Unduh</a><button class="ghost danger" data-backup-del="${esc(b.name)}" aria-label="Hapus backup">${trashIcon}</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada backup</td></tr>'}</tbody></table></div>`;
   root.querySelectorAll('[data-backup-del]').forEach((b) => b.onclick = async () => {
     if (!await confirmDelete('Hapus backup ini?')) return;
     try { await call('DELETE', `/backups/${encodeURIComponent(b.dataset.backupDel)}`); if (currentPage === 'backups') setPage('backups'); } catch (err) { notify(err.message); }
@@ -1693,8 +1802,19 @@ function showOverlay(id) {
   (overlay.querySelector('input, select, textarea') || overlay.querySelector('button'))?.focus();
 }
 
-function skeleton() {
-  return '<div class="skeleton" role="status" aria-label="Memuat data"><span></span><span></span><span></span></div>';
+function skeleton(module, title = 'data') {
+  const panel = (shape, lines = 3) => `<div class="loading-panel loading-${shape}">${'<i></i>'.repeat(lines)}</div>`;
+  const list = panel('list', 5);
+  let layout = list;
+  if (module === 'dashboard' || module === 'analytics') {
+    layout = `<div class="loading-stats">${panel('metric', 2).repeat(4)}</div>
+      <div class="loading-columns">${panel('chart', 7)}${panel('summary', 3)}</div>${list}`;
+  } else if (['rules', 'ai', 'labels', 'templates', 'agents', 'account'].includes(module)) {
+    layout = `<div class="loading-columns">${list}${panel('form', 4)}</div>`;
+  } else if (module === 'inbox' || module === 'thread') {
+    layout = panel(module, 5);
+  }
+  return `<div class="skeleton loading-layout" role="status" aria-label="Memuat ${esc(title)}"><div class="loading-content" aria-hidden="true">${layout}</div></div>`;
 }
 
 function formatPhone(value) {
@@ -1797,6 +1917,7 @@ function updateHeader() {
   if (!detail) { detail = document.createElement('small'); detail.id = 'contactDetail'; $('#title').insertAdjacentElement('afterend', detail); }
   detail.textContent = chat ? formatPhone(chat.pn || chat.jid) : '';
   detail.className = 'contact-detail';
+  $('.contact-heading').dataset.initials = chat ? chatLabel(chat).trim().slice(0,2).toUpperCase() : '';
   let release = $('#releaseChat');
   if (!release) {
     release = document.createElement('button'); release.id = 'releaseChat'; release.className = 'ghost';
@@ -1850,6 +1971,38 @@ function chatEmpty() {
   return '<div class="empty chat-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><strong>belum ada chat</strong><small>kirim pesan dari HP untuk memulai</small></div>';
 }
 
+function addModuleFilter(table) {
+  const panel = table.closest('.module-list');
+  const heading = panel?.querySelector('h2');
+  const rows = [...(table.tBodies[0]?.rows || [])].filter(row => !row.querySelector('td[colspan]'));
+  if (!heading || !rows.length || panel.querySelector('.module-filter')) return;
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'module-toolbar';
+  const input = document.createElement('input');
+  input.type = 'search';
+  input.className = 'module-filter';
+  input.placeholder = 'Cari di daftar';
+  input.setAttribute('aria-label', 'Cari di daftar ' + heading.firstChild.textContent.trim());
+  const status = document.createElement('p');
+  status.className = 'module-filter-status hidden';
+  status.setAttribute('role','status');
+  heading.before(toolbar);
+  toolbar.append(heading,input);
+  toolbar.after(status);
+  input.addEventListener('input', () => {
+    const query = input.value.trim().toLocaleLowerCase('id-ID');
+    let visible = 0;
+    for (const row of rows) {
+      const matches = row.textContent.toLocaleLowerCase('id-ID').includes(query);
+      row.classList.toggle('hidden',!matches);
+      if (matches) visible++;
+    }
+    status.textContent = visible ? `${visible} dari ${rows.length} hasil` : 'Tidak ada hasil. Coba kata kunci lain.';
+    status.classList.toggle('hidden',!query);
+  });
+}
+
 function enhanceTables() {
   $('#page').querySelectorAll('table').forEach(table => {
     table.setAttribute('role', 'table');
@@ -1865,6 +2018,7 @@ function enhanceTables() {
         cell.classList.toggle('action-col', headers[index] === 'Aksi' && !!cell.querySelector('button,a'));
       });
     });
+    addModuleFilter(table);
     if (table.parentElement.classList.contains('table-scroll')) return;
     const scroller = document.createElement('div');
     scroller.className = 'table-scroll';
@@ -1885,7 +2039,8 @@ function enhanceTables() {
   $('#page').querySelectorAll('td.empty').forEach(cell => {
     if (cell.dataset.enhanced) return;
     cell.dataset.enhanced = 'true';
-    cell.textContent = 'belum ada data';
+    const text = cell.textContent.trim();
+    cell.textContent = text ? text[0].toUpperCase() + text.slice(1) : 'Belum ada data';
     const action = document.createElement('button');
     action.className = 'ghost empty-action';
     action.textContent = ({ numbers:'Tambah nomor', rules:'Tambah rule', templates:'Tambah template', labels:'Tambah label', agents:'Tambah agen', backups:'Buat backup', search:'Cari pesan', monitor:'Perbarui' })[currentPage] || 'Perbarui';
@@ -1929,7 +2084,7 @@ document.addEventListener('keydown', e => {
 $('#chats').innerHTML = chatEmpty();
 boot();
 </script>
-<script src="/phase345.js"></script>
+<script src="/phase345.js?v=rail-2"></script>
 <script src="/select-menu.js?v=2"></script>
 <script src="/action-icons.js"></script>
 <script src="/form-feedback.js"></script>

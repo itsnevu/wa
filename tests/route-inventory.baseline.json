@@ -3,7 +3,7 @@
     "T03": 0,
     "T05": 17,
     "T06": 32,
-    "T08": 4,
+    "T08": 3,
     "T13": 5,
     "T07": 1,
     "T04": 0
@@ -47,7 +47,6 @@
     "POST /api/backups",
     "POST /api/chats/:chatId/labels/:labelId",
     "POST /api/chats/:chatId/media",
-    "POST /api/chats/:chatId/media-url",
     "POST /api/chats/:chatId/react",
     "POST /api/chats/:chatId/read",
     "POST /api/chats/:chatId/send",
