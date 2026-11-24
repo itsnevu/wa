@@ -90,7 +90,7 @@ try {
   await wait("document.querySelector('#aiSettingsResult').textContent.includes('disimpan')");
   assert.equal(h.q.aiSettings.get(n).system_prompt,'Prompt dari browser');
   await evaluate("const p=document.querySelector('#aiProductForm');p.elements.sku.value='UI-NEW';p.elements.name.value='Produk UI';p.elements.price.value='1000';p.elements.stock.value='3';p.requestSubmit()");
-  await wait("document.querySelector('.ai-products').textContent.includes('UI-NEW')");
+  await wait("document.querySelector('.ai-products')?.textContent.includes('UI-NEW')");
   assert.ok(h.q.productBySku.get(n,'UI-NEW'));
   await evaluate("const s=document.querySelector('[data-order-status]');s.value='completed';s.dispatchEvent(new Event('change'))");
   for(let i=0;i<40 && h.db.prepare('SELECT status FROM orders').get().status!=='completed';i++)await new Promise(r=>setTimeout(r,100));
