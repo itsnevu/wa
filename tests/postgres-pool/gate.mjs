@@ -307,6 +307,10 @@ async function main() {
     const {verifyTenantAuth}=await import('./tenant-auth-contract.mjs');
     return verifyTenantAuth({admin,proxy,tenants});
   });
+  await check('scoped PostgreSQL ingest, media reference and reply routing',async()=>{
+    const {verifyWaScope}=await import('./wa-scope-contract.mjs');
+    return verifyWaScope({admin,proxy,tenants});
+  });
 
   await check('mixed load', async () => {
     const started = performance.now();

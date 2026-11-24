@@ -130,7 +130,16 @@ export function createPostgresTenantAuth(pool, stats={}) {
     return {id:token,expires_at:expiry};
   }
 
-  return {withAuth,withTenantRead:(req,tenant,fn)=>withinTenant(req,tenant,fn,true),
+  // Worker callers supply a tenant previously resolved from trusted server-side routing.
+  const withTenantJob=(tenantId,fn)=>transaction(async client=>{
+    await client.query(lockSql,[tenantId]);
+    await asTenant(client,tenantId);
+    const {rowCount}=await client.query(`SELECT id FROM tenant_data.tenants
+      WHERE id=$1::uuid AND status='active' AND deleted_at IS NULL`,[tenantId]);
+    if (!rowCount) throw sessionError(404,'TENANT_NOT_FOUND');
+    return fn({client,tenantId});
+  });
+  return {withAuth,withTenantJob,withTenantRead:(req,tenant,fn)=>withinTenant(req,tenant,fn,true),
     withTenantWrite:(req,tenant,fn)=>withinTenant(req,tenant,fn,false),rotate};
 }
 
