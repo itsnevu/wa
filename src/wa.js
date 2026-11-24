@@ -670,13 +670,13 @@ export async function sendMedia(numberId, jid, buffer, mime, caption = '', agent
   });
 }
 
-export function disconnect(numberId, forget = false) {
+export function disconnect(numberId, forget = false, { planned = false } = {}) {
   clearTimeout(reconnects.get(numberId)?.timer);
   reconnects.delete(numberId);
   const s = live.get(numberId);
   if (!s) return;
   live.delete(numberId);
-  recordHealth(numberId, 'disconnect');
+  if (!planned) recordHealth(numberId, 'disconnect');
   if (!resyncQueues.has(numberId)) recordHealth(numberId, 'queue', 0);
   s.rejectReady(new Error('koneksi ditutup'));
   try { s.sock.end(undefined); } catch { /* sudah mati */ }
@@ -752,7 +752,7 @@ export async function resync(numberId, step) {
       previousAnchor = current?.historyAnchor;
       resyncQueues.set(numberId, current?.queue || []);
       if (current) current.queue = [];
-      disconnect(numberId);
+      disconnect(numberId, false, { planned: true });
       return current ? { status: 'ok' } : { status: 'skipped', detail: 'Socket sudah tertutup.' };
     });
     const startedAt = Date.now();

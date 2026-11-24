@@ -218,6 +218,7 @@ test('resync transfers and drains queued sends on the replacement socket', async
       step: 'drain', attempted: 1, failed: 0, status: 'ok',
     });
     assert.equal(sessionHealthRow(id, 'A').queue_depth, 0);
+    assert.equal(sessionHealthRow(id, 'A').disconnect_count, 0);
     assert.equal(db.prepare("SELECT tenant_id FROM messages WHERE wa_id='out-queued' AND number_id=?").get(id).tenant_id, 'A');
   } finally {
     [config.delayMin, config.delayMax] = oldDelay;
