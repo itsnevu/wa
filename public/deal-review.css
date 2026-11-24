@@ -25,6 +25,11 @@
 .deal-dialog [data-error] { color:#991b1b; }
 .deal-dialog [hidden] { display:none !important; }
 .deal-tools { display:flex; flex-wrap:wrap; gap:8px 20px; color:#475569; font-size:.875rem; }
+.deal-toolbar,.deal-setting-row { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+.deal-settings { width:min(26rem,calc(100vw - 24px)); }
+.deal-setting-row { margin-top:16px; }
+.deal-setting-row [aria-checked="true"] { background:#ecfdf5; border-color:#0f766e; color:#134e4a; }
+.deal-settings [data-error]:empty { display:none; }
 .deal-tools summary,.deal-metadata summary { cursor:pointer; }
 .deal-feedback:empty,.deal-tools:empty,.deal-card[hidden],.deal-back { display:none; }
 .deal-workspace { display:grid; grid-template-columns:minmax(12rem,17rem) minmax(0,1fr); gap:16px; align-items:start; max-width:76rem; }

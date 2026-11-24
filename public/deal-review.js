@@ -14,21 +14,19 @@
   window.renderDealReview = async (root, call, active) => {
     let tab = 'review', offset = 0;
     let generation = 0, selectedId = null, detailOpen = false;
-    async function load() {
+    async function load({ openSettings = false } = {}) {
       const token = ++generation;
       let data;
       try { data = await call('GET',`/deals/review?tab=${tab}&offset=${offset}`); }
       catch (err) { if (active() && token === generation) root.textContent = err.message; return; }
       if (!active() || token !== generation) return;
       root.innerHTML = `<section class="deal-review">
-        <nav class="deal-tabs" aria-label="Antrean deal">${[['review','Verifikasi'],['dp','Penagihan DP'],...(data.owner ? [['audit','Audit sampel']] : [])].map(([key,title]) =>
+        <div class="deal-toolbar"><nav class="deal-tabs" aria-label="Antrean deal">${[['review','Verifikasi'],['dp','Penagihan DP'],...(data.owner ? [['audit','Audit sampel']] : [])].map(([key,title]) =>
           `<button data-tab="${key}" aria-pressed="${key===tab}">${title}</button>`).join('')}</nav>
+          ${data.can_decide ? '<button type="button" data-open-settings aria-haspopup="dialog">Pengaturan</button>' : ''}
+        </div>
         <p class="deal-feedback" role="status"></p>
         <div class="deal-tools">
-        ${data.can_decide ? `<details data-proof-settings><summary>Pengaturan</summary>
-          <p>Lampiran bukti pembayaran <strong>${data.proof_enabled ? 'Aktif' : 'Nonaktif'}</strong></p>
-          <button type="button" data-toggle-proof>${data.proof_enabled ? 'Nonaktifkan lampiran' : 'Aktifkan lampiran'}</button>
-        </details>` : ''}
         ${tab === 'audit' ? `<div class="card"><button data-sample>Ambil sampel 5% hari ini</button>
           ${data.audit_stats.length ? `<ul>${data.audit_stats.map(r=>`<li>Admin ${esc(r.admin_id)} · ${esc(r.classifier_version || 'Tanpa classifier')} · ${Number(r.false_positive)}/${Number(r.audited)} false positive</li>`).join('')}</ul>` : ''}</div>` : ''}
         ${data.notices.length && tab === 'review' ? `<details><summary>Digest dan eskalasi</summary><ul>
@@ -70,6 +68,11 @@
         }).join('') || '<p class="empty">Antrean ini kosong.</p>'}</div></div>
         <nav class="deal-tabs" aria-label="Halaman antrean">${offset ? '<button data-prev>Sebelumnya</button>' : ''}${data.has_more ? '<button data-next>Berikutnya</button>' : ''}</nav>
         <dialog class="deal-dialog"><header><h3></h3><form method="dialog"><button>Tutup</button></form></header><div data-evidence-view hidden></div><form data-decision-form></form></dialog>
+        ${data.can_decide ? `<dialog class="deal-dialog deal-settings" data-proof-settings aria-labelledby="deal-settings-title">
+          <header><h3 id="deal-settings-title">Pengaturan deal</h3><form method="dialog"><button autofocus>Tutup</button></form></header>
+          <div class="deal-setting-row"><span>Lampiran bukti pembayaran</span><button type="button" role="switch" aria-label="Lampiran bukti pembayaran" aria-checked="${Boolean(data.proof_enabled)}" data-toggle-proof>${data.proof_enabled ? 'Aktif' : 'Nonaktif'}</button></div>
+          <p data-error role="alert"></p>
+        </dialog>` : ''}
       </section>`;
       const feedback = root.querySelector('.deal-feedback');
       const dialog = root.querySelector('.deal-dialog');
@@ -115,12 +118,30 @@
         } finally { button.disabled = false; }
       };
       root.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { tab=b.dataset.tab; offset=0; detailOpen=false; load(); });
-      root.querySelector('[data-toggle-proof]')?.addEventListener('click',e =>
-        refresh('/deals/review/settings',{proof_enabled:!data.proof_enabled},e.currentTarget,r => {
-          const settings = root.querySelector('[data-proof-settings]');
-          if (settings) settings.open = true;
-          return r.proof_enabled ? 'Lampiran bukti diaktifkan.' : 'Lampiran bukti dinonaktifkan.';
-        }));
+      const settings = root.querySelector('[data-proof-settings]');
+      if (settings) {
+        const trigger = root.querySelector('[data-open-settings]');
+        const toggle = settings.querySelector('[data-toggle-proof]');
+        const error = settings.querySelector('[data-error]');
+        trigger.onclick = () => settings.showModal();
+        settings.onclose = () => trigger.focus();
+        toggle.onclick = async () => {
+          toggle.disabled = true;
+          error.textContent = '';
+          try {
+            await call('POST','/deals/review/settings',{proof_enabled:!data.proof_enabled});
+            if (active() && token === generation) await load({openSettings:settings.open});
+          } catch (err) {
+            error.textContent = err.message;
+          } finally {
+            toggle.disabled = false;
+          }
+        };
+        if (openSettings) {
+          settings.showModal();
+          toggle.focus();
+        }
+      }
       root.querySelector('[data-prev]')?.addEventListener('click',() => { offset-=30; load(); });
       root.querySelector('[data-next]')?.addEventListener('click',() => { offset+=30; load(); });
       root.querySelector('[data-sample]')?.addEventListener('click',e => refresh('/deals/audit/sample',{},e.currentTarget,r =>

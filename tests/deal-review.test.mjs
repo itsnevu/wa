@@ -227,10 +227,12 @@ test('Chrome desktop and 360px render card, SLA, reason grid, proof and DP form'
     await wait(()=>evalJs(`!!${card}`));
     const dialog = "document.querySelector('.deal-dialog')";
     const settings = "document.querySelector('[data-proof-settings]')";
-    await evalJs(`${settings}.querySelector('summary').click();${settings}.querySelector('[data-toggle-proof]').click()`);
-    await wait(()=>evalJs(`${settings}?.open && ${settings}.querySelector('strong').textContent==='Nonaktif' && !${card}?.querySelector('[data-proof-view]')`));
+    await evalJs(`document.querySelector('[data-open-settings]').click();${settings}.querySelector('[data-toggle-proof]').click()`);
+    await wait(()=>evalJs(`${settings}?.open && ${settings}.querySelector('[role=switch]').getAttribute('aria-checked')==='false' && !${card}?.querySelector('[data-proof-view]')`));
     await evalJs(`${settings}.querySelector('[data-toggle-proof]').click()`);
-    await wait(()=>evalJs(`!!${card}?.querySelector('[data-proof-view]')`));
+    await wait(()=>evalJs(`${settings}?.open && ${settings}.querySelector('[role=switch]').getAttribute('aria-checked')==='true' && !!${card}?.querySelector('[data-proof-view]')`));
+    await evalJs(`${settings}.querySelector('form button').click()`);
+    await wait(()=>evalJs(`!${settings}.open && document.activeElement.matches('[data-open-settings]')`));
     for(const width of [1366,360]) {
       await cdp('Emulation.setDeviceMetricsOverride',{width,height:width===360?780:900,deviceScaleFactor:1,mobile:width===360});
       // The resize re-renders the review list; the card is briefly absent (flake seen in H0 follow-up run).
