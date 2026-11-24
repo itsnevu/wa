@@ -2,7 +2,7 @@ import {createHash,randomBytes} from 'node:crypto';
 import {cookieId,sessionError} from './sessionStore.js';
 
 const hash = token => createHash('sha256').update(token).digest('hex');
-export const newSessionToken = () => randomBytes(32).toString('hex');
+export const newSessionToken = () => randomBytes(32).toString('base64url');
 export const sessionTokenHash = hash;
 const invalid = () => sessionError(401,'SESSION_INVALID');
 const lockSql = 'SELECT pg_advisory_xact_lock_shared(hashtextextended($1::uuid::text, 3201))';

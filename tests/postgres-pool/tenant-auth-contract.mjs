@@ -112,6 +112,8 @@ export async function verifyTenantAuth({admin,proxy,tenants}) {
     assert.equal(moved.status,200);
     const replacement=moved.headers.get('set-cookie').match(/^sid=([^;]+)/)[1];
     assert.notEqual(replacement,'switch');
+    assert.match(replacement,/^[A-Za-z0-9_-]{43}$/);
+    assert.equal(Buffer.from(replacement,'base64url').length,32);
     assert.equal(await status('switch'),401);
     assert.equal(await status(replacement,'beta.fixture.test'),200);
     assert.equal(await status(replacement),404);
