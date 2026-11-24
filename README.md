@@ -51,6 +51,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\start-all.ps1
 ```
 
 Launcher membuka Docker Desktop bila diperlukan dan menunggu engine siap.
+Jika port 3000 sudah dipakai, launcher melewati profil Raqio dan tetap menjalankan kedua aplikasi.
 WA Suite memakai http://127.0.0.1:3001 dan Competitor Scraping memakai
 http://localhost:3002. Tekan Ctrl+C untuk menghentikan proses lokal. Container
 Raqio tetap berjalan sesuai perilaku bawaan `dev.ps1`. Gunakan `-RaqioPath`

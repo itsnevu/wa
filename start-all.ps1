@@ -14,7 +14,8 @@ if (-not (Test-Path -LiteralPath $raqioLauncher -PathType Leaf)) {
 $node = Get-Command node.exe -CommandType Application
 $null = Get-Command docker.exe -CommandType Application
 $listeners = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners()
-$busy = @(3000, 3001, 3002 | Where-Object { $_ -in $listeners.Port })
+$skipProfile = 3000 -in $listeners.Port
+$busy = @(3001, 3002 | Where-Object { $_ -in $listeners.Port })
 if ($busy.Count) {
     throw "Port $($busy -join ', ') sudah dipakai. Hentikan server terkait dari terminal asalnya sebelum menjalankan launcher."
 }
@@ -72,9 +73,11 @@ try {
 
     Write-Host 'WA Suite              http://127.0.0.1:3001'
     Write-Host 'Competitor Scraping   http://localhost:3002 (setelah Raqio siap)'
+    if ($skipProfile) { Write-Host 'Port 3000 sudah dipakai. Profil Raqio tidak dijalankan ulang.' }
     Push-Location
     try {
-        & $raqioLauncher
+        if ($skipProfile) { & $raqioLauncher -NoProfileSite }
+        else { & $raqioLauncher }
     } finally {
         Pop-Location
     }
