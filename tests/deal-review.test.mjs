@@ -57,6 +57,38 @@ const proof = Number(db.prepare(`INSERT INTO messages(number_id,chat_id,tenant_i
 fs.writeFileSync(path.join(fixture.dir,'media','review.png'),Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVQYV2NgAAAAAgABSK+kcQAAAABJRU5ErkJggg==','base64'));
 const send = (id,action,data={},cookie=owner) => request(`/deals/${id}/decision`,cookie,{ action,...data });
 
+test('proof settings work without environment keys and revoke links only for their tenant', async () => {
+  const original = config.mediaSignedUrlsEnabled;
+  const originalKey = config.mediaSigningKey;
+  config.mediaSignedUrlsEnabled = false;
+  config.mediaSigningKey = '';
+  const settings = '/deals/review/settings';
+  const id = deal();
+  const endpoint = `/deals/${id}/evidence/${proof}/url`;
+  const open = (url,cookie=owner) => fetch(origin+url,{headers:{cookie}});
+  try {
+    assert.equal((await request(endpoint,owner,{})).status,503);
+    assert.equal((await request(settings,agent,{proof_enabled:true})).status,403);
+    assert.equal((await request(settings,owner,{proof_enabled:true,tenant_id:'B'})).status,403);
+    assert.equal((await request(settings,owner,{proof_enabled:'true'})).status,400);
+    assert.deepEqual((await request(settings,owner,{proof_enabled:true})).data,{proof_enabled:true});
+    assert.equal((await request('/deals/review',other)).data.proof_enabled,false);
+    const issued = await request(endpoint,owner,{});
+    assert.equal(issued.status,200);
+    assert.equal((await open(issued.data.url)).status,200);
+    assert.equal((await open(issued.data.url,other)).status,403);
+    assert.equal((await request(settings,owner,{proof_enabled:false})).status,200);
+    assert.equal((await open(issued.data.url)).status,503);
+    assert.equal((await request(settings,owner,{proof_enabled:true})).status,200);
+    assert.equal((await open(issued.data.url)).status,403);
+    assert.equal((await request(endpoint,owner,{})).status,200);
+  } finally {
+    config.mediaSignedUrlsEnabled = original;
+    config.mediaSigningKey = originalKey;
+    db.prepare("DELETE FROM deal_evidence_settings WHERE tenant_id='A'").run();
+  }
+});
+
 test('role/scoping and required reasons, proof and override', async () => {
   const id = deal();
   const idAgent = deal(11);
@@ -194,6 +226,11 @@ test('Chrome desktop and 360px render card, SLA, reason grid, proof and DP form'
     await evalJs("document.querySelector('#railDeals').click()");
     await wait(()=>evalJs(`!!${card}`));
     const dialog = "document.querySelector('.deal-dialog')";
+    const settings = "document.querySelector('[data-proof-settings]')";
+    await evalJs(`${settings}.querySelector('summary').click();${settings}.querySelector('[data-toggle-proof]').click()`);
+    await wait(()=>evalJs(`${settings}?.open && ${settings}.querySelector('strong').textContent==='Nonaktif' && !${card}?.querySelector('[data-proof-view]')`));
+    await evalJs(`${settings}.querySelector('[data-toggle-proof]').click()`);
+    await wait(()=>evalJs(`!!${card}?.querySelector('[data-proof-view]')`));
     for(const width of [1366,360]) {
       await cdp('Emulation.setDeviceMetricsOverride',{width,height:width===360?780:900,deviceScaleFactor:1,mobile:width===360});
       // The resize re-renders the review list; the card is briefly absent (flake seen in H0 follow-up run).

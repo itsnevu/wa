@@ -8,7 +8,8 @@ test('v9 copy backfills verified number owners once and leaves unresolved rows a
   const h=twoTenants();
   try {
     const db=h.db;
-    db.exec(`ALTER TABLE numbers DROP COLUMN owner_assignment;
+    db.exec(`DROP TABLE deal_evidence_settings;
+      ALTER TABLE numbers DROP COLUMN owner_assignment;
       DELETE FROM schema_migrations WHERE version>=10;
       DELETE FROM schema_ddl_hash WHERE version>=10;
       DELETE FROM tenant_members WHERE (tenant_id='A' AND user_id IN (10,11)) OR (tenant_id='B' AND user_id=21)`);
@@ -23,7 +24,7 @@ test('v9 copy backfills verified number owners once and leaves unresolved rows a
     db.pragma('foreign_keys=ON');
     const config={dataDir:h.dir,allowAutoMigrate:true,migrationBackupKeep:2};
     const upgraded=await ensureSchema(db,config);
-    assert.equal(upgraded.version,11);
+    assert.equal(upgraded.version,12);
     assert.deepEqual(numberMembershipGaps(db),{missing:0,deterministic:0,unresolved:0});
     assert.deepEqual(await ensureSchema(db,{...config,allowAutoMigrate:false}),upgraded);
     const before=db.prepare("SELECT * FROM tenant_members ORDER BY tenant_id,user_id").all();

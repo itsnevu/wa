@@ -23,6 +23,10 @@
         <nav class="deal-tabs" aria-label="Antrean deal">${[['review','Verifikasi'],['dp','Penagihan DP'],...(data.owner ? [['audit','Audit sampel']] : [])].map(([key,title]) =>
           `<button data-tab="${key}" aria-pressed="${key===tab}">${title}</button>`).join('')}</nav>
         <p class="deal-feedback" role="status"></p>
+        ${data.can_decide ? `<details class="card" data-proof-settings><summary>Pengaturan</summary>
+          <p>Lampiran bukti pembayaran <strong>${data.proof_enabled ? 'Aktif' : 'Nonaktif'}</strong></p>
+          <button type="button" data-toggle-proof>${data.proof_enabled ? 'Nonaktifkan lampiran' : 'Aktifkan lampiran'}</button>
+        </details>` : ''}
         ${tab === 'audit' ? `<div class="card"><button data-sample>Ambil sampel 5% hari ini</button>
           ${data.audit_stats.length ? `<ul>${data.audit_stats.map(r=>`<li>Admin ${esc(r.admin_id)} · ${esc(r.classifier_version || 'Tanpa classifier')} · ${Number(r.false_positive)}/${Number(r.audited)} false positive</li>`).join('')}</ul>` : ''}</div>` : ''}
         ${data.notices.length && tab === 'review' ? `<details class="card"><summary>Digest dan eskalasi pemilik</summary><ul>
@@ -44,7 +48,9 @@
             </dl>
             <ol class="deal-messages" aria-label="Potongan pesan relevan">${card.messages.map(m=>`<li><small>${m.from_me ? 'Tim' : 'Klien'}</small>
               <span>${esc(m.body || label(m.kind))}</span>
-              ${proofs.includes(m) ? `<button type="button" data-proof-view="${m.id}">Buka bukti #${m.id}</button>` : ''}</li>`).join('')}</ol>
+              ${proofs.includes(m) ? data.proof_enabled
+                ? `<button type="button" data-proof-view="${m.id}">Buka bukti #${m.id}</button>`
+                : '<small>Lampiran bukti nonaktif</small>' : ''}</li>`).join('')}</ol>
             ${data.can_decide ? `<div class="deal-actions">${tab==='review' ? `
               <button class="primary" data-action="paid" ${card.state!=='proof_submitted' || !card.recorded_proof ? 'disabled' : ''}>Lunas</button>
               <button data-action="dp">DP</button><button data-action="reject">Bukan closing</button><button data-action="info">Butuh info</button>
@@ -76,6 +82,12 @@
         } finally { button.disabled = false; }
       };
       root.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { tab=b.dataset.tab; offset=0; load(); });
+      root.querySelector('[data-toggle-proof]')?.addEventListener('click',e =>
+        refresh('/deals/review/settings',{proof_enabled:!data.proof_enabled},e.currentTarget,r => {
+          const settings = root.querySelector('[data-proof-settings]');
+          if (settings) settings.open = true;
+          return r.proof_enabled ? 'Lampiran bukti diaktifkan.' : 'Lampiran bukti dinonaktifkan.';
+        }));
       root.querySelector('[data-prev]')?.addEventListener('click',() => { offset-=30; load(); });
       root.querySelector('[data-next]')?.addEventListener('click',() => { offset+=30; load(); });
       root.querySelector('[data-sample]')?.addEventListener('click',e => refresh('/deals/audit/sample',{},e.currentTarget,r =>

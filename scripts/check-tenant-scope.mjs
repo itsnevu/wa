@@ -7,7 +7,7 @@ import path from 'node:path';
 // Tables that carry tenant_id (checked against the live schema in tests/tenant-scope-check.test.mjs).
 export const TENANT_TABLES = ['tenant_members','activity','numbers','send_count','chats','messages','notifications','rules','templates','labels',
   'chat_labels','ai_settings','ai_usage','ai_notice','ai_alerts','ai_seen','ai_logs','products','orders','contacts','contacts_v2','media_records',
-  'platform_grants','platform_audit','tenant_invitations','deals','classifier_runs','deal_job_notices','tenant_business_hours','tenant_holidays','dp_reminder_rescan'];
+  'platform_grants','platform_audit','tenant_invitations','deals','classifier_runs','deal_job_notices','tenant_business_hours','tenant_holidays','dp_reminder_rescan','deal_evidence_settings'];
 const SQL = /(`[^`]*`|'(?:SELECT|INSERT|UPDATE|DELETE|WITH)[^']*'|"(?:SELECT|INSERT|UPDATE|DELETE|WITH)[^"]*")/gis;
 const TABLE_REF = new RegExp(`\\b(?:FROM|JOIN|UPDATE|INTO)\\s+"?(${TENANT_TABLES.join('|')})"?\\b`, 'gi');
 const normalize = sql => sql.replace(/\$\{[^}]*\}/g, '?').replace(/\s+/g, ' ').trim();

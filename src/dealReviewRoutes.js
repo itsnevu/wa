@@ -1,6 +1,6 @@
 import { requireTenantScope } from './tenantScope.js';
-import { completeDealAudit, decideDeal, getDealEvidence, listDealReview, sampleDealAudit } from './dealReview.js';
-import { issueDealMediaUrl } from './media.js';
+import { completeDealAudit, decideDeal, getDealEvidence, listDealReview, requireReviewer, sampleDealAudit } from './dealReview.js';
+import { dealEvidenceEnabled, issueDealMediaUrl, setDealEvidenceEnabled } from './media.js';
 
 function respond(fn) {
   return (req,res,next) => {
@@ -20,7 +20,16 @@ export function mountDealReview(api) {
     if (!['review','dp','audit'].includes(tab) || !Number.isSafeInteger(offset) || offset < 0) {
       throw Object.assign(Error('Antrean atau halaman tidak valid.'),{ status: 400 });
     }
-    return listDealReview(req.tenantScope,tab,offset);
+    return {...listDealReview(req.tenantScope,tab,offset), proof_enabled:dealEvidenceEnabled(req.tenantScope.tenantId)};
+  }));
+  api.post('/deals/review/settings',requireTenantScope,respond(req => {
+    requireReviewer(req.tenantScope);
+    const enabled = req.body?.proof_enabled;
+    if (typeof enabled !== 'boolean') {
+      throw Object.assign(Error('Pilih aktif atau nonaktif untuk lampiran bukti.'),{status:400});
+    }
+    setDealEvidenceEnabled(req.tenantScope.tenantId,enabled);
+    return {proof_enabled:enabled};
   }));
   api.post('/deals/:id/decision',requireTenantScope,respond(req => decideDeal.immediate(req.tenantScope,req.params.id,req.body)));
   api.post('/deals/:id/evidence/:messageId/url',requireTenantScope,respond(req => {

@@ -13,9 +13,10 @@ test('number 4 owner assignment opens read and send guards only for the chosen a
     h.db.transaction(()=>{
       h.db.exec("UPDATE tenant_members SET role='agent' WHERE tenant_id='default' AND role='owner'");
       h.db.prepare("UPDATE tenant_members SET role='owner' WHERE tenant_id='default' AND user_id=?").run(owner.id);
-      h.db.exec(`ALTER TABLE numbers DROP COLUMN owner_assignment;
-        DELETE FROM schema_migrations WHERE version=11;
-        DELETE FROM schema_ddl_hash WHERE version=11;
+      h.db.exec(`DROP TABLE deal_evidence_settings;
+        ALTER TABLE numbers DROP COLUMN owner_assignment;
+        DELETE FROM schema_migrations WHERE version>=11;
+        DELETE FROM schema_ddl_hash WHERE version>=11;
         INSERT INTO numbers(id,phone,name,created_at) VALUES(4,'fixture','fixture',0);
         INSERT INTO chats(id,number_id,jid) VALUES(4,4,'fixture@s.whatsapp.net');
         INSERT INTO messages(id,number_id,chat_id,ts,body) VALUES(4,4,4,1,'fixture message');
@@ -36,7 +37,7 @@ test('number 4 owner assignment opens read and send guards only for the chosen a
     assert.equal((await send(other.cookie)).status,403);
     assert.equal((await read(admin)).status,200);
     const result=await ensureSchema(h.db,h.config);
-    assert.equal(result.version,11);
+    assert.equal(result.version,12);
     const get=()=>h.db.prepare('SELECT owner_id,owner_assignment FROM numbers WHERE id=4').get();
     assert.deepEqual(get(),{owner_id:owner.id,owner_assignment:'derived'});
     assert.equal((await read(owner.cookie)).status,200);

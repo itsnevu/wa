@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { createHmac, timingSafeEqual, randomUUID } from 'node:crypto';
+import { createHmac, timingSafeEqual, randomUUID, randomBytes } from 'node:crypto';
 import { Router } from 'express';
 import { db } from './db.js';
 import { config } from './config.js';
@@ -18,8 +18,23 @@ const INLINE = new Map(Object.entries({
 }));
 
 function fail(status, message) { return Object.assign(new Error(message), { status }); }
-function available() {
-  if (!config.mediaSignedUrlsEnabled) throw fail(503, 'Lampiran belum diaktifkan oleh pengelola.');
+const dealSetting = db.prepare('SELECT enabled, signing_key FROM deal_evidence_settings WHERE tenant_id=?');
+const saveDealSetting = db.prepare(`INSERT INTO deal_evidence_settings(tenant_id,enabled,signing_key)
+  VALUES(?,?,?) ON CONFLICT(tenant_id) DO UPDATE SET
+  enabled=excluded.enabled, signing_key=CASE
+    WHEN deal_evidence_settings.enabled=excluded.enabled THEN deal_evidence_settings.signing_key
+    ELSE excluded.signing_key END`);
+export function dealEvidenceEnabled(tenant) {
+  const setting = dealSetting.get(tenant);
+  return setting ? setting.enabled === 1 : config.mediaSignedUrlsEnabled;
+}
+export function setDealEvidenceEnabled(tenant, enabled) {
+  saveDealSetting.run(tenant, Number(enabled), randomBytes(32).toString('hex'));
+}
+function available(setting) {
+  if (!(setting ? setting.enabled === 1 : config.mediaSignedUrlsEnabled)) {
+    throw fail(503, 'Lampiran belum diaktifkan oleh pengelola.');
+  }
 }
 function mediaPath(name) {
   if (!validMediaName(name)) throw fail(403, 'Lokasi lampiran tidak diizinkan.');
@@ -67,8 +82,10 @@ const signature = (uuid, user, exp, tenant, key = config.mediaSigningKey) => cre
 // MEDIA_SIGNING_KEY_PREVIOUS_UNTIL (epoch ms), so rotating never breaks links already issued (TTL stays 5 min).
 export function mediaSignatureValid(sig, uuid, user, exp, tenant, now = Date.now()) {
   const given = Buffer.from(sig, 'hex');
-  const keys = [config.mediaSigningKey];
-  if (config.mediaSigningKeyPrevious && now < (config.mediaSigningKeyPreviousUntil || 0)) keys.push(config.mediaSigningKeyPrevious);
+  const setting = tenant ? dealSetting.get(tenant) : undefined;
+  if (setting && !setting.enabled) return false;
+  const keys = [setting?.signing_key ?? config.mediaSigningKey];
+  if (!setting && config.mediaSigningKeyPrevious && now < (config.mediaSigningKeyPreviousUntil || 0)) keys.push(config.mediaSigningKeyPrevious);
   return keys.some(key => timingSafeEqual(given, Buffer.from(signature(uuid, user, exp, tenant, key), 'hex')));
 }
 const register = db.prepare('INSERT OR IGNORE INTO media_records(uuid,message_id,number_id,storage_path,created_at) VALUES(?,?,?,?,?)');
@@ -96,7 +113,8 @@ const registerScoped = db.prepare(`INSERT OR IGNORE INTO media_records(uuid,mess
   SELECT ?,m.id,m.number_id,m.media_path,?,m.tenant_id FROM messages m WHERE m.id=? AND m.tenant_id=?`);
 const findScoped = db.prepare('SELECT uuid FROM media_records WHERE message_id=? AND tenant_id=?');
 export function issueDealMediaUrl(messageId, scope) {
-  available();
+  const setting = dealSetting.get(scope.tenantId);
+  available(setting);
   const uuid = db.transaction(() => {
     registerScoped.run(randomUUID(),Date.now(),messageId,scope.tenantId);
     const record = findScoped.get(messageId,scope.tenantId);
@@ -106,7 +124,7 @@ export function issueDealMediaUrl(messageId, scope) {
     return record.uuid;
   }).immediate();
   const exp = Date.now() + TTL;
-  return { url: `/media/${uuid}?user=${scope.userId}&exp=${exp}&tenant=${encodeURIComponent(scope.tenantId)}&sig=${signature(uuid,scope.userId,exp,scope.tenantId)}` };
+  return { url: `/media/${uuid}?user=${scope.userId}&exp=${exp}&tenant=${encodeURIComponent(scope.tenantId)}&sig=${signature(uuid,scope.userId,exp,scope.tenantId,setting?.signing_key)}` };
 }
 
 export function mediaError(err, req, res, next) {
@@ -123,13 +141,16 @@ mediaRouter.use((req, res, next) => {
 }, requireAuth);
 mediaRouter.use((req, res, next) => {
   try {
-    available();
     if (!['GET', 'HEAD'].includes(req.method)) throw fail(403, 'Permintaan lampiran tidak diizinkan.');
     const uuid = req.path.slice(1);
     const params = new URLSearchParams(req.originalUrl.slice(req.originalUrl.indexOf('?') + 1));
+    if (!params.has('tenant')) available();
     if (!UUID.test(uuid) || ['user', 'exp', 'sig'].some(k => params.getAll(k).length !== 1)
       || params.getAll('tenant').length > 1 || [...params.keys()].some(k => !['user', 'exp', 'sig', 'tenant'].includes(k))) throw fail(403, 'Tautan lampiran tidak valid.');
     const user = params.get('user'), exp = params.get('exp'), sig = params.get('sig'), tenant = params.get('tenant');
+    const scope = tenant ? resolveTenantScope(req) : undefined;
+    if (scope && scope.tenantId !== tenant) throw fail(403,'Akses lampiran tidak tersedia.');
+    if (scope) available(dealSetting.get(scope.tenantId));
     if (!/^\d+$/.test(user) || Number(user) !== req.user.id || !/^\d+$/.test(exp)
       || !Number.isSafeInteger(Number(exp)) || Number(exp) <= Date.now() || Number(exp) > Date.now() + TTL
       || !/^[0-9a-f]{64}$/.test(sig)
@@ -137,8 +158,6 @@ mediaRouter.use((req, res, next) => {
       throw fail(403, 'Tautan lampiran tidak valid atau sudah kedaluwarsa.');
     }
     if (tenant === '') throw fail(403,'Tautan lampiran tidak valid.');
-    const scope = tenant ? resolveTenantScope(req) : undefined;
-    if (scope && scope.tenantId !== tenant) throw fail(403,'Akses lampiran tidak tersedia.');
     const row = authorize(lookup.get(uuid), req.user, scope);
     const file = mediaPath(row.storage_path);
     const type = INLINE.get(path.extname(file).toLowerCase());

@@ -33,6 +33,7 @@ Protokol:
 | 9 | Koreksi analytics (jadwal per hari, libur, tak terjawab 4 jam operasional, kas masuk) — **BEKU** (23 Nov 2026, `docs/deal-analytics/V9-FREEZE.md`) | Claude |
 | 10 | Backfill membership pemilik nomor | Codex |
 | 11 | Provenance pemilik nomor dan penetapan terverifikasi nomor 4 | Codex |
+| 12 | Pengaturan lampiran bukti pembayaran per tenant | Codex |
 
 - Klaim nomor di tabel ini **sebelum** menulis migrasi.
 - Gunakan satu nomor bebas berikutnya untuk setiap migrasi. Dukungan grup mengikuti aturan yang sama.

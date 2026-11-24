@@ -20,7 +20,9 @@ import { migrateDealAnalyticsV9 } from './dealAnalyticsV9Migration.js';
 import { migrateNumberMembership } from './numberMembershipMigration.js';
 import { migrateNumberOwnerAssignment } from './numberOwnerAssignmentMigration.js';
 
-export const SCHEMA_VERSION=11;
+import { migrateDealEvidenceSettings } from './dealEvidenceMigration.js';
+
+export const SCHEMA_VERSION=12;
 export const VERSION_TABLE=`CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY, name TEXT NOT NULL, fingerprint TEXT NOT NULL, applied_at INTEGER NOT NULL)`;
 const known=JSON.parse(fs.readFileSync(new URL('./schema-fingerprints.json',import.meta.url),'utf8'));
 export async function ensureSchema(db,config) {
@@ -70,13 +72,18 @@ export async function ensureSchema(db,config) {
         db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(10,'Number owner membership',known.v10,Date.now());
         recordSchemaDdl(db,10);
       }
-      migrateNumberOwnerAssignment(db);
+      if(fromVersion<11){
+        migrateNumberOwnerAssignment(db);
+        db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(11,'Number owner provenance',known.v11,Date.now());
+        recordSchemaDdl(db,11);
+      }
+      migrateDealEvidenceSettings(db);
       if(schemaFingerprint(db)!==known.current) throw Error('Unexpected migrated schema fingerprint');
       if(db.pragma('foreign_key_check').length) throw Error('Schema migration foreign key verification failed');
       // H2: integrity verified inside the migration transaction, so a failure rolls everything back.
       const integrity=(config.integrityCheck ?? (d=>d.pragma('integrity_check',{simple:true})))(db);
       if(integrity!=='ok') throw Error(`Schema migration integrity_check failed (${integrity}); rolled back`);
-      db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(SCHEMA_VERSION,'Number owner provenance',known.current,Date.now());
+      db.prepare('INSERT INTO schema_migrations VALUES(?,?,?,?)').run(SCHEMA_VERSION,'Deal evidence settings',known.current,Date.now());
       return recordSchemaDdl(db,SCHEMA_VERSION);
     }).immediate();
   } finally {db.pragma(`foreign_keys = ${fk?'ON':'OFF'}`);}

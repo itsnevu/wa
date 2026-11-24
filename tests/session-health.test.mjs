@@ -116,7 +116,7 @@ test.after(async () => {
 
 test('session health columns, current fingerprint and pre-migration backup', () => {
   const version = db.prepare('SELECT version,fingerprint FROM schema_migrations ORDER BY version DESC LIMIT 1').get();
-  assert.equal(version.version, 11);
+  assert.equal(version.version, 12);
   assert.equal(version.fingerprint, schemaFingerprint(db));
   const columns = db.pragma('table_info(numbers)').map(column => column.name);
   for (const name of ['last_event_at', 'last_inbound_at', 'last_outbound_at', 'last_connect_at', 'last_disconnect_at',

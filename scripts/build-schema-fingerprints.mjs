@@ -15,6 +15,7 @@ import {migrateDealAnalytics} from '../src/dealAnalyticsMigration.js';
 import {migrateDealAnalyticsV9} from '../src/dealAnalyticsV9Migration.js';
 import {migrateNumberMembership} from '../src/numberMembershipMigration.js';
 import {migrateNumberOwnerAssignment} from '../src/numberOwnerAssignmentMigration.js';
+import {migrateDealEvidenceSettings} from '../src/dealEvidenceMigration.js';
 const db=new Database(':memory:');
 const legacy={empty:schemaFingerprint(db)};
 bootstrapLegacy(db,{adminUser:'schema-fixture',adminPass:'schema-fixture-password'});
@@ -48,8 +49,10 @@ const v9=versionFingerprint(9);
 db.transaction(()=>migrateNumberMembership(db)).immediate();
 const v10=versionFingerprint(10);
 db.transaction(()=>migrateNumberOwnerAssignment(db)).immediate();
-const current=versionFingerprint(11);
+const v11=versionFingerprint(11);
+migrateDealEvidenceSettings(db);
+const current=versionFingerprint(12);
 fs.writeFileSync('src/schema-fingerprints.json',JSON.stringify({
-  legacy,t01,v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,current,...(Object.keys(ddl).length ? {ddl} : {}),
+  legacy,t01,v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,current,...(Object.keys(ddl).length ? {ddl} : {}),
 },null,2)+'\n');
 db.close();

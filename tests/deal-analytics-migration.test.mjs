@@ -67,7 +67,7 @@ test('11a. v7 -> v8 pada salinan berisi data: versi, fingerprint, backup, baris 
   const after = counts(db);
   const delta = Object.fromEntries(tables.map(t=>[t,after[t]-before[t]]));
   console.log('MIGRATION v7->v8', JSON.stringify({ ms:Math.round(migrationMs),before,after,delta }));
-  assert.deepEqual(db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(r=>r.version),[1,2,3,4,5,6,7,8,9,10,11]);
+  assert.deepEqual(db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(r=>r.version),[1,2,3,4,5,6,7,8,9,10,11,12]);
   assert.equal(schemaFingerprint(db),known.current);
   assert.equal(db.pragma('integrity_check',{ simple:true }),'ok');
   assert.deepEqual(db.pragma('foreign_key_check'),[]);
