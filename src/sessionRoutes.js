@@ -11,7 +11,7 @@ export function mountSessionRoutes(api){
       ? db.prepare('SELECT id,name,slug,status FROM tenants WHERE deleted_at IS NULL ORDER BY id').all()
       : db.prepare('SELECT t.id,t.name,t.status,m.role FROM tenant_members m JOIN tenants t ON t.id=m.tenant_id WHERE m.user_id=? AND t.deleted_at IS NULL ORDER BY t.id').all(s.userId);
     const grant=s.session.grant;
-    res.json({user:{...s.user,capabilities},tenants,platform_grant:grant?{id:grant.id,tenant_id:grant.tenant_id,expires_at:grant.expires_at,capabilities:JSON.parse(grant.capabilities_json)}:null,active_tenant_id:s.session.active_tenant_id,tenant_mode:config.multitenantEnabled,passMin:config.passMin});
+    res.json({user:{...s.user,capabilities},tenants,platform_grant:grant?{id:grant.id,tenant_id:grant.tenant_id,expires_at:grant.expires_at,capabilities:JSON.parse(grant.capabilities_json)}:null,active_tenant_id:s.session.active_tenant_id,tenant_mode:config.multitenantEnabled,passMin:config.passMin,...(config.raqioSso?{loginUrl:config.raqioLoginUrl}:{})});
   });
   api.post('/tenant/switch',requireSessionScope,(req,res)=>{
     try{

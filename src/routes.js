@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { db, q, schemaStatus } from './db.js';
 import { readiness } from './readiness.js';
 import { acceptOwnerInvitation, login, setCookie, requireAuth, requireAdmin, canAccessNumber } from './auth.js';
+import {startRaqioSession} from './raqioSso.js';
 import {clearCookie,createLogoutHandler,logoutSqlite} from './sessionLogout.js';
 import {createSqliteTransactions} from './database/transactions.js';
 import { hashPassword, verifyPassword } from './passwords.js';
@@ -35,7 +36,9 @@ api.get('/health', (_req, res) => res.json({
 api.get('/ready', (_req, res) => { const r = readiness(db, schemaStatus); res.status(r.status).json(r.body); });
 
 api.post('/login', (req, res) => {
+  if(req.body?.raqio===true)return startRaqioSession(req,res);
   const { username, password, invitation_token } = req.body || {};
+  if(config.raqioSso&&invitation_token===undefined)return res.status(403).json({code:'RAQIO_LOGIN_REQUIRED',loginUrl:config.raqioLoginUrl});
   if (typeof username !== 'string' || typeof password !== 'string') return res.status(400).json({ error: 'username dan password wajib' });
   if (guard.blocked(username, req.ip)) return res.status(429).json({ error: 'terlalu banyak percobaan, coba lagi nanti' });
   const out = invitation_token === undefined ? login(username, password, req) : acceptOwnerInvitation(invitation_token, username.trim(), password, req);

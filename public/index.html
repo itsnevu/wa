@@ -550,7 +550,7 @@ async function call(method, url, body) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    if (res.status === 401 && url !== '/login') showLogin();
+    if (res.status === 401 && url !== '/login' && url !== '/me') void startLogin();
     if (res.status === 409 && data.code === 'TENANT_NOT_SELECTED' && !url.startsWith('/platform/')) { if(data.reason==='NO_MEMBERSHIP')state.tenants=[]; showTenantPicker(state.tenants || []); }
     if (res.status === 403 && data.select_tenant) {
       const session = await fetch('/api/me').then(r => r.json()).catch(() => ({}));
@@ -572,6 +572,39 @@ async function call(method, url, body) {
 }
 
 const ownerInvitation = new URLSearchParams(location.hash.slice(1)).get('owner-invite');
+let raqioLoginUrl;
+let loginAttempt;
+
+function startLogin() {
+  if (ownerInvitation) { showLogin(); return Promise.resolve(); }
+  if (loginAttempt) return loginAttempt;
+  loginAttempt = (async () => {
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ raqio: true }),
+      });
+      const data = await response.json();
+      if (response.ok) { await boot(true); return; }
+      if (data.code === 'RAQIO_SSO_DISABLED') { showLogin(); return; }
+      if (data.code === 'RAQIO_LOGIN_REQUIRED' && data.loginUrl) { location.replace(data.loginUrl); return; }
+      const notice = $('#sessionNotice');
+      notice.textContent = data.error || 'Login RAQIO tidak tersedia.';
+      if (data.loginUrl) {
+        const link = document.createElement('a');
+        link.href = data.loginUrl;
+        link.textContent = 'Masuk dengan akun lain';
+        notice.append(' ', link);
+      }
+      notice.classList.remove('hidden');
+    } catch {
+      $('#sessionNotice').textContent = 'Login RAQIO tidak tersedia.';
+      $('#sessionNotice').classList.remove('hidden');
+    }
+  })().finally(() => { loginAttempt = null; });
+  return loginAttempt;
+}
 
 function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
@@ -614,13 +647,17 @@ function showTenantPicker(tenants) {
 }
 
 $('#tenantLogout').onclick = async () => {
-  try { await call('POST','/logout'); } finally { showLogin(); }
+  try { await call('POST','/logout'); } finally {
+    if (raqioLoginUrl) location.replace(raqioLoginUrl);
+    else showLogin();
+  }
 };
 
-async function boot() {
+async function boot(fromRaqio = false) {
   if (ownerInvitation) { showLogin(); return; }
   try {
     const out = await call('GET', '/me');
+    raqioLoginUrl = out.loginUrl;
     state.me = out.user; state.passMin = out.passMin || 12; state.tenants = out.tenants || [];
     if (out.user.capabilities?.includes('tenant.list')) {
       $('#login').classList.add('hidden');
@@ -648,7 +685,11 @@ async function boot() {
       button.onclick = () => showOwnerAudit();
       $('#app .rail').append(button);
     }
-  } catch (error) { if (error.code === 'GRANT_EXPIRED') { await boot(); return; } if (error.status !== 409 && error.status !== 403) showLogin(); return; }
+  } catch (error) {
+    if (error.code === 'GRANT_EXPIRED') { await boot(fromRaqio); return; }
+    if (!fromRaqio && error.status !== 409 && error.status !== 403) await startLogin();
+    return;
+  }
   $('#app').classList.remove('hidden');
   await loadNumbers(); await loadTemplates(); await loadLabels();
   await loadNotificationCount();
@@ -1279,7 +1320,11 @@ $('#takeChat').onclick = async () => {
   if (!state.chatId) return notify('pilih chat dulu');
   try { await call('PATCH', `/chats/${state.chatId}/assign`, { user_id: state.me.id }); await loadChats(); notify('Chat ditugaskan kepada Anda'); } catch (err) { notify(err.message); }
 };
-$('#btnOut').onclick = async () => { await call('POST', '/logout'); location.reload(); };
+$('#btnOut').onclick = async () => {
+  await call('POST', '/logout');
+  if (raqioLoginUrl) location.replace(raqioLoginUrl);
+  else location.reload();
+};
 
 const pencilIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14Z"/></svg>';
 const trashIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg>';
@@ -1574,7 +1619,11 @@ pages.account = { title: 'Akun', render: (root) => {
     } catch (err) { $('#usernameResult').textContent = err.message; }
   };
   $('#logoutAll').onclick = async () => {
-    try { await call('POST', '/logout-all'); location.reload(); }
+    try {
+      await call('POST', '/logout-all');
+      if (raqioLoginUrl) location.replace(raqioLoginUrl);
+      else location.reload();
+    }
     catch (err) { $('#logoutAllResult').textContent = err.message; }
   };
   $('#passwordForm').onsubmit = async (e) => {

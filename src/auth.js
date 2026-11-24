@@ -30,6 +30,10 @@ export function acceptOwnerInvitation(token, username, password, req) {
 export function login(username, password, req={headers:{}}) {
   const user = q.userByName.get(username);
   if (!user || !verifyPassword(password, user.pass)) return null;
+  return loginUser(user,req);
+}
+
+export function loginUser(user,req) {
   const memberships=q.tenantMemberships.all(user.id);
   const platform=can(user,'tenant.list',{kind:'platform'}).ok;
   const tenantId=platform?null:config.multitenantEnabled?(memberships.length===1?memberships[0].tenant_id:null):'default';
