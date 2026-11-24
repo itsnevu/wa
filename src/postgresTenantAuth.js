@@ -10,6 +10,11 @@ const lockSql = 'SELECT pg_advisory_xact_lock_shared(hashtextextended($1::uuid::
 const activeSessionSql = `SELECT token_hash,user_id,tenant_id,expires_at,created_at FROM tenant_auth.sessions
   WHERE token_hash=$1::text AND expires_at>clock_timestamp()`;
 
+export async function expirePostgresSession(client,tokenHash) {
+  await client.query(`UPDATE tenant_auth.sessions SET expires_at=clock_timestamp()
+    WHERE token_hash=$1::text AND expires_at>clock_timestamp()`,[tokenHash]);
+}
+
 export async function lookupMembership(db,userId,tenantId) {
   if (userId==null || !tenantId) throw new Error('Membership lookup requires user_id and tenant_id');
   const {rows:[row]}=await db.query(`SELECT role FROM tenant_auth.tenant_members
@@ -69,8 +74,7 @@ export function createPostgresTenantAuth(pool, stats={}) {
     await asAuth(client);
     return fn(client);
   });
-  const revoke=tokenHash=>withAuth(client=>client.query(`UPDATE tenant_auth.sessions
-    SET expires_at=clock_timestamp() WHERE token_hash=$1::text AND expires_at>clock_timestamp()`,[tokenHash]));
+  const revoke=tokenHash=>withAuth(client=>expirePostgresSession(client,tokenHash));
 
   async function resolve(req) {
     const token=cookieId(req);

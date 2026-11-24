@@ -9,6 +9,7 @@ import {config} from '../../src/config.js';
 import {cookieId,writeSessionCookie} from '../../src/sessionStore.js';
 import {consumePostgresQuota,lookupMembership,sessionTokenHash} from '../../src/postgresTenantAuth.js';
 import {createPostgresTransactions} from '../../src/database/transactions.js';
+import {createLogoutHandler,logoutPostgres} from '../../src/sessionLogout.js';
 
 const denied=error=>error.code==='42501';
 const expired=error=>error.status===401;
@@ -24,7 +25,7 @@ export async function verifyTenantAuth({admin,proxy,tenants}) {
   const issue=(token,user,tenant)=>admin.query(`INSERT INTO tenant_auth.sessions(token_hash,user_id,tenant_id,expires_at)
     VALUES($1::text,$2::bigint,$3::uuid,clock_timestamp()+interval '1 hour')`,[sessionTokenHash(token),user,tenant]);
   for(const session of [['alpha',101,a],['beta',102,b],['none',101,null],['race',101,a],['switch',101,a],
-    ['role-change',101,a],['suspend',102,c],['delete',102,d]])await issue(...session);
+    ['role-change',101,a],['suspend',102,c],['delete',102,d],['logout',101,a]])await issue(...session);
   const stats={};
   const pool=new pg.Pool({...proxy,user:'app_login',max:5,connectionTimeoutMillis:5000});
   const auth=createPostgresTransactions(pool,undefined,stats);
@@ -57,6 +58,8 @@ export async function verifyTenantAuth({admin,proxy,tenants}) {
         throw error;
       }
     });
+    const sessionRoutes=express.Router();
+    application.use(sessionRoutes);
     application.use((error,_request,res,_next)=>res.status(error.status||500).json({code:error.code||'ERROR'}));
     server=application.listen(0,'127.0.0.1');
     await once(server,'listening');
@@ -93,6 +96,25 @@ export async function verifyTenantAuth({admin,proxy,tenants}) {
     assert.equal(await status('alpha','beta.fixture.test'),404);
     assert.equal(await status('alpha'),200);
     assert.equal(await status('missing'),401);
+    assert.equal(await status('logout'),200);
+    const beforePort=await request('logout','alpha.fixture.test','/logout',{method:'POST'});
+    assert.equal(beforePort.status,404);
+    await beforePort.arrayBuffer();
+    assert.equal(await status('logout'),200);
+    sessionRoutes.post('/logout',async(req,_res,next)=>{
+      await auth.withTenantRead(req,resolveHost(req),()=>undefined);
+      next();
+    },createLogoutHandler(req=>logoutPostgres(req,auth)));
+    const foreignLogout=await request('logout','beta.fixture.test','/logout',{method:'POST'});
+    assert.equal(foreignLogout.status,404);
+    await foreignLogout.arrayBuffer();
+    assert.equal(await status('logout'),200);
+    const loggedOut=await request('logout','alpha.fixture.test','/logout',{method:'POST'});
+    assert.equal(loggedOut.status,200);
+    assert.match(loggedOut.headers.get('set-cookie'),/Max-Age=0/);
+    assert.deepEqual(await loggedOut.json(),{ok:true});
+    assert.equal(await status('logout'),401);
+    assert.equal(await status('alpha'),200);
     const disallowed=await request('beta','beta.fixture.test','/auth/switch',{
       method:'POST',body:JSON.stringify({host:'alpha.fixture.test'}),
     });

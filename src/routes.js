@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { db, q, schemaStatus } from './db.js';
 import { readiness } from './readiness.js';
-import { acceptOwnerInvitation, login, logout, setCookie, clearCookie, requireAuth, requireAdmin, canAccessNumber } from './auth.js';
+import { acceptOwnerInvitation, login, setCookie, requireAuth, requireAdmin, canAccessNumber } from './auth.js';
+import {clearCookie,createLogoutHandler,logoutSqlite} from './sessionLogout.js';
+import {createSqliteTransactions} from './database/transactions.js';
 import { hashPassword, verifyPassword } from './passwords.js';
 import * as guard from './loginGuard.js';
 import * as wa from './wa.js';
@@ -47,7 +49,8 @@ api.post('/login', (req, res) => {
   res.json({ user: out.user });
 });
 
-api.post('/logout',requireSessionScope, (req, res) => { logout(req); clearCookie(res); res.json({ ok: true }); });
+api.post('/logout',requireSessionScope,createLogoutHandler(req =>
+  logoutSqlite(req,createSqliteTransactions(path.join(config.dataDir,'app.db')))));
 
 mountSessionRoutes(api);
 mountSessionHealthRoutes(api);

@@ -2,7 +2,7 @@ import {createHash} from 'node:crypto';
 import { db, q } from './db.js';
 import { hashPassword, verifyPassword } from './passwords.js';
 import { config } from './config.js';
-import {createSession,readSession,cookieId,revokeSession,sendSessionError,sessionError} from './sessionStore.js';
+import {createSession,readSession,cookieId,sendSessionError,sessionError} from './sessionStore.js';
 import {can} from './capabilities.js';
 
 const COOKIE = 'sid';
@@ -37,21 +37,12 @@ export function login(username, password, req={headers:{}}) {
   return { token:session.id,expires:session.expires_at,noMembership:config.multitenantEnabled&&!memberships.length&&!can(user,'tenant.list',{kind:'platform'}).ok,user:{id:user.id,username:user.username,role:user.role} };
 }
 
-export function logout(req) {
-  const token=cookieId(req);
-  if(token)revokeSession(token);
-}
-
 export function currentUser(req) {
   try{const row=readSession(req);if(can(row,'tenant.list',{kind:'platform'}).ok)return null;return {id:row.user_id,username:row.username,role:row.role,platform_role:row.platform_role};}catch{return null;}
 }
 
 export function setCookie(res, token, expires) {
   res.setHeader('Set-Cookie', `${COOKIE}=${token}; HttpOnly; Path=/; SameSite=Lax; Expires=${new Date(expires).toUTCString()}${config.secureCookie ? '; Secure' : ''}`);
-}
-
-export function clearCookie(res) {
-  res.setHeader('Set-Cookie', `${COOKIE}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${config.secureCookie ? '; Secure' : ''}`);
 }
 
 export function requireAuth(req, res, next) {
