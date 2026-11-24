@@ -1,5 +1,6 @@
 import {performance} from 'node:perf_hooks';
 import pg from 'pg';
+import {pinPostgresTimeouts} from '../../src/postgresTransactionPolicy.js';
 
 const setting = "SELECT nullif(current_setting('app.tenant_id', true), '') AS tenant";
 const codes = {I:'idle', T:'in transaction', E:'aborted'};
@@ -35,11 +36,14 @@ export function instrumentedPool(options, report, {setScope = "SELECT set_config
     let discard = true;
     let scoped = false;
     let begun = false;
+    let leaseStart;
     try {
       await probe(client, 'checkout');
       discard = false;
       await client.query(readOnly?'BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY':'BEGIN');
       begun = true;
+      leaseStart=performance.now();
+      await pinPostgresTimeouts(client);
       await probe(client, 'transaction entry');
       if (tenant !== null) {
         await client.query(setScope, [tenant]);
@@ -56,6 +60,7 @@ export function instrumentedPool(options, report, {setScope = "SELECT set_config
       await client.query('COMMIT');
       return result;
     } finally {
+      if(leaseStart!==undefined)report.backendLeaseMs.push(performance.now()-leaseStart);
       const atRelease = status(client);
       report.releaseStates[atRelease] = (report.releaseStates[atRelease] ?? 0) + 1;
       try {
@@ -85,7 +90,7 @@ export function instrumentedPool(options, report, {setScope = "SELECT set_config
 }
 
 export function metrics() {
-  return {checkouts:0, waitTotalMs:0, maxWaitMs:0, violations:0, discarded:0, removed:0,
+  return {checkouts:0, waitTotalMs:0, maxWaitMs:0, violations:0, discarded:0, removed:0, backendLeaseMs:[],
     rollbacks:0, idleErrors:0, retries:0, cleanReleases:0, unverifiedOrDirtyReleases:0, releaseStates:{}, probes:{},
     transactionsWithoutSetLocal:0, unscopedBegins:0};
 }

@@ -315,11 +315,28 @@ async function main() {
     const {verifyTenantJobs}=await import('./tenant-jobs-contract.mjs');
     return verifyTenantJobs({admin,proxy,tenants});
   });
+  await check('transaction-local timeouts and bounded idempotent retries',async()=>{
+    const {verifyOperationPolicy}=await import('./operation-policy-contract.mjs');
+    return verifyOperationPolicy({proxy,tenants});
+  });
+
+  await check('2x worker saturation',async()=>{
+    const startWait=report.waitTotalMs;
+    const start=performance.now();
+    const outcomes=await Promise.allSettled(Array.from({length:40},(_,i)=>mixed.transaction(tenants[i%5],async client=>{
+      await client.query('SELECT pg_sleep(0.03)');
+      await oneTenant(client,tenants[i%5]);
+    })));
+    for(const outcome of outcomes)if(outcome.status==='rejected')throw outcome.reason;
+    return {parallel:40,serverPoolSize:5,ms:Math.round(performance.now()-start),
+      averageWaitMs:(report.waitTotalMs-startWait)/40};
+  });
 
   await check('mixed load', async () => {
     const started = performance.now();
     const until = started + 60000;
     const counts = Array(5).fill(0);
+    const firstLease=report.backendLeaseMs.length;
     const outcomes = await Promise.allSettled(Array.from({length:20}, async (_, worker) => {
       const tenant = tenants[worker % 5];
       do {
@@ -334,7 +351,14 @@ async function main() {
     }));
     for (const outcome of outcomes) if (outcome.status === 'rejected') throw outcome.reason;
     assert.ok(counts.every(count => count > 0));
-    return {workers:20, durationMs:Math.round(performance.now() - started), transactionsPerTenant:counts};
+    const elapsed=performance.now()-started;
+    const leases=report.backendLeaseMs.slice(firstLease).sort((a,b)=>a-b);
+    const p95LeaseMs=leases[Math.ceil(leases.length*.95)-1];
+    const observedTransactionsPerSecond=counts.reduce((a,b)=>a+b,0)*1000/elapsed;
+    const headroom=1.25;
+    return {workers:20,durationMs:Math.round(elapsed),transactionsPerTenant:counts,p95LeaseMs,
+      observedTransactionsPerSecond,headroom,
+      estimatedConnections:Math.ceil(observedTransactionsPerSecond*p95LeaseMs/1000*headroom)};
   });
 
   assert.equal(report.violations, 0);
@@ -348,7 +372,8 @@ try {
   console.error(error);
   process.exitCode = 1;
 } finally {
-  console.log(JSON.stringify({results, metrics:{...report, removedDuringGate:report.removed,
+  const {backendLeaseMs,...summary}=report;
+  console.log(JSON.stringify({results, metrics:{...summary, removedDuringGate:report.removed,
     averageWaitMs:report.checkouts ? report.waitTotalMs / report.checkouts : null}}, null, 2));
   for (const connection of pools) await connection.end();
   for (const args of cleanup.reverse()) {

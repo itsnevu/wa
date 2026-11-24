@@ -1,5 +1,6 @@
 import {createHash,randomBytes} from 'node:crypto';
 import {cookieId,sessionError} from './sessionStore.js';
+import {pinPostgresTimeouts,retryPostgresIdempotent} from './postgresTransactionPolicy.js';
 
 const hash = token => createHash('sha256').update(token).digest('hex');
 export const newSessionToken = () => randomBytes(32).toString('base64url');
@@ -19,6 +20,7 @@ export async function lookupMembership(db,userId,tenantId) {
 export function createPostgresTenantAuth(pool, stats={}) {
   stats.checkouts ??= 0;
   stats.contextViolations ??= 0;
+  stats.retries ??= 0;
   const loginRole='app_login';
   async function clean(client) {
     const {rows:[row]}=await client.query(`SELECT current_user AS role,
@@ -36,6 +38,7 @@ export function createPostgresTenantAuth(pool, stats={}) {
     try {
       await clean(client);
       await client.query(readOnly?'BEGIN READ ONLY':'BEGIN');
+      await pinPostgresTimeouts(client);
       await clean(client);
       const result=await fn(client);
       if (client.getTransactionStatus()!=='T') throw new Error('PostgreSQL transaction cannot commit');
@@ -139,7 +142,8 @@ export function createPostgresTenantAuth(pool, stats={}) {
     if (!rowCount) throw sessionError(404,'TENANT_NOT_FOUND');
     return fn({client,tenantId});
   });
-  return {withAuth,withTenantJob,withTenantRead:(req,tenant,fn)=>withinTenant(req,tenant,fn,true),
+  return {withAuth,withTenantJob,
+    withTenantRead:(req,tenant,fn)=>retryPostgresIdempotent(()=>withinTenant(req,tenant,fn,true),()=>{stats.retries++;}),
     withTenantWrite:(req,tenant,fn)=>withinTenant(req,tenant,fn,false),rotate};
 }
 

@@ -1,8 +1,11 @@
+import {pinPostgresTimeouts} from './postgresTransactionPolicy.js';
+
 export async function withPostgresControl(pool,work) {
   const client=await pool.connect();
   let discard=true;
   try {
     await client.query('BEGIN READ ONLY');
+    await pinPostgresTimeouts(client);
     const {rows:[state]}=await client.query(`SELECT current_user AS role,
       nullif(current_setting('app.tenant_id',true),'') AS tenant`);
     if (state.role!=='control_login' || state.tenant!==null) throw new Error('Dirty control connection');
