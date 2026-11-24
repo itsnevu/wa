@@ -17,7 +17,7 @@ export function mountDealReview(api) {
   api.get('/deals/review',requireTenantScope,respond(req => {
     const tab = req.query.tab ?? 'review';
     const offset = Number(req.query.offset ?? 0);
-    if (!['review','dp','audit'].includes(tab) || !Number.isSafeInteger(offset) || offset < 0) {
+    if (!['review','dp','audit','rejected'].includes(tab) || !Number.isSafeInteger(offset) || offset < 0) {
       throw Object.assign(Error('Antrean atau halaman tidak valid.'),{ status: 400 });
     }
     return {...listDealReview(req.tenantScope,tab,offset), proof_enabled:dealEvidenceEnabled(req.tenantScope.tenantId)};

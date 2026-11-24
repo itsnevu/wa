@@ -1,4 +1,6 @@
 .deal-review { display:grid; gap:12px; }
+.deal-history { min-width:0; overflow-x:auto; }
+.deal-history small { display:block; color:#475569; white-space:pre-wrap; overflow-wrap:anywhere; }
 .deal-tabs, .deal-actions { display:flex; flex-wrap:wrap; gap:8px; }
 .deal-tabs button[aria-pressed="true"] { border-color:#0f766e; background:#ccfbf1; color:#134e4a; }
 .deal-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr)); gap:12px; }

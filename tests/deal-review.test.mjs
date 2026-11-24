@@ -109,6 +109,10 @@ test('role/scoping and required reasons, proof and override', async () => {
   assert.equal((await send(id,'reject')).status,400);
   assert.equal((await send(id,'reject',{ reason_code:'lain_lain',note:'pendek' })).status,400);
   assert.equal((await send(idAgent,'reject',{ reason_code:'lain_lain',note:'Alasan yang valid' })).status,200);
+  const history = (await request('/deals/review?tab=rejected',owner)).data.cards;
+  assert.equal(history.find(row => row.id === idAgent)?.note,'Alasan yang valid');
+  assert.ok((await request('/deals/review?tab=rejected',agent)).data.cards.some(row => row.id === idAgent));
+  assert.ok(!(await request('/deals/review?tab=rejected',other)).data.cards.some(row => row.id === idAgent));
   assert.equal((await send(id,'proof',{ message_id:20,proof_amount:300000 })).status,400);
   const media = await request(`/deals/${id}/evidence/${proof}/url`,owner,{});
   assert.equal(media.status,200);
@@ -184,6 +188,8 @@ const wait = (fn,label='browser condition') => waitFor(fn,{ deadline:8000,interv
 
 test('Chrome desktop and 360px render card, SLA, reason grid, proof and DP form', async () => {
   const id = deal(10,'A',Date.now()-26*3600000);
+  const rejected = deal();
+  assert.equal((await send(rejected,'reject',{reason_code:'tanya_saja'})).status,200);
   const executable = [process.env.MEDIA_TEST_BROWSER,'C:/Program Files/Google/Chrome/Application/chrome.exe',
     'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe','/usr/bin/chromium'].find(file=>file&&fs.existsSync(file));
   assert.ok(executable);
@@ -273,6 +279,8 @@ test('Chrome desktop and 360px render card, SLA, reason grid, proof and DP form'
     await evalJs(`${card}.querySelector('[data-action=paid]').click()`);
     await wait(()=>evalJs(`!${card}`));
     assert.equal(get(id).state,'verified_lunas');
+    await evalJs("document.querySelector('[data-tab=rejected]').click()");
+    await wait(()=>evalJs(`Array.from(document.querySelectorAll('.deal-history tbody tr')).some(row => row.textContent.includes('#${rejected} ·') && row.textContent.includes('Tanya saja'))`));
   } finally {
     await stopFixtureBrowser(browser, browserClosed, socket);
   }

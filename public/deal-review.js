@@ -21,7 +21,7 @@
       catch (err) { if (active() && token === generation) root.textContent = err.message; return; }
       if (!active() || token !== generation) return;
       root.innerHTML = `<section class="deal-review">
-        <div class="deal-toolbar"><nav class="deal-tabs" aria-label="Antrean deal">${[['review','Verifikasi'],['dp','Penagihan DP'],...(data.owner ? [['audit','Audit sampel']] : [])].map(([key,title]) =>
+        <div class="deal-toolbar"><nav class="deal-tabs" aria-label="Antrean deal">${[['review','Verifikasi'],['dp','Penagihan DP'],['rejected','Ditolak'],...(data.owner ? [['audit','Audit sampel']] : [])].map(([key,title]) =>
           `<button data-tab="${key}" aria-pressed="${key===tab}">${title}</button>`).join('')}</nav>
           ${data.can_decide ? `<button type="button" data-open-settings aria-haspopup="dialog" aria-label="Pengaturan deal" title="Pengaturan deal">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -40,7 +40,12 @@
               ${n.payload.reasons.length ? `<ul>${n.payload.reasons.map(r=>`<li>Admin ${esc(r.admin_id)} · ${esc(label(r.reason_code))} · ${Number(r.total)}</li>`).join('')}</ul>` : ''}</li>`
             : `<li>${esc(time(n.at))} · Deal #${Number(n.payload.deal_id)} dieskalasi ke pemilik.</li>`).join('')}</ul></details>` : ''}
         </div>
-        <div class="${tab === 'review' && data.cards.length ? 'deal-workspace' : ''}">
+        ${tab === 'rejected' ? (data.cards.length ? `<div class="deal-history"><table aria-label="Riwayat deal ditolak">
+          <thead><tr><th scope="col">Deal</th><th scope="col">Nominal</th><th scope="col">Alasan</th><th scope="col">Waktu</th></tr></thead>
+          <tbody>${data.cards.map(row => `<tr><td>#${row.id} · ${esc(row.session_name)}</td><td>${amount(row.amount)}</td>
+            <td>${row.reason_code ? esc(label(row.reason_code)) : 'Belum dicatat'}${row.note ? `<small>${esc(row.note)}</small>` : ''}</td>
+            <td>${esc(time(row.decided_at))}</td></tr>`).join('')}</tbody>
+        </table></div>` : '<p class="empty">Belum ada deal ditolak.</p>') : `<div class="${tab === 'review' && data.cards.length ? 'deal-workspace' : ''}">
         ${tab === 'review' && data.cards.length ? `<nav class="deal-queue" aria-label="Antrean verifikasi">${data.cards.map(card =>
           `<button type="button" data-select-deal="${card.id}"><strong>#${card.id} · ${esc(card.session_name)}</strong><span>${amount(card.amount)}</span><small class="${card.overdue ? 'is-overdue' : ''}">${card.overdue ? 'Lewat SLA · ' : ''}${age(card.age_ms)}</small></button>`).join('')}</nav>` : ''}
         <div class="deal-cards">${data.cards.map(card => {
@@ -71,7 +76,7 @@
             ` : tab==='dp' ? '<button class="primary" data-action="installment">Catat cicilan</button>' :
               '<button data-action="audit_confirm">Tepat</button><button data-action="audit_false">False positive</button>'}</div><p class="deal-feedback" data-card-feedback role="status"></p>` : ''}
             </article>`;
-        }).join('') || '<p class="empty">Antrean ini kosong.</p>'}</div></div>
+        }).join('') || '<p class="empty">Antrean ini kosong.</p>'}</div></div>`}
         <nav class="deal-tabs" aria-label="Halaman antrean">${offset ? '<button data-prev>Sebelumnya</button>' : ''}${data.has_more ? '<button data-next>Berikutnya</button>' : ''}</nav>
         <dialog class="deal-dialog"><header><h3></h3><form method="dialog"><button>Tutup</button></form></header><div data-evidence-view hidden></div><form data-decision-form></form></dialog>
         ${data.can_decide ? `<dialog class="deal-dialog deal-settings" data-proof-settings aria-labelledby="deal-settings-title">
@@ -232,7 +237,7 @@
             if (requestId) body.request_id = requestId;
             if (action.startsWith('audit_')) {
               refresh(`/deals/${card.id}/audit`,{ false_positive:action==='audit_false',note:body.note },submitter);
-            } else refresh(endpoint,body,submitter);
+            } else refresh(endpoint,body,submitter,action === 'reject' ? () => 'Deal tersimpan di tab Ditolak.' : undefined);
           };
           dialog.showModal();
         });

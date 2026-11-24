@@ -38,6 +38,12 @@ const listRows = db.prepare(`SELECT d.id FROM deals d JOIN numbers n ON n.id=d.s
   ORDER BY CASE WHEN @tab='dp' THEN d.due_at ELSE d.due_sla_at END <= @now DESC,
   CASE WHEN @tab='dp' THEN 0 WHEN d.confidence>=0.85 THEN 0 WHEN d.confidence>=0.6 THEN 1 ELSE 2 END,
   d.created_at,d.id LIMIT 31 OFFSET @offset`);
+const rejectedRows = db.prepare(`SELECT d.id, n.name AS session_name, d.amount, d.reason_code, d.decided_at,
+  (SELECT v.note FROM deal_verifications v WHERE v.deal_id=d.id AND v.decision='rejected'
+    ORDER BY v.at DESC,v.id DESC LIMIT 1) AS note
+  FROM deals d JOIN numbers n ON n.id=d.session_id AND n.tenant_id=d.tenant_id
+  WHERE d.tenant_id=@tenantId AND (@all=1 OR n.owner_id=@userId) AND d.state='rejected'
+  ORDER BY d.decided_at DESC,d.id DESC LIMIT 31 OFFSET @offset`);
 const relevant = db.prepare(`WITH pool AS (
   SELECT m.id,substr(m.body,1,500) AS body,m.kind,m.from_me,m.ts,m.media_path IS NOT NULL AS has_media
   FROM messages m WHERE m.tenant_id=@tenant_id AND m.number_id=@session_id AND m.chat_id=@chat_id
@@ -110,10 +116,12 @@ function card(row, now) {
 export function listDealReview(scope, tab, offset, now = Date.now()) {
   if (scope.grant) throw failure(403, 'Akses antrean tidak tersedia.');
   if (tab === 'audit') requireReviewer(scope, true);
-  const rows = listRows.all({ tenantId: scope.tenantId, userId: scope.userId, all: Number(canDecide(scope)), tab, now, offset });
+  const filters = { tenantId: scope.tenantId, userId: scope.userId, all: Number(canDecide(scope)), offset };
+  const rows = tab === 'rejected' ? rejectedRows.all(filters) : listRows.all({ ...filters, tab, now });
+  const page = rows.slice(0,30);
   return {
     can_decide: canDecide(scope), owner: ownerOnly(scope), reasons: dealReasons,
-    cards: rows.slice(0,30).map(({ id }) => card(getDeal(scope,id),now)), has_more: rows.length > 30,
+    cards: tab === 'rejected' ? page : page.map(({ id }) => card(getDeal(scope,id),now)), has_more: rows.length > 30,
     notices: ownerOnly(scope) ? notices.all(scope.tenantId).map(n => ({ ...n, payload: { ...JSON.parse(n.payload_json), deal_id:n.deal_id }, payload_json: undefined })) : [],
     audit_stats: tab === 'audit' ? auditStats.all(scope.tenantId) : [],
   };
