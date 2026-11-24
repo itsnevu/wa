@@ -44,12 +44,13 @@ npm i
 npm start                     # buka http://localhost:3000
 
 Untuk menjalankan WA Suite dan Raqio Competitor Scraping dari satu terminal Windows,
-siapkan kedua repo seperti biasa, buka Docker Desktop, lalu jalankan dari folder WA Suite:
+siapkan kedua repo seperti biasa, lalu jalankan dari folder WA Suite:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\start-all.ps1
 ```
 
+Launcher membuka Docker Desktop bila diperlukan dan menunggu engine siap.
 WA Suite memakai http://127.0.0.1:3001 dan Competitor Scraping memakai
 http://localhost:3002. Tekan Ctrl+C untuk menghentikan proses lokal. Container
 Raqio tetap berjalan sesuai perilaku bawaan `dev.ps1`. Gunakan `-RaqioPath`
