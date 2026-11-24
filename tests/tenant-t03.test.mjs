@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {once} from 'node:events';
 import {WebSocket} from 'ws';
-import Database from 'better-sqlite3';
+import Database from '../src/database/sqlite.js';
 import {twoTenants} from './tenant-fixture.mjs';
 
 const fixture=twoTenants();

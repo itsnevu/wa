@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
-import Database from 'better-sqlite3';
+import Database from '../src/database/sqlite.js';
 
 const sha = '5c033e42231fa7dff1e81bd2b39ba91c3e17ae06';
 const root = process.cwd();
@@ -15,6 +15,10 @@ try {
     fs.writeFileSync(target,execFileSync('git',['-C',repository,'show',`${sha}:${file}`]));
   }
   fs.mkdirSync(path.join(dir,'tests')); fs.mkdirSync(path.join(dir,'data'));
+  // The current contract fixtures import the shared driver entry point.
+  const driver = path.join('src','database','sqlite.js');
+  fs.mkdirSync(path.dirname(path.join(dir,driver)),{recursive:true});
+  fs.copyFileSync(path.join(root,driver),path.join(dir,driver));
   for(const file of ['tenant-t01.test.mjs','tenant-fixture.mjs']) fs.copyFileSync(path.join(root,'tests',file),path.join(dir,'tests',file));
   const source=new Database(path.join(root,'data','app.db'),{readonly:true,fileMustExist:true});
   try {await source.backup(path.join(dir,'data','app.db'));} finally{source.close();}

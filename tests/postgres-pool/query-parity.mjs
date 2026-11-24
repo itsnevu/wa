@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import Database from 'better-sqlite3';
+import Database from '../../src/database/sqlite.js';
 
 const timestamp = 1795468395148;
 const sample = {email:'Agent@fixture.test',enabled:1,optional:null,createdAt:timestamp,

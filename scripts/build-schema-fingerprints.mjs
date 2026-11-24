@@ -1,6 +1,6 @@
 // Maintainer-only generator; review JSON diff. Never called by application startup.
 import fs from 'node:fs';
-import Database from 'better-sqlite3';
+import Database from '../src/database/sqlite.js';
 import {bootstrapLegacy} from '../src/legacySchema.js';
 import {schemaFingerprint} from '../src/schemaFingerprint.js';
 import {schemaDdlHash} from '../src/schemaDdlHash.js';

@@ -6,7 +6,7 @@ import { childClose, stopFixtureBrowser } from './child-fixture.mjs';
 import { spawn } from 'node:child_process';
 import { registerHooks } from 'node:module';
 import test from 'node:test';
-import Database from 'better-sqlite3';
+import Database from '../src/database/sqlite.js';
 import { twoTenants } from './tenant-fixture.mjs';
 import { waitFor } from './lib/wait.mjs';
 import { schemaFingerprint } from '../src/schemaFingerprint.js';

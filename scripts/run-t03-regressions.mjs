@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync,execFileSync} from 'node:child_process';
-import Database from 'better-sqlite3';
+import Database from '../src/database/sqlite.js';
 const phase=process.argv[2]||'before';
 const root=process.cwd();const work=fs.mkdtempSync(path.join(root,'artifacts','t03-regression-'));
 const output=path.join(root,'docs',process.argv[3]||'t03','evidence',`verify-${phase}`);fs.mkdirSync(output,{recursive:true});

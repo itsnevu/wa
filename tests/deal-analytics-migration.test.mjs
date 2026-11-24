@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process';
 import { rm } from 'node:fs/promises';
 import { setTimeout as pause } from 'node:timers/promises';
 import test from 'node:test';
-import Database from 'better-sqlite3';
+import Database from '../src/database/sqlite.js';
 import { buildV7 } from './v7-fixture.mjs';
 import { schemaFingerprint } from '../src/schemaFingerprint.js';
 import { schemaDdlHash, verifySchemaDdl } from '../src/schemaDdlHash.js';

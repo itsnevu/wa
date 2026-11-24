@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import Database from 'better-sqlite3';
+import Database from '../src/database/sqlite.js';
 import { validMediaName } from '../src/mediaPaths.js';
 
 const input = process.argv[2];

@@ -7,7 +7,8 @@ import pg from 'pg';
 import * as guard from '../../src/loginGuard.js';
 import {config} from '../../src/config.js';
 import {cookieId,writeSessionCookie} from '../../src/sessionStore.js';
-import {consumePostgresQuota,createPostgresTenantAuth,lookupMembership,sessionTokenHash} from '../../src/postgresTenantAuth.js';
+import {consumePostgresQuota,lookupMembership,sessionTokenHash} from '../../src/postgresTenantAuth.js';
+import {createPostgresTransactions} from '../../src/database/transactions.js';
 
 const denied=error=>error.code==='42501';
 const expired=error=>error.status===401;
@@ -26,7 +27,7 @@ export async function verifyTenantAuth({admin,proxy,tenants}) {
     ['role-change',101,a],['suspend',102,c],['delete',102,d]])await issue(...session);
   const stats={};
   const pool=new pg.Pool({...proxy,user:'app_login',max:5,connectionTimeoutMillis:5000});
-  const auth=createPostgresTenantAuth(pool,stats);
+  const auth=createPostgresTransactions(pool,undefined,stats);
   let server;
   try {
     const application=express();

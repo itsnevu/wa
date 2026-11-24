@@ -4,7 +4,7 @@ import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import Database from 'better-sqlite3';
+import Database from '../src/database/sqlite.js';
 import { gracefulShutdown, trackJob, runningJobs } from '../src/shutdown.js';
 import { ensureSchema, SCHEMA_VERSION } from '../src/schemaMigrations.js';
 import { buildV7 } from './v7-fixture.mjs';

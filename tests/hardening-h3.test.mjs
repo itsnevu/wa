@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
-import Database from 'better-sqlite3';
+import Database from '../src/database/sqlite.js';
 import { createHmac } from 'node:crypto';
 import { twoTenants } from './tenant-fixture.mjs';
 import { scanSource, scanTree, check, TENANT_TABLES } from '../scripts/check-tenant-scope.mjs';

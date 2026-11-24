@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
-import Database from 'better-sqlite3';
+import Database from '../src/database/sqlite.js';
 import { twoTenants } from './tenant-fixture.mjs';
 import { schemaFingerprint } from '../src/schemaFingerprint.js';
 import { ensureSchema } from '../src/schemaMigrations.js';

@@ -111,7 +111,7 @@ async function startServer(seed) {
 // PR01 replaces legacy static URLs with authorized, message-backed signed URLs.
 // Keep all original header/auth assertions; add an actual ownership fixture.
 async function signedFixture(srv, file, cookie) {
-  const { default: Database } = await import('better-sqlite3');
+  const { default: Database } = await import('../src/database/sqlite.js');
   const db = new Database(path.join(srv.temp, 'app.db'));
   let chat;
   try {
@@ -223,7 +223,7 @@ await step(4, 'otorisasi per objek', async () => {
   // Migrasi contacts lama -> contacts_v2 pada DB terpisah (proses anak, DATA_DIR sendiri).
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'wa-contacts-mig-'));
   try {
-    const seed = `import Database from 'better-sqlite3';
+    const seed = `import Database from './src/database/sqlite.js';
 import {bootstrapLegacy} from './src/legacySchema.js';
 const d = new Database(process.env.DATA_DIR + '/app.db');
 d.exec("CREATE TABLE numbers (id INTEGER PRIMARY KEY AUTOINCREMENT, phone TEXT NOT NULL UNIQUE, name TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'offline', owner_id INTEGER, created_at INTEGER NOT NULL)");

@@ -1,8 +1,5 @@
-import path from 'node:path';
-import Database from 'better-sqlite3';
-import {config} from './config.js';
+import {sqliteTenantConnection} from './database/transactions.js';
 
-const scopes = new WeakMap();
 const pageSize = 500;
 const pageQuery = 'SELECT * FROM messages WHERE tenant_id=? AND chat_id=?';
 const pageOrder = 'ORDER BY ts DESC,id DESC LIMIT 501';
@@ -21,32 +18,10 @@ export function parseMessageCursor(value) {
   return {ts,id};
 }
 
-export async function withTenantRead(tenantId, work) {
-  if (!tenantId) throw new Error('Tenant scope required');
-  // The handle belongs to this request. No other request can enter its snapshot
-  // while the async adapter settles.
-  const connection = new Database(path.join(config.dataDir,'app.db'),{readonly:true,fileMustExist:true});
-  const tx = Object.freeze({});
-  try {
-    connection.exec('BEGIN DEFERRED');
-    scopes.set(tx,{tenantId,connection});
-    const result = await work(tx);
-    connection.exec('COMMIT');
-    return result;
-  } finally {
-    scopes.delete(tx);
-    try {
-      if (connection.inTransaction) connection.exec('ROLLBACK');
-    } finally {
-      connection.close();
-    }
-  }
-}
+export {withSqliteTenantRead as withTenantRead} from './database/transactions.js';
 
 export async function readChatMessages(tx,{tenantId,userId,chatId,before}) {
-  const scope = scopes.get(tx);
-  if (!scope || scope.tenantId !== tenantId) throw new Error('Invalid tenant read scope');
-  const {connection} = scope;
+  const connection = sqliteTenantConnection(tx,tenantId);
   const chat = connection.prepare(`SELECT n.owner_id FROM chats c JOIN numbers n
     ON n.id=c.number_id AND n.tenant_id=c.tenant_id WHERE c.id=? AND c.tenant_id=?`).get(chatId,tenantId);
   if (!chat) return {status:404,error:'chat tidak ada'};

@@ -5,7 +5,7 @@ import path from 'node:path';
 import net from 'node:net';
 import { once } from 'node:events';
 import { spawn } from 'node:child_process';
-import Database from 'better-sqlite3';
+import Database from '../src/database/sqlite.js';
 import { rm } from 'node:fs/promises';
 import { childClose, stopFixtureChild } from '../tests/child-fixture.mjs';
 
