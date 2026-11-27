@@ -1,5 +1,5 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-tenant-sessions-browser.mjs
-SHA: 4fb42cb3d88789e0168ee73be8a38e05f8625d69
+SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
 exit: 1
 node:internal/modules/run_main:107
     triggerUncaughtException(
@@ -9,7 +9,7 @@ AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
 
   assert.ok(await evaluate("!document.querySelector('#login').classList.contains('hidden')"))
 
-    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-rZGKgV/scripts/verify-tenant-sessions-browser.mjs:56:10 {
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-AsyJul/scripts/verify-tenant-sessions-browser.mjs:56:10 {
   generatedMessage: true,
   code: 'ERR_ASSERTION',
   actual: false,

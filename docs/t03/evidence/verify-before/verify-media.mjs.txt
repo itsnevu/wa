@@ -1,17 +1,17 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-media.mjs
-SHA: 4fb42cb3d88789e0168ee73be8a38e05f8625d69
+SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
 exit: 0
-✔ legacy path nomor B ditolak untuk A; tidak boleh ada fallback static (1460.8837ms)
-✔ penerbitan URL mengecek sesi dan akses chat, termasuk admin (57.4626ms)
-✔ URL valid terikat pengguna, tetap membutuhkan sesi, dan private/no-store (71.1356ms)
-✔ signature, pengguna, expiry, UUID dan query duplikat tidak dapat diubah (85.0071ms)
-✔ ownership dicek ulang setelah URL diterbitkan dan registry mismatch ditolak (40.4591ms)
-✔ HTML aktif dipaksa unduh dan disandbox; URL basename tidak dipublikasikan (8.7817ms)
-✔ path traversal mentah, encoded, backslash dan path Windows ditolak (69.4169ms)
-✔ registry backfill stabil dan tidak menimpa ownership; pesan baru ikut terdaftar (627.5392ms)
-✔ file hilang ditolak tanpa membocorkan path filesystem (14.1924ms)
-✔ symlink di media menuju luar direktori tidak bisa diunduh (13.7563ms)
-✔ stiker dan pesan suara bisa diunduh tanpa flag global dan tetap terikat sesi dan tenant (1372.9111ms)
+✔ legacy path nomor B ditolak untuk A; tidak boleh ada fallback static (1642.0157ms)
+✔ penerbitan URL mengecek sesi dan akses chat, termasuk admin (55.0633ms)
+✔ URL valid terikat pengguna, tetap membutuhkan sesi, dan private/no-store (78.7677ms)
+✔ signature, pengguna, expiry, UUID dan query duplikat tidak dapat diubah (107.1022ms)
+✔ ownership dicek ulang setelah URL diterbitkan dan registry mismatch ditolak (62.0449ms)
+✔ HTML aktif dipaksa unduh dan disandbox; URL basename tidak dipublikasikan (16.0631ms)
+✔ path traversal mentah, encoded, backslash dan path Windows ditolak (76.6305ms)
+✔ registry backfill stabil dan tidak menimpa ownership; pesan baru ikut terdaftar (727.4257ms)
+✔ file hilang ditolak tanpa membocorkan path filesystem (10.7558ms)
+✔ symlink di media menuju luar direktori tidak bisa diunduh (14.4065ms)
+✔ stiker dan pesan suara bisa diunduh tanpa flag global dan tetap terikat sesi dan tenant (1419.3169ms)
 ℹ tests 11
 ℹ suites 0
 ℹ pass 11
@@ -19,5 +19,5 @@ exit: 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 3851.8329
+ℹ duration_ms 4258.3604
 

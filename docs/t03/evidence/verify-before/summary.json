@@ -1,10 +1,10 @@
 {
-  "sha": "4fb42cb3d88789e0168ee73be8a38e05f8625d69",
+  "sha": "10b165b5db71eef0fc28c9a521b0a6228094fbb2",
   "phase": "before",
   "results": [
     {
       "file": "verify-ai-final.mjs",
-      "exit": 0,
+      "exit": 1,
       "error": null
     },
     {
@@ -49,7 +49,7 @@
     },
     {
       "file": "verify-ai6.mjs",
-      "exit": 0,
+      "exit": 1,
       "error": null
     },
     {
@@ -64,7 +64,7 @@
     },
     {
       "file": "verify-media-browser.mjs",
-      "exit": 0,
+      "exit": 1,
       "error": null
     },
     {
@@ -104,7 +104,7 @@
     },
     {
       "file": "verify-phase345.mjs",
-      "exit": 0,
+      "exit": 1,
       "error": null
     },
     {

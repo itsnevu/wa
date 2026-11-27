@@ -1,6 +1,6 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-phase345.mjs
-SHA: 4fb42cb3d88789e0168ee73be8a38e05f8625d69
-exit: 0
+SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
+exit: 1
 $ node --check src/db.js
 exit 0
 $ node --check src/wa.js
@@ -17,19 +17,25 @@ $ node --check scripts/phase-harness.mjs
 exit 0
 $ node --check scripts/verify-phase345.mjs
 exit 0
-Inline UI syntax: OK; phase345.js included once
-[db] admin dibuat: harness-admin
-[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase345-OzDd4W\\migration-backups\\pre-t01-e3be27fd-3a81-4b2e-b53f-1d77571eaaee.sqlite","backupCount":1,"backupBytes":4096}
-1. PASS assign + incoming (including duplicate): notifications A=1, B=0; event A=1
-2. PASS mine: A=[assigned chat], B=[] with temporary fixture ownership; B without access=403
-3. PASS search: 2 characters=1 result; 1 character=[]
-4. PASS search access: A sees only A number; B sees only B number; admin sees both
-5. PASS CSV: header, escaped quotes, comma, embedded newline, download headers; unauthorized=403
-[retensi] 1 pesan dihapus
-6. PASS production retention callback: disabled=preserved; RETENTION_DAYS=2 deletes 3-day-old message, keeps recent
-Additional: mark notifications read=PASS; temporary database=PASS; real WhatsApp not connected
-Cleanup: temporary database closed and removed
-phase345: PASS
-[in] 123456789@lid | fromMe= false | conversation
-[in] 123456789@lid | fromMe= false | conversation
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+1 !== 2
+
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-AsyJul/scripts/verify-phase345.mjs:13:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 2,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
 

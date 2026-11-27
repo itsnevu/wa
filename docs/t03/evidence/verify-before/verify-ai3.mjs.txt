@@ -1,8 +1,8 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai3.mjs
-SHA: 4fb42cb3d88789e0168ee73be8a38e05f8625d69
+SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
 exit: 0
 [db] admin dibuat: harness-admin
-[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai3-GeS23w\\migration-backups\\pre-t01-cd6126bf-0890-49af-8ca4-d2da68e209fd.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai3-NPVPkU\\migration-backups\\pre-t01-5b1f52fd-02d0-44f3-ab2e-5310b1d69031.sqlite","backupCount":1,"backupBytes":4096}
 PASS ai3b: state skip, 60-min rate window, default stop_reply, escalation sends one handoff, assign pauses AI; exit 0
 PASS ai3: 11 ordered guard reasons, stop x3 returns one reply, warn x2 emits one alert; exit 0
 

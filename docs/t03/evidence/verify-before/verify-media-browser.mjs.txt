@@ -1,9 +1,28 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-media-browser.mjs
-SHA: 4fb42cb3d88789e0168ee73be8a38e05f8625d69
-exit: 0
-Agen B: lampiran nomor B tampil dengan URL UUID bertanda tangan; viewport 1360x900.
-URL diperbarui ketika dibuka setelah expiry; preview tetap tampil.
-Agen A: dokumen HTML miliknya mendapat tautan unduh; browser tidak menjalankan HTML. Header attachment diuji melalui HTTP.
-Agen A: upaya lampiran nomor B menampilkan pesan 403 Bahasa Indonesia, tanpa src gambar; screenshot desktop dan 360x800.
-Tidak ada exception JavaScript yang tidak tertangani; tidak ada pengiriman WhatsApp.
+SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
+exit: 1
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   'Uncaught',
++   'Uncaught'
++ ]
+- []
+
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-AsyJul/scripts/verify-media-browser.mjs:91:10
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [ 'Uncaught', 'Uncaught' ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
 

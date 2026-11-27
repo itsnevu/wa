@@ -1,6 +1,6 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai-final.mjs
-SHA: 4fb42cb3d88789e0168ee73be8a38e05f8625d69
-exit: 0
+SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
+exit: 1
 node --check src/db.js: exit 0
 node --check src/config.js: exit 0
 node --check src/ai/client.js: exit 0
@@ -34,12 +34,38 @@ node  scripts/verify-ai4.mjs: exit 0
 PASS ai4: real tool loop, fallback, agent pause, paused skip, model error escalation, no error text, independent incoming save/rules; exit 0
 node  scripts/verify-ai5.mjs: exit 0
 PASS ai5: validation 400, auth 401/403, secret masking, resume +20%/clear notice, test sends no messages, product CRUD, order ownership/status; exit 0
-node  scripts/verify-ai6.mjs: exit 0
-PASS ai6: Chrome screenshots for settings/usage thresholds/event alert/number badge/console/products/orders/logs/mobile; save, product create, order status, test no send, resume endpoint; exit 0
-node --regexp-interpret-all scripts/verify-hardening.mjs: exit 0
-PASS 12. push name terbaru dan jalur cepat rule slow
-node  scripts/verify-module-guide.mjs: exit 0
-PASS: module coverage, hidden target filtering, navigation cleanup, local assets, HTTP serving; exit 0
-npm start: health HTTP 200 {"ok":true}; startup assertion exit 0
-PASS final: ai1–6, hardening, module guide, clean npm start; exit 0
+node  scripts/verify-ai6.mjs: exit 1
+
+[db] admin dibuat: harness-admin
+[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai6-ogOTBo\\migration-backups\\pre-t01-4e03ed07-d2c3-4d89-b3f8-5d6bdf6013aa.sqlite","backupCount":1,"backupBytes":4096}
+ node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   "NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n" +
++     '    at http://127.0.0.1:57697/pwa.js:18:9\n' +
++     '    at http://127.0.0.1:57697/pwa.js:42:3'
++ ]
+- []
+
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-AsyJul/scripts/verify-ai6.mjs:102:10
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [
+    "NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n" +
+      '    at http://127.0.0.1:57697/pwa.js:18:9\n' +
+      '    at http://127.0.0.1:57697/pwa.js:42:3'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
+ 
 

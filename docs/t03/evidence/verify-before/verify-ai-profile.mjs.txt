@@ -1,8 +1,8 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai-profile.mjs
-SHA: 4fb42cb3d88789e0168ee73be8a38e05f8625d69
+SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
 exit: 0
 [db] admin dibuat: harness-admin
-[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai-profile-CD7DDf\\migration-backups\\pre-t01-531191ab-eb37-458d-8a3d-208a316a3c26.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai-profile-4s4qBi\\migration-backups\\pre-t01-7e3b87e7-84dc-4b63-9519-b09d03c90afd.sqlite","backupCount":1,"backupBytes":4096}
 PASS ai-profile attachments: image_url + file parts, image-only allowed, bad type/too many/empty 400; exit 0
 PASS ai-profile: validation, save/read, prompt includes profile, context_tokens, profile draft admin-only no-save, product draft filtered no-save, bad JSON 502, tokens counted; exit 0
 

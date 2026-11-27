@@ -1,8 +1,8 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-phase1.mjs
-SHA: 4fb42cb3d88789e0168ee73be8a38e05f8625d69
+SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
 exit: 0
 [db] admin dibuat: phase1
-[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase1-0EtjZ7\\migration-backups\\pre-t01-eb6f46ce-cc66-4963-af54-f8130afcf80c.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase1-Ws3rgQ\\migration-backups\\pre-t01-613b6d5e-f7ca-4a73-9280-bb819b4c58e8.sqlite","backupCount":1,"backupBytes":4096}
 {
   "syntax": "OK",
   "lockout": [
