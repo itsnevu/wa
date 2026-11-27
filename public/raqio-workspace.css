@@ -804,3 +804,72 @@ body:has(#app:not(.hidden)) .label-color-option:hover { background:var(--swatch)
 #app #msgs .b:not(.plain):has(> div:first-child + time:last-child):not(:has(img,video,audio)) { display:flex; flex-wrap:wrap; align-items:flex-end; gap:0 12px; }
 #app #msgs .b:not(.plain) > div:first-child { min-width:0; }
 #app #msgs .b:not(.plain):has(> div:first-child + time:last-child) .message-time { margin:0 0 0 auto; }
+
+/* ===== Raqio 2026: palet dan tipografi yang sama dengan situs Raqio dan Competitor Scraping =====
+   Blok ini hanya menimpa token dan warna amber lama; tata letak tidak berubah. Hapus blok ini untuk kembali ke tema amber.
+   Tinta #0a0a0f, permukaan #111119/#181822, aksen --highlight #a78bfa (teks dan sorotan), --accent-primary #6c4cf1 (tombol utama).
+   Seri grafik memakai --accent-2/3/4 situs (#ff6b4a, #22d3a6, #5b8def). Figtree: SIL OFL 1.1 (public/fonts/OFL-Figtree.txt). */
+@font-face { font-family:"Figtree"; font-style:normal; font-weight:300 700; font-display:swap; src:url(/fonts/figtree-latin.woff2) format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family:"Figtree"; font-style:normal; font-weight:300 700; font-display:swap; src:url(/fonts/figtree-latin-ext.woff2) format("woff2");
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+body { --raqio-font:"Figtree","Segoe UI",system-ui,sans-serif; }
+.login-brand .brand-word,.rail .logo .brand-word { text-transform:capitalize; letter-spacing:-.02em; }
+body:has(#app:not(.hidden), #platformPanel:not(.hidden)) {
+  --page:#0a0a0f; --card:#111119; --line:rgba(245,245,247,.07); --line2:rgba(245,245,247,.13);
+  --text:#f5f5f7; --muted:#9a9aa8; --accent:#a78bfa; --accent-h:color-mix(in srgb,#a78bfa 70%,#f5f5f7);
+  --rail:#0d0d14; --surface-inset:#0d0d14; --surface-hover:#181822; --amber-soft:rgba(167,139,250,.13);
+}
+#app #workspace[data-module=analytics] {
+  --page:#0a0a0f; --card:#111119; --surface-inset:#0d0d14; --surface-hover:#181822;
+  --line:rgba(245,245,247,.07); --line2:rgba(245,245,247,.13); --text:#f5f5f7; --muted:#9a9aa8;
+  --accent:#a78bfa; --accent-h:var(--accent); --amber-soft:rgba(167,139,250,.13);
+  --glass-bg:rgba(17,17,25,.5); --glass-bg-strong:rgba(13,13,20,.66); --glass-border-hot:rgba(167,139,250,.34); --glass-solid:#111119;
+}
+#app:has(#workspace[data-module=chats]) { --chat-ink:#0a0a0f; --chat-out:#241d45; }
+#app button.primary,body:has(#app:not(.hidden)) dialog button.primary,
+body:has(#app:not(.hidden)) .overlay .dialog button.primary { background:#6c4cf1; border-color:#6c4cf1; color:#f5f5f7; }
+#app button.primary:hover,body:has(#app:not(.hidden)) dialog button.primary:hover,
+body:has(#app:not(.hidden)) .overlay .dialog button.primary:hover { background:color-mix(in srgb,#6c4cf1 86%,#f5f5f7); border-color:transparent; }
+#app #workspace[data-module=analytics] .da-export { color:#0a0a0f; }
+#app .connection-badge.connected { border-color:rgba(167,139,250,.22); }
+#app :is(.num,.chat).active,#app .inbox-filters button[aria-pressed=true] { border-color:rgba(167,139,250,.28); }
+body:has(#app:not(.hidden)) :is(.deal-tabs button,.deal-queue button)[aria-pressed=true] { border-color:rgba(167,139,250,.33); }
+.deal-setting-row button[aria-checked=true]::before { background:#a78bfa; }
+#app .deal-analytics { --da-s1:#a78bfa; --da-s2:#ff6b4a; --da-s3:#22d3a6; --da-s4:#5b8def; }
+#app .da-outcome-card {
+  --da-s1:#a78bfa; --da-s2:#ff6b4a; --da-s3:#22d3a6; --da-s4:#5b8def;
+  --da-ring-inner-1:#c4b5fd; --da-ring-outer-1:#6c4cf1; --da-ring-inner-2:#ff9a83; --da-ring-outer-2:#c2452b;
+  --da-ring-inner-3:#7de6c8; --da-ring-outer-3:#16916f; --da-ring-inner-4:#9db9f5; --da-ring-outer-4:#3a63b8;
+}
+.da-ring-1 { filter:drop-shadow(0 0 18px rgba(167,139,250,.3)); }
+.da-outcome-chip { background:#0d0d14; }
+.da-outcome-chip.is-largest { border-color:rgba(167,139,250,.45); }
+#app .da-trend-card .da-trend-week i { background:linear-gradient(#a78bfa,#2e2266); }
+#app .da-trend-card .da-trend-week[aria-pressed=true] i { background:linear-gradient(#c4b5fd,#4a35b0); box-shadow:0 0 30px rgba(167,139,250,.45); }
+#app #msgs .b.me { border-color:transparent; }
+#app #msgs .b.me:not(.plain) { background:var(--chat-out); }
+#app #msgs .b.me .message-time { color:rgba(245,245,247,.62); }
+/* Layar masuk dan pilih workspace: terang seperti halaman login Raqio (input 46px, garis 1px, tombol tinta). */
+body:has(#login:not(.hidden)),body:has(#tenantPicker:not(.hidden)) { background:#f5f5f7; color:#0a0a0f; color-scheme:light; }
+:is(#login,#tenantPicker) { --text:#0a0a0f; --muted:#5a5a66; width:min(440px,calc(100vw - 32px)); margin:12vh auto; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; color:#0a0a0f; }
+#login .login-brand { justify-content:flex-start; gap:10px; color:#0a0a0f; margin-bottom:48px; }
+#login .login-brand img { width:36px; height:36px; border-radius:9px; }
+#login .login-brand .brand-word { font-size:24px; }
+#login h3,#tenantPicker h2 { margin:0 0 8px; font-size:clamp(28px,4vw,36px); line-height:1.1; letter-spacing:-.01em; }
+#login .login-intro,#tenantPicker p { color:#5a5a66; font-size:15px; line-height:1.5; margin:0 0 28px; }
+#login input { width:100%; height:46px; padding:0 16px; border:1px solid rgba(10,10,15,.2); border-radius:6px; background:#f5f5f7; color:#0a0a0f; font-size:15px; }
+#login input:hover { border-color:rgba(10,10,15,.35); }
+#login input:focus,#login input:focus-visible { border-color:#6c4cf1; outline:2px solid #6c4cf1; outline-offset:0; }
+#login button.primary,#tenantPicker button { width:100%; height:46px; margin-top:20px; border:0; border-radius:6px; background:#0a0a0f; color:#f5f5f7; font-size:15px; }
+#login button.primary:hover,#tenantPicker button:hover { background:color-mix(in srgb,#0a0a0f 86%,#f5f5f7); }
+#login .err { color:#c8321a; }
+/* Sisa amber dari dashboard.css: titik online memakai --accent-3 (mint, status hidup), garis sambutan memakai --highlight. */
+.dot.online { background:#22d3a6; box-shadow:0 0 0 3px rgba(34,211,166,.16); }
+.dashboard-welcome { --brand-gold:#a78bfa; }
+#tenantPicker #tenantChoices { display:grid; gap:8px; }
+#tenantPicker #tenantChoices button { margin:0; padding:0 16px; text-align:left; background:transparent; color:#0a0a0f; border:1px solid rgba(10,10,15,.2); }
+#tenantPicker #tenantChoices button:hover:not(:disabled) { background:#efeff2; border-color:rgba(10,10,15,.4); }
+#tenantPicker #tenantChoices button:disabled { opacity:.5; }
+#tenantPicker #tenantLogout { width:auto; height:40px; margin-top:24px; padding:0; background:transparent; color:#5a5a66; text-decoration:underline; text-underline-offset:3px; }
+#tenantPicker #tenantLogout:hover { background:transparent; color:#0a0a0f; }
