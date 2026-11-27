@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { db, q, schemaStatus } from './db.js';
 import { readiness } from './readiness.js';
 import { acceptOwnerInvitation, login, setCookie, requireAuth, requireAdmin, canAccessNumber } from './auth.js';
-import {startRaqioSession} from './raqioSso.js';
+import {redeemRaqioTicket,startRaqioSession} from './raqioSso.js';
 import {clearCookie,createLogoutHandler,logoutSqlite} from './sessionLogout.js';
 import {createSqliteTransactions} from './database/transactions.js';
 import { hashPassword, verifyPassword } from './passwords.js';
@@ -37,6 +37,7 @@ api.get('/ready', (_req, res) => { const r = readiness(db, schemaStatus); res.st
 
 api.post('/login', (req, res) => {
   if(req.body?.raqio===true)return startRaqioSession(req,res);
+  if(typeof req.body?.raqio_ticket==='string')return redeemRaqioTicket(req,res); // tiket SSO Raqio lintas host (src/raqioSso.js)
   const { username, password, invitation_token } = req.body || {};
   if(config.raqioSso&&invitation_token===undefined)return res.status(403).json({code:'RAQIO_LOGIN_REQUIRED',loginUrl:config.raqioLoginUrl});
   if (typeof username !== 'string' || typeof password !== 'string') return res.status(400).json({ error: 'username dan password wajib' });

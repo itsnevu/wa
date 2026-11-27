@@ -31,6 +31,7 @@ export const config = {
   raqioSso: process.env.RAQIO_SSO === '1',
   raqioApiUrl: process.env.RAQIO_API_URL || 'http://127.0.0.1:8080',
   raqioLoginUrl: process.env.RAQIO_LOGIN_URL || 'http://localhost:3002/login?next=%2Fpilih-produk',
+  raqioSsoSecret: process.env.RAQIO_SSO_SECRET || '', // sama dengan SSO_SECRET di API Raqio; untuk tukar tiket /api/sso/raqio
   loginMax: positiveInteger('LOGIN_MAX', 5),
   loginIpMax: positiveInteger('LOGIN_IP_MAX', 30),
   loginLockMin: positiveInteger('LOGIN_LOCK_MIN', 15),

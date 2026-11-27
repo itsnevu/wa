@@ -606,6 +606,10 @@ async function call(method, url, body) {
 const ownerInvitation = new URLSearchParams(location.hash.slice(1)).get('owner-invite');
 let raqioLoginUrl;
 let loginAttempt;
+// Tiket SSO Raqio sekali pakai (dari Raqio /go/wasuite) dibawa di fragmen URL: tidak pernah terkirim ke server,
+// log, atau Referer. Dibaca sekali lalu dihapus dari alamat; ditukar lewat POST /api/login.
+let raqioTicket = new URLSearchParams(location.hash.slice(1)).get('raqio-ticket');
+if (raqioTicket) history.replaceState(null, '', location.pathname + location.search);
 
 function startLogin() {
   if (ownerInvitation) { showLogin(); return Promise.resolve(); }
@@ -615,8 +619,9 @@ function startLogin() {
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ raqio: true }),
+        body: JSON.stringify(raqioTicket ? { raqio_ticket: raqioTicket } : { raqio: true }),
       });
+      raqioTicket = null; // sekali pakai, baik berhasil maupun ditolak
       const data = await response.json();
       if (response.ok) { await boot(true); return; }
       if (data.code === 'RAQIO_SSO_DISABLED') { showLogin(); return; }
@@ -2083,7 +2088,7 @@ document.addEventListener('keydown', e => {
 });
 
 $('#chats').innerHTML = chatEmpty();
-boot();
+if (raqioTicket) void startLogin(); else boot(); // tiket SSO lebih dulu daripada sesi WA-Suite lama
 </script>
 <script src="/phase345.js?v=rail-2"></script>
 <script src="/select-menu.js?v=2"></script>
