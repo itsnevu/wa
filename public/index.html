@@ -308,7 +308,7 @@ th.action-col,td.action-col { width:72px; min-width:72px; max-width:72px; }
 <link rel="stylesheet" href="/session-health.css">
 <link rel="stylesheet" href="/deal-review.css">
 <link rel="stylesheet" href="/deal-analytics.css">
-<link rel="stylesheet" href="/raqio-workspace.css?v=bubble-1">
+<link rel="stylesheet" href="/raqio-workspace.css?v=mobile-3">
 </head>
 <body>
 <div id="sessionNotice" class="hidden" role="alert"></div>
@@ -1513,6 +1513,8 @@ $('#btnUsers').onclick = async () => {
   };
 };
 
+// Label status nomor untuk Ringkasan; sama dengan halaman Nomor (Terhubung/Terputus).
+const NUMBER_STATUS_TEXT = { online:'Terhubung', offline:'Terputus', pairing:'Menunggu scan QR', reconnecting:'Menyambung ulang', loggedout:'Perlu scan ulang', error:'Gagal tersambung' };
 pages.dashboard = { title: 'Ringkasan', render: async (root) => {
   const version = pageVersion;
   const numbers = await call('GET', '/numbers');
@@ -1521,9 +1523,10 @@ pages.dashboard = { title: 'Ringkasan', render: async (root) => {
   const connectedShare = numbers.length ? Math.round(online / numbers.length * 100) : 0;
   root.innerHTML = `<div class="dashboard-welcome"><div><span class="eyebrow">Workspace bisnis Anda</span><h2>Halo, ${esc(state.me.username)}</h2><p>Semua percakapan, satu tempat. Siap terhubung dengan pelanggan hari ini?</p></div><span class="dashboard-date">${esc(new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }))}</span></div>
   <div class="stat-grid"><article class="card stat"><span>Total nomor</span><strong>${numbers.length}</strong><small>Nomor di workspace Anda</small></article><article class="card stat"><span>Nomor online</span><strong class="status-online">${online}</strong><small>Terhubung dan siap digunakan</small></article><article class="card stat"><span>Belum online</span><strong>${numbers.length - online}</strong><small>Periksa koneksi nomor Anda</small></article></div>
-  <div class="dashboard-grid"><article class="card dashboard-inbox"><h3>Kesiapan koneksi WhatsApp</h3><p>${online} dari ${numbers.length} nomor sedang online.</p><button class="primary" id="dashboardChat">Buka kotak masuk ↗</button><figure class="connection-chart" aria-label="${connectedShare}% nomor online"><div class="connection-chart-ring" style="--connected:${connectedShare}%"><strong aria-hidden="true">${connectedShare}%</strong></div></figure></article><article class="card quick-actions"><h3>Akses cepat</h3><button data-go="numbers"><span>Kelola nomor<small>Hubungkan akun WhatsApp bisnis</small></span><span>↗</span></button><button data-go="templates"><span>Template pesan<small>Respons lebih cepat dan konsisten</small></span><span>↗</span></button><button data-go="labels"><span>Label pelanggan<small>Rapikan dan kelompokkan percakapan</small></span><span>↗</span></button></article></div>
-  <article class="card"><div class="panel-head"><div><h3 style="margin:0">Status koneksi</h3><p class="section-description">Pantau kesiapan nomor WhatsApp Anda.</p></div><button id="dashboardRefresh">Perbarui</button></div><table><thead><tr><th>Nama nomor</th><th>WhatsApp</th><th>Status</th></tr></thead><tbody>${numbers.map(n => `<tr><td><strong>${esc(n.name)}</strong></td><td>${esc(n.phone)}</td><td><span class="connection-badge ${n.status === 'online' ? 'connected' : ''}">${esc(n.status)}</span></td></tr>`).join('') || '<tr><td colspan="3"><div class="dashboard-empty"><strong>Mulai dengan nomor pertama Anda</strong><p>Hubungkan WhatsApp untuk mengelola pesan dari workspace ini.</p><button id="dashboardAdd" class="primary">+ Hubungkan nomor</button></div></td></tr>'}</tbody></table></article>`;
-  $('#dashboardChat').onclick = () => setPage('chats');
+  <div class="dashboard-grid"><article class="card dashboard-inbox"><h3>Kesiapan koneksi WhatsApp</h3>${numbers.length ? `<p>${online} dari ${numbers.length} nomor sedang online.</p><button class="primary" id="dashboardChat">Buka kotak masuk ↗</button>` : '<p>Belum ada nomor WhatsApp di workspace ini.</p><button class="primary" id="dashboardConnect">+ Hubungkan nomor</button>'}<figure class="connection-chart" aria-label="${connectedShare}% nomor online"><div class="connection-chart-ring" style="--connected:${connectedShare}%"><strong aria-hidden="true">${connectedShare}%</strong></div></figure></article><article class="card quick-actions"><h3>Akses cepat</h3><button data-go="numbers"><span>Kelola nomor<small>Hubungkan akun WhatsApp bisnis</small></span><span>↗</span></button><button data-go="templates"><span>Template pesan<small>Respons lebih cepat dan konsisten</small></span><span>↗</span></button><button data-go="labels"><span>Label pelanggan<small>Rapikan dan kelompokkan percakapan</small></span><span>↗</span></button></article></div>
+  <article class="card"><div class="panel-head"><div><h3 style="margin:0">Status koneksi</h3><p class="section-description">Pantau kesiapan nomor WhatsApp Anda.</p></div><button id="dashboardRefresh">Perbarui</button></div><table><thead><tr><th>Nama nomor</th><th>WhatsApp</th><th>Status</th></tr></thead><tbody>${numbers.map(n => `<tr><td><strong>${esc(n.name)}</strong></td><td>${esc(formatPhone(n.phone))}</td><td><span class="connection-badge${n.status === 'online' ? ' connected' : ['loggedout', 'error'].includes(n.status) ? ' is-problem' : ''}">${esc(NUMBER_STATUS_TEXT[n.status] || n.status)}</span></td></tr>`).join('') || '<tr><td colspan="3"><div class="dashboard-empty"><strong>Mulai dengan nomor pertama Anda</strong><p>Hubungkan WhatsApp untuk mengelola pesan dari workspace ini.</p><button id="dashboardAdd" class="primary">+ Hubungkan nomor</button></div></td></tr>'}</tbody></table></article>`;
+  if ($('#dashboardChat')) $('#dashboardChat').onclick = () => setPage('chats');
+  if ($('#dashboardConnect')) $('#dashboardConnect').onclick = () => $('#btnNum').click();
   $('#dashboardRefresh').onclick = () => setPage('dashboard');
   root.querySelectorAll('[data-go]').forEach(b => b.onclick = () => setPage(b.dataset.go));
   if ($('#dashboardAdd')) $('#dashboardAdd').onclick = () => $('#btnNum').click();
@@ -1717,7 +1720,7 @@ pages.monitor = { title: 'Monitor', render: async (root) => {
   if (version !== pageVersion) return;
   $('#pageAction').textContent = 'Perbarui';
   $('#pageAction').onclick = () => setPage('monitor');
-  root.innerHTML = `<div class="card module-list"><h2>Koneksi nomor <small>${numbers.length}</small></h2><table><thead><tr><th>Nomor</th><th>Status</th><th>Terakhir aktif</th><th>Percobaan</th></tr></thead><tbody>${numbers.map((n) => `<tr class="${['loggedout', 'error'].includes(n.status) ? 'monitor-problem' : ''}"><td>${esc(n.name)}<div><small>${esc(n.phone)}</small></div></td><td class="${['loggedout', 'error'].includes(n.status) ? 'status-danger' : n.status === 'online' ? 'status-online' : ''}">${esc(n.status)}</td><td>${n.last_seen ? esc(new Date(n.last_seen).toLocaleString('id-ID')) : 'belum terhubung'}</td><td>${Number(n.attempts)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada nomor</td></tr>'}</tbody></table></div><div class="card module-list"><h2>Log aktivitas</h2><table><thead><tr><th>Waktu</th><th>Pengguna</th><th>Nomor</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>${activity.map((a) => `<tr><td>${esc(new Date(a.at).toLocaleString('id-ID'))}</td><td>${esc(a.username || 'sistem')}</td><td>${esc(a.number_name || a.number_id || '')}</td><td>${esc(a.action)}</td><td>${esc(a.detail || '')}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada aktivitas</td></tr>'}</tbody></table></div>`;
+  root.innerHTML = `<div class="card module-list"><h2>Koneksi nomor <small>${numbers.length}</small></h2><table><thead><tr><th>Nomor</th><th>Status</th><th>Terakhir aktif</th><th>Percobaan</th></tr></thead><tbody>${numbers.map((n) => `<tr class="${['loggedout', 'error'].includes(n.status) ? 'monitor-problem' : ''}"><td>${esc(n.name)}<div><small>${esc(n.phone)}</small></div></td><td class="${['loggedout', 'error'].includes(n.status) ? 'status-danger' : n.status === 'online' ? 'status-online' : ''}">${esc(NUMBER_STATUS_TEXT[n.status] || n.status)}</td><td>${n.last_seen ? esc(new Date(n.last_seen).toLocaleString('id-ID')) : 'belum terhubung'}</td><td>${Number(n.attempts)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">belum ada nomor</td></tr>'}</tbody></table></div><div class="card module-list"><h2>Log aktivitas</h2><table><thead><tr><th>Waktu</th><th>Pengguna</th><th>Nomor</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>${activity.map((a) => `<tr><td>${esc(new Date(a.at).toLocaleString('id-ID'))}</td><td>${esc(a.username || 'sistem')}</td><td>${esc(a.number_name || a.number_id || '')}</td><td>${esc(a.action)}</td><td>${esc(a.detail || '')}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">belum ada aktivitas</td></tr>'}</tbody></table></div>`;
 } };
 
 pages.account = { title: 'Akun', render: (root) => {
@@ -2091,7 +2094,7 @@ document.addEventListener('keydown', e => {
 $('#chats').innerHTML = chatEmpty();
 if (raqioTicket) void startLogin(); else boot(); // tiket SSO lebih dulu daripada sesi WA-Suite lama
 </script>
-<script src="/phase345.js?v=rail-2"></script>
+<script src="/phase345.js?v=rail-3"></script>
 <script src="/select-menu.js?v=2"></script>
 <script src="/action-icons.js"></script>
 <script src="/form-feedback.js"></script>

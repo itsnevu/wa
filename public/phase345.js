@@ -67,6 +67,10 @@
     release: 'M2 21v-2a7 7 0 0 1 14 0v2M17 11h6M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
     take: 'M2 21v-2a7 7 0 0 1 14 0v2M19 8v6M16 11h6M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
     copy: 'M8 8h12v12H8ZM16 8V4H4v12h4',
+    pin: 'm16 3 5 5-4 1-4 4-1 4-5-5 4-1 4-4 1-4ZM7 17l-4 4',
+    workspace: 'M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h2a2 2 0 0 1 2 2v10M2 21h20M8 7h4M8 11h4M8 15h4',
+    audit: 'M9 5h11M9 12h11M9 19h11M4 5l1 1 2-2M4 12l1 1 2-2M4 19l1 1 2-2',
+    item: 'M9 6l6 6-6 6',
   };
   const currentChat = () => state.chats.find((c) => c.id === state.chatId);
 
@@ -197,11 +201,13 @@
   railMore.innerHTML = icon(ICON.menu);
   $('#btnOut').before(railMore);
   railMore.onclick = () => {
+    // Tombol tanpa ikon atau label (Workspace, Audit workspace) tetap mendapat ikon dan nama agar barisnya tidak kosong.
+    const fallbackIcon = { btnTenantSwitch: ICON.workspace, btnTenantAudit: ICON.audit };
     const items = [...document.querySelectorAll('.rail button')]
-      .filter((b) => !b.classList.contains('m-slot') && !b.classList.contains('hidden'))
+      .filter((b) => !b.classList.contains('m-slot') && !b.classList.contains('hidden') && !b.hidden)
       .map((b) => ({
-        label: b.getAttribute('aria-label') || b.title,
-        svg: b.querySelector('svg')?.outerHTML || '',
+        label: b.getAttribute('aria-label') || b.title || b.textContent.trim(),
+        svg: b.querySelector('svg')?.outerHTML || icon(fallbackIcon[b.id] || ICON.item),
         danger: b.id === 'btnOut',
         run: () => b.click(),
       }));
@@ -229,12 +235,14 @@
   window.updateHeader = (...args) => { const out = baseUpdateHeader(...args); syncTake(); return out; };
 
   // ---------- Geser baris chat ----------
-  const SWIPE = 144;
+  // Aksi (pin, nama, hapus) berada di luar tepi kanan baris; seluruh baris yang bergeser sehingga
+  // aksinya masuk dari kanan dan tidak pernah tampil bertumpuk dengan isi baris.
+  const SWIPE = 192;
   let openRow = null;
   let suppressRowClick = false;
 
   function setOffset(row, x) {
-    row.querySelector('.chat-info').style.transform = x ? `translateX(${x}px)` : '';
+    row.style.transform = x ? `translateX(${x}px)` : '';
     row.dataset.offset = String(x);
   }
   function closeRow(row) { if (row) setOffset(row, 0); if (openRow === row) openRow = null; }
@@ -246,8 +254,15 @@
       const id = Number(row.dataset.id);
       const actions = document.createElement('div');
       actions.className = 'm-swipe m-only';
-      actions.innerHTML = `<button type="button" class="m-rename" aria-label="Ubah nama kontak">${icon(ICON.pencil)}nama</button>`
+      const pinned = row.querySelector('.chat-pin')?.getAttribute('aria-pressed') === 'true';
+      actions.innerHTML = `<button type="button" class="m-pin" aria-label="${pinned ? 'Lepas pin' : 'Pin percakapan'}">${icon(ICON.pin)}${pinned ? 'lepas' : 'pin'}</button>`
+        + `<button type="button" class="m-rename" aria-label="Ubah nama kontak">${icon(ICON.pencil)}nama</button>`
         + `<button type="button" class="m-del" aria-label="Hapus chat">${icon(ICON.trash)}hapus</button>`;
+      actions.querySelector('.m-pin').onclick = (e) => {
+        e.stopPropagation();
+        closeRow(row);
+        row.querySelector('.chat-pin')?.click();
+      };
       actions.querySelector('.m-rename').onclick = async (e) => {
         e.stopPropagation();
         closeRow(row);

@@ -923,3 +923,160 @@ html[data-theme="light"] #app :is(.select-menu,.inbox-filter-menu,details[open] 
 /* tombol tema di area akun sidebar; di ponsel tema mengikuti sistem */
 #themeToggle svg { fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 @media (max-width:820px) { #themeToggle { display:none; } }
+
+/* ===== Mobile (<=820px): rapikan tata letak =====
+   Lapisan mobile lama (index.html #mobile-ux, style-extra.css, dashboard.css, blok di atas) saling menimpa sehingga
+   gutter tidak seragam, aksi geser chat selalu tampil, dan tombol kirim berikon ganda. Blok ini menjadi sumber akhir
+   untuk layar sempit: gutter 16px, header halaman satu baris, daftar tabel menjadi baris ringkas. Desktop tidak tersentuh. */
+@media(max-width:820px) {
+  /* Panel daftar chat */
+  #app .number-panel { padding:env(safe-area-inset-top) 0 0; }
+  #app .number-panel .section-head { min-height:0; margin:0; padding:12px 16px 4px; }
+  #app .number-panel .section-head strong { font-size:20px; font-weight:400; }
+  #app .number-panel .section-head .module-guide-button { width:44px; padding:0; }
+  #app .number-panel .section-head .module-guide-button span,
+  #app #workspace > header .module-guide-button span,
+  #app .inbox-status-filter > label { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+  #app .inbox-number-controls { min-height:0; padding:4px 16px; }
+  #app .inbox-number-controls #btnNum { flex-basis:44px; width:44px; height:44px; border-radius:8px; }
+  #app .inbox-number-manager { padding:0 16px; }
+  #app .inbox-number-manager summary { padding:8px 0; }
+  #app .inbox-number-manager #nums { margin:0 -16px; padding:4px 16px 8px; }
+  #app .search-head { display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:8px; margin:0; padding:8px 16px 12px; border-bottom:0; }
+  #app .search-head > :is(.inbox-search,#inboxCount) { grid-column:1 / -1; }
+  #app .inbox-search { height:44px; padding-inline:14px; }
+  #app .inbox-search #search { height:auto; min-height:0; font-size:16px; }
+  #app #phase345SearchResults:not([hidden]) {
+    position:absolute; z-index:6; inset:calc(100% + 6px) 0 auto; max-height:60dvh; overflow:auto; margin:0; padding:8px;
+    background:var(--card); border:1px solid var(--line2); border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.18);
+  }
+  #app .inbox-filters { flex-wrap:nowrap; gap:6px; margin:0; padding:0; min-width:0; }
+  #app .inbox-filters button { min-height:36px; padding:0 12px; font-size:13px; }
+  #app #inboxFilterMore summary { width:36px; height:36px; }
+  #app .inbox-status-filter { display:flex; justify-content:flex-end; min-width:0; margin:0; }
+  #app .inbox-status-filter .select-trigger { flex:0 1 auto; width:100%; min-width:0; max-width:160px; height:36px; min-height:36px; gap:6px; padding:0 12px; border-radius:999px; font-size:13px; }
+  #app #inboxCount { margin:0; padding:0; border:0; font-size:12px; }
+  #app #chats { overflow:hidden; border-top:1px solid var(--line); }
+
+  /* Baris chat: tanpa tombol sebaris; pin, nama, dan hapus lewat geser kiri */
+  #app #chats .chat { display:flex; align-items:center; gap:12px; min-height:72px; padding:10px 16px; overflow:visible; background:var(--page); transition:transform 180ms ease; }
+  #app #chats .chat.active { background:var(--surface-hover); box-shadow:none; }
+  #app #chats .chat.dragging { transition:none; }
+  #app #chats .chat .chat-info { flex:1; min-width:0; min-height:0; padding:0; background:transparent; transform:none; }
+  #app #chats .chat :is(.chat-rename,.chat-pin,.row-del) { display:none; }
+  #app #chats .chat-topline { gap:8px; }
+  #app #chats .chat-topline time { font-size:12px; }
+  #app #chats .chat:has(.chat-pin[aria-pressed=true]) .chat-topline time::before {
+    content:""; display:inline-block; width:12px; height:12px; margin-inline-end:4px; vertical-align:-1px; background:currentColor;
+    -webkit-mask:var(--m-pin) center/contain no-repeat; mask:var(--m-pin) center/contain no-repeat;
+  }
+  #app #chats .chat .m-swipe { position:absolute; inset:0 auto 0 100%; display:flex; width:192px; }
+  #app #chats .m-swipe button { flex:1; width:auto; min-width:0; min-height:0; height:100%; gap:4px; border:0; border-radius:0; font-size:12px; }
+  #app #chats .m-swipe .m-pin { background:color-mix(in srgb,var(--accent) 18%,var(--card)); color:var(--text); }
+  #app #chats .m-swipe .m-rename { background:var(--surface-hover); color:var(--text); }
+  #app #chats .m-swipe .m-del { background:#c8321a; color:#fff; }
+
+  /* Thread: satu ikon kirim (svg), bukan svg + panah mask dari lapisan lama */
+  #app #composer #btnSend::before { content:none; }
+
+  /* Header halaman: judul, panduan (ikon), aksi utama dalam satu baris */
+  #app #workspace > header.card { display:flex; flex-wrap:nowrap; align-items:center; gap:8px; margin:0 0 16px; padding:0; }
+  #app #workspace #pageTitle { flex:1 1 auto; min-width:0; margin:0; font-size:24px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #app #workspace > header .module-guide-button { flex:none; width:44px; height:44px; min-height:44px; margin:0; padding:0; }
+  #app #workspace #pageAction { flex:none; min-height:44px; margin:0; padding-inline:14px; }
+  #app #workspace[data-module=analytics] > header.card { display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:4px 8px; }
+  #app #workspace[data-module=analytics] #pageTitle { grid-column:1 / -1; grid-row:1; white-space:normal; font-size:24px; }
+  #app #workspace[data-module=analytics] .da-page-period { grid-column:1; grid-row:2; align-self:center; }
+  #app #workspace[data-module=analytics] :is(.module-guide-button,.da-export) { grid-row:2; height:44px; min-height:44px; justify-self:end; }
+  #app #workspace[data-module=analytics] .module-guide-button { grid-column:2; width:44px; padding:0; }
+  #app #workspace[data-module=analytics] .da-export { grid-column:3; padding:0 14px; }
+
+  /* Daftar tabel: baris ringkas (label kiri, nilai kanan), tanpa kartu di dalam kartu */
+  #app #page .module-toolbar { gap:10px; }
+  #app #page .module-filter { width:100%; }
+  #app #page .table-scroll tbody { gap:0; }
+  #app #page .table-scroll tbody tr { padding:12px 0; border:0; border-bottom:1px solid var(--line); border-radius:0; background:transparent; }
+  #app #page .table-scroll tbody tr:last-child { padding-bottom:0; border-bottom:0; }
+  #app #page .table-scroll td { height:auto; padding-block:0; padding-inline-end:0; text-align:start; }
+  #app #page .table-scroll td::before { text-align:start; }
+  #app #page .table-scroll td + td { margin-top:6px; }
+  /* Kolom pertama menjadi judul baris (tanpa label), rincian berlabel di bawahnya */
+  #app #page .table-scroll td[data-label]:first-child:not(.action-col,[colspan]) { padding-inline-start:0; margin-bottom:4px; font-size:15px; color:var(--text); }
+  #app #page .table-scroll td[data-label]:first-child:not(.action-col,[colspan])::before { content:none; }
+  /* Satu atau dua tombol ikon (hapus, QR, unduh) di pojok kanan atas baris, bukan baris sendiri */
+  #app #page .table-scroll tbody tr:has(> td.action-col) { position:relative; }
+  #app #page .table-scroll td.action-col:not(:has(> :nth-child(3))) { position:absolute; inset-block-start:2px; inset-inline-end:0; width:auto; margin:0; }
+  #app #page .table-scroll tr:has(> td.action-col):not(:has(> td.action-col > :nth-child(3))) > td:first-child { padding-inline-end:52px; }
+  #app #page .table-scroll tr:has(> td.action-col > :nth-child(2)):not(:has(> td.action-col > :nth-child(3))) > td:first-child { padding-inline-end:100px; }
+  #app #page .table-scroll td[data-label]:not(.action-col,[colspan]) { position:relative; min-height:20px; padding-inline-start:calc(min(30%,112px) + 12px); }
+  #app #page .table-scroll td[data-label]:not(.action-col,[colspan])::before { position:absolute; inset-inline-start:0; top:2px; width:min(30%,112px); margin:0; font-size:12px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #app #page .table-scroll td.action-col { justify-content:flex-end; gap:4px; margin-top:4px; padding-top:0; border-top:0; }
+  #app #page .table-scroll td.action-col::before { content:none; }
+
+  /* Analytics: tab rincian satu baris yang bisa digeser */
+  #app .deal-analytics .da-tabs { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; }
+  #app .deal-analytics .da-tabs::-webkit-scrollbar { display:none; }
+  #app .deal-analytics .da-tabs button { flex:none; white-space:nowrap; }
+  #app .da-detail-controls { display:grid; grid-template-columns:minmax(0,1fr); }
+  #app .da-detail-controls :is(input,select) { width:100%; }
+
+  /* Cari pesan: kolom dan tombol cari dalam satu baris */
+  #app #page #messageSearchForm { flex-direction:row; align-items:center; }
+  #app #page #messageSearchForm > input { flex:1 1 auto; width:auto; }
+  #app #page #messageSearchForm > button { flex:none; width:auto; }
+
+  /* iOS Safari memperbesar halaman saat fokus ke kolom < 16px; semua kolom isian 16px di ponsel */
+  input:not([type=checkbox],[type=radio],[type=color],[type=range]),select,textarea { font-size:16px !important; }
+
+  /* Verifikasi deal: tab antrean satu baris yang bisa digeser */
+  #app .deal-review > * { min-width:0; }
+  #app .deal-toolbar { flex-wrap:nowrap; min-width:0; }
+  #app .deal-toolbar .deal-tabs { flex:1 1 auto; min-width:0; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
+    -webkit-mask:linear-gradient(90deg,#000 calc(100% - 28px),transparent); mask:linear-gradient(90deg,#000 calc(100% - 28px),transparent); }
+  #app .deal-toolbar .deal-tabs::-webkit-scrollbar { display:none; }
+  #app .deal-toolbar .deal-tabs button { flex:none; white-space:nowrap; border-radius:999px; padding:0 14px; }
+
+  /* Ringkasan: sambutan ringkas (tanggal + sapaan), angka sejajar, cincin di samping teks,
+     daftar status satu baris per nomor (nama dan nomor di kiri, status di kanan) */
+  #app .dashboard-welcome { display:flex; flex-direction:column; align-items:flex-start; gap:2px; }
+  #app .dashboard-welcome :is(.eyebrow,p) { display:none; }
+  #app .dashboard-welcome .dashboard-date { order:-1; font-size:13px; }
+  #app .dashboard-welcome h2 { font-size:22px; line-height:1.3; }
+  #app .stat-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  #app .stat { display:flex; flex-direction:column; justify-content:flex-start; align-items:flex-start; gap:2px; min-height:0; padding:12px; }
+  #app .stat > small { display:none; }
+  #app .stat > span { font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #app .stat > strong { font-size:24px; line-height:1.25; }
+  #app .dashboard-inbox { display:grid; grid-template-columns:minmax(0,1fr) auto; column-gap:16px; padding:16px; }
+  #app .dashboard-inbox > :not(.connection-chart) { grid-column:1; }
+  #app .dashboard-inbox h3 { font-size:16px; line-height:1.35; }
+  #app .dashboard-inbox p { margin:4px 0 14px; }
+  #app .dashboard-inbox .connection-chart { grid-column:2; grid-row:1 / span 3; }
+  #app .dashboard-inbox .connection-chart-ring { width:72px; }
+  #app .dashboard-inbox .connection-chart-ring strong { font-size:16px; }
+  #app .quick-actions { padding:16px 16px 4px; }
+  #app .quick-actions h3 { margin:0 0 4px; font-size:16px; }
+  #app .quick-actions > button { align-items:center; min-height:60px; padding:10px 0; }
+  #app .quick-actions small { margin-top:2px; }
+  #app #workspace[data-module=dashboard] #page > .card:has(table) { padding:16px; }
+  #app #workspace[data-module=dashboard] #page .panel-head { flex-wrap:nowrap; align-items:flex-start; margin-bottom:4px; }
+  #app #workspace[data-module=dashboard] #page .table-scroll tbody tr { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; column-gap:12px; padding:10px 0; }
+  #app #workspace[data-module=dashboard] #page .table-scroll td { min-height:0; margin:0; padding:0; }
+  #app #workspace[data-module=dashboard] #page .table-scroll td::before { content:none; }
+  #app #workspace[data-module=dashboard] #page .table-scroll td:nth-child(1) { grid-column:1; grid-row:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #app #workspace[data-module=dashboard] #page .table-scroll td:nth-child(2) { grid-column:1; grid-row:2; color:var(--muted); font-size:13px; }
+  #app #workspace[data-module=dashboard] #page .table-scroll td:nth-child(3) { grid-column:2; grid-row:1 / span 2; }
+  #app #workspace[data-module=dashboard] #page .table-scroll td[colspan] { grid-column:1 / -1; grid-row:auto; }
+}
+@media(max-width:380px) {
+  #app .inbox-filters button { padding:0 10px; }
+}
+/* Status nomor bermasalah (perlu scan ulang, gagal) di Ringkasan memakai warna bahaya, bukan abu-abu netral. */
+#app .connection-badge.is-problem { color:var(--danger); background:color-mix(in srgb,var(--danger) 12%,transparent); }
+/* Otomasi AI: ai.css memusatkan semua tombol di .ai-page, termasuk pemicu pilihan nomor; teks pilihan kembali rata kiri. */
+#app .ai-page .select-trigger { justify-content:space-between; }
+/* Belum ada nomor: cincin 0% tidak bermakna; kartu cukup berisi ajakan menghubungkan nomor. */
+#app .dashboard-inbox:has(#dashboardConnect) .connection-chart { display:none; }
+/* Tombol khusus ponsel (kembali, aksi lain) tidak tampil di header desktop; aturan #head > .ghost di atas menimpa .m-only. */
+@media(min-width:821px) { #app #head > .m-only { display:none; } }
+:root { --m-pin:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m16 3 5 5-4 1-4 4-1 4-5-5 4-1 4-4 1-4ZM7 17l-4 4'/%3E%3C/svg%3E"); }
