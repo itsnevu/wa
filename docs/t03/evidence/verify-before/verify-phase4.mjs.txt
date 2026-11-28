@@ -1,8 +1,8 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-phase4.mjs
-SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
+SHA: 3dbf5cc96eb0be389cec75a4a3909697629ed1aa
 exit: 0
 [db] admin dibuat: harness-admin
-[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase4-fRtCXO\\migration-backups\\pre-t01-da9e0191-2511-418f-b0f3-5940759a20c3.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phase4-AJc6NC\\migration-backups\\pre-t01-8c4d9afc-91ca-4873-84ef-83bbe35d436e.sqlite","backupCount":1,"backupBytes":4096}
 {
   "phase": 4,
   "syntax": "OK",

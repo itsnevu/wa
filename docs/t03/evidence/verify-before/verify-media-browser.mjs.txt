@@ -1,5 +1,5 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-media-browser.mjs
-SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
+SHA: 3dbf5cc96eb0be389cec75a4a3909697629ed1aa
 exit: 1
 node:internal/modules/run_main:107
     triggerUncaughtException(
@@ -14,7 +14,7 @@ AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
 + ]
 - []
 
-    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-AsyJul/scripts/verify-media-browser.mjs:91:10
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-iAXRye/scripts/verify-media-browser.mjs:91:10
     at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
   generatedMessage: true,
   code: 'ERR_ASSERTION',

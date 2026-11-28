@@ -1,8 +1,8 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai6.mjs
-SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
+SHA: 3dbf5cc96eb0be389cec75a4a3909697629ed1aa
 exit: 1
 [db] admin dibuat: harness-admin
-[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai6-IZN9Ro\\migration-backups\\pre-t01-f2f9ad70-924e-4b29-9492-c7ff1f766120.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai6-OdTomD\\migration-backups\\pre-t01-93fa509d-2503-4a01-ac31-f251a2d9e146.sqlite","backupCount":1,"backupBytes":4096}
 node:internal/modules/run_main:107
     triggerUncaughtException(
     ^
@@ -12,19 +12,19 @@ AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
 
 + [
 +   "NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n" +
-+     '    at http://127.0.0.1:56737/pwa.js:18:9\n' +
-+     '    at http://127.0.0.1:56737/pwa.js:42:3'
++     '    at http://127.0.0.1:55034/pwa.js:18:9\n' +
++     '    at http://127.0.0.1:55034/pwa.js:42:3'
 + ]
 - []
 
-    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-AsyJul/scripts/verify-ai6.mjs:102:10
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-iAXRye/scripts/verify-ai6.mjs:102:10
     at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
   generatedMessage: true,
   code: 'ERR_ASSERTION',
   actual: [
     "NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n" +
-      '    at http://127.0.0.1:56737/pwa.js:18:9\n' +
-      '    at http://127.0.0.1:56737/pwa.js:42:3'
+      '    at http://127.0.0.1:55034/pwa.js:18:9\n' +
+      '    at http://127.0.0.1:55034/pwa.js:42:3'
   ],
   expected: [],
   operator: 'deepStrictEqual',

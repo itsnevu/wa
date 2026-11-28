@@ -1,7 +1,7 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai-rules.mjs
-SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
+SHA: 3dbf5cc96eb0be389cec75a4a3909697629ed1aa
 exit: 0
 [db] admin dibuat: harness-admin
-[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai-rules-JCYdF5\\migration-backups\\pre-t01-e60ef61e-17f9-4247-965a-ea753869fd91.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai-rules-3CFHXc\\migration-backups\\pre-t01-551e380c-767f-4953-9013-e7fa6b24b310.sqlite","backupCount":1,"backupBytes":4096}
 PASS ai-rules: rule+AI one message no model call, rule cooldown blocks AI, no-match AI answers, no-rule AI answers; exit 0
 

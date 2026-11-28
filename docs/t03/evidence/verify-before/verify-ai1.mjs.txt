@@ -1,8 +1,8 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai1.mjs
-SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
+SHA: 3dbf5cc96eb0be389cec75a4a3909697629ed1aa
 exit: 0
 [db] admin dibuat: admin
-[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-ai1-R2mboF\\migration-backups\\pre-t01-11f91a79-5523-4ba0-87c3-6445e6ff6107.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-ai1-iuZrE8\\migration-backups\\pre-t01-94cf597e-c42a-4a27-a2ac-5a2c8d00fb7e.sqlite","backupCount":1,"backupBytes":4096}
 migration 1: ai_settings [{"name":"number_id","default":null,"pk":1},{"name":"enabled","default":"0","pk":0},{"name":"provider","default":"'ollama'","pk":0},{"name":"base_url","default":null,"pk":0},{"name":"api_key","default":null,"pk":0},{"name":"model","default":"''","pk":0},{"name":"system_prompt","default":"''","pk":0},{"name":"max_per_hour","default":"6","pk":0},{"name":"min_gap_sec","default":"20","pk":0},{"name":"daily_tokens","default":"200000","pk":0},{"name":"warn_percent","default":"80","pk":0},{"name":"stop_reply","default":"''","pk":0},{"name":"escalate_keywords","default":"''","pk":0},{"name":"ai_paused_minutes","default":"30","pk":0},{"name":"business_profile","default":"'{}'","pk":0},{"name":"tenant_id","default":"'default'","pk":0}]
 migration 1: ai_usage [{"name":"number_id","default":null,"pk":1},{"name":"day","default":null,"pk":2},{"name":"tokens","default":"0","pk":0},{"name":"replies","default":"0","pk":0},{"name":"tenant_id","default":"'default'","pk":0}]
 migration 1: ai_notice [{"name":"number_id","default":null,"pk":1},{"name":"chat_id","default":null,"pk":2},{"name":"day","default":null,"pk":3},{"name":"kind","default":null,"pk":4},{"name":"tenant_id","default":"'default'","pk":0}]

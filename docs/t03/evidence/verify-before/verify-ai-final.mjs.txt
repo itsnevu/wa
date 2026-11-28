@@ -1,5 +1,5 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-ai-final.mjs
-SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
+SHA: 3dbf5cc96eb0be389cec75a4a3909697629ed1aa
 exit: 1
 node --check src/db.js: exit 0
 node --check src/config.js: exit 0
@@ -37,7 +37,7 @@ PASS ai5: validation 400, auth 401/403, secret masking, resume +20%/clear notice
 node  scripts/verify-ai6.mjs: exit 1
 
 [db] admin dibuat: harness-admin
-[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai6-ogOTBo\\migration-backups\\pre-t01-4e03ed07-d2c3-4d89-b3f8-5d6bdf6013aa.sqlite","backupCount":1,"backupBytes":4096}
+[schema] {"version":12,"backup":"C:\\Users\\user\\AppData\\Local\\Temp\\wa-phaseai6-GaxRF5\\migration-backups\\pre-t01-d9c04233-1af9-426c-8a26-de6dc3d0700d.sqlite","backupCount":1,"backupBytes":4096}
  node:internal/modules/run_main:107
     triggerUncaughtException(
     ^
@@ -47,19 +47,19 @@ AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
 
 + [
 +   "NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n" +
-+     '    at http://127.0.0.1:57697/pwa.js:18:9\n' +
-+     '    at http://127.0.0.1:57697/pwa.js:42:3'
++     '    at http://127.0.0.1:62494/pwa.js:18:9\n' +
++     '    at http://127.0.0.1:62494/pwa.js:42:3'
 + ]
 - []
 
-    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-AsyJul/scripts/verify-ai6.mjs:102:10
+    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-iAXRye/scripts/verify-ai6.mjs:102:10
     at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
   generatedMessage: true,
   code: 'ERR_ASSERTION',
   actual: [
     "NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n" +
-      '    at http://127.0.0.1:57697/pwa.js:18:9\n' +
-      '    at http://127.0.0.1:57697/pwa.js:42:3'
+      '    at http://127.0.0.1:62494/pwa.js:18:9\n' +
+      '    at http://127.0.0.1:62494/pwa.js:42:3'
   ],
   expected: [],
   operator: 'deepStrictEqual',

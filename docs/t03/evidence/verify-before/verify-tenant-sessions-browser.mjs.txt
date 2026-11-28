@@ -1,22 +1,15 @@
 command: ALLOW_AUTO_MIGRATE=1 node --regexp-interpret-all scripts/verify-tenant-sessions-browser.mjs
-SHA: 10b165b5db71eef0fc28c9a521b0a6228094fbb2
+SHA: 3dbf5cc96eb0be389cec75a4a3909697629ed1aa
 exit: 1
-node:internal/modules/run_main:107
-    triggerUncaughtException(
-    ^
+file:///C:/Users/user/wa-suite/artifacts/t03-regression-iAXRye/scripts/verify-tenant-sessions-browser.mjs:37
+  const evaluate=async expression=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);return r.result.value;};
+                                                                                                                                                         ^
 
-AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
-
-  assert.ok(await evaluate("!document.querySelector('#login').classList.contains('hidden')"))
-
-    at file:///C:/Users/user/wa-suite/artifacts/t03-regression-AsyJul/scripts/verify-tenant-sessions-browser.mjs:56:10 {
-  generatedMessage: true,
-  code: 'ERR_ASSERTION',
-  actual: false,
-  expected: true,
-  operator: '==',
-  diff: 'simple'
-}
+Error: TypeError: Cannot read properties of null (reading 'classList')
+    at <anonymous>:1:34
+    at evaluate (file:///C:/Users/user/wa-suite/artifacts/t03-regression-iAXRye/scripts/verify-tenant-sessions-browser.mjs:37:154)
+    at async wait (file:///C:/Users/user/wa-suite/artifacts/t03-regression-iAXRye/scripts/verify-tenant-sessions-browser.mjs:38:59)
+    at async file:///C:/Users/user/wa-suite/artifacts/t03-regression-iAXRye/scripts/verify-tenant-sessions-browser.mjs:41:44
 
 Node.js v24.19.0
 
